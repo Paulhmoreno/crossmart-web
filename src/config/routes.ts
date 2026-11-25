@@ -48,6 +48,8 @@ export const ROUTES = {
   checkoutCanceled: '/settings/billing/checkout/canceled',
   /** API keys, webhooks and connected agents. */
   developers: '/settings/developers',
+  /** Read-only Odoo 18 ERP catalog source connection. */
+  odooSource: '/settings/odoo',
   webhookEndpoint: `/settings/developers/webhooks/:${ROUTE_PARAMS.endpointId}`,
   /** The signed-in person's own account, from the user menu. */
   account: '/account',

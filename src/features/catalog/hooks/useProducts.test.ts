@@ -1,4 +1,5 @@
 import {
+  CatalogSourceKind,
   ChannelType,
   ListingDisplayState,
   ListingSource,
@@ -15,6 +16,8 @@ function pageWith(displayState: ListingDisplayState): { items: ProductSummary[] 
         id: 'p-1',
         handle: 'mug',
         title: 'Mug',
+        sourceKind: CatalogSourceKind.MANUAL,
+        sourceExternalId: null,
         status: ProductStatus.ACTIVE,
         vendor: null,
         productType: null,

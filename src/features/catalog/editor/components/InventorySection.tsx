@@ -2,6 +2,7 @@ import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { OutOfStockPolicy } from '@/api/schema';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
+import { OdooFieldLockNote } from '@/features/odoo/components/OdooSourceBadge';
 import { BARCODE_HELP } from '../../catalog.constants';
 import type { ProductFormValues } from '../product-form.schema';
 import { EditorSection } from './EditorSection';
@@ -10,7 +11,7 @@ import { CheckboxField, TextField } from './FormFields';
 const TRACKED_FIELD_ID = 'variants.0.tracked';
 const CONTINUE_SELLING_FIELD_ID = 'variants.0.continueSelling';
 
-function TrackStockSwitch() {
+function TrackStockSwitch({ disabled }: { disabled: boolean }) {
   const { control } = useFormContext<ProductFormValues>();
   return (
     <Controller
@@ -18,7 +19,12 @@ function TrackStockSwitch() {
       name="variants.0.tracked"
       render={({ field }) => (
         <Field orientation="horizontal">
-          <Switch id={TRACKED_FIELD_ID} checked={field.value} onCheckedChange={field.onChange} />
+          <Switch
+            id={TRACKED_FIELD_ID}
+            checked={field.value}
+            onCheckedChange={field.onChange}
+            disabled={disabled}
+          />
           <FieldLabel htmlFor={TRACKED_FIELD_ID} className="font-normal">
             Track stock
           </FieldLabel>
@@ -55,16 +61,29 @@ function ContinueSellingSwitch() {
 }
 
 /** SKU, barcode, stock tracking and tax of a product without options. */
-export function InventorySection() {
+export function InventorySection({ isOdooManaged = false }: { isOdooManaged?: boolean }) {
   const { control } = useFormContext<ProductFormValues>();
   const tracked = useWatch({ control, name: 'variants.0.tracked' });
   return (
     <EditorSection title="Inventory">
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField name="variants.0.sku" label="SKU" isCode />
-        <TextField name="variants.0.barcode" label="Barcode" hint={BARCODE_HELP} isCode />
+        <TextField
+          name="variants.0.sku"
+          label="SKU"
+          isCode
+          disabled={isOdooManaged}
+          description={isOdooManaged ? <OdooFieldLockNote /> : undefined}
+        />
+        <TextField
+          name="variants.0.barcode"
+          label="Barcode"
+          hint={BARCODE_HELP}
+          isCode
+          disabled={isOdooManaged}
+          description={isOdooManaged ? <OdooFieldLockNote /> : undefined}
+        />
       </div>
-      <TrackStockSwitch />
+      <TrackStockSwitch disabled={isOdooManaged} />
       {tracked && <ContinueSellingSwitch />}
       <CheckboxField name="variants.0.taxable" label="Charge tax on this product" />
     </EditorSection>

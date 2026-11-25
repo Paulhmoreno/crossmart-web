@@ -32,9 +32,11 @@ interface MediaCardProps {
   workspaceId: string;
   /** Tells the editor how many uploads are still running, so it can hold Save. */
   onPendingChange: (count: number) => void;
+  /** Original source-managed photo URLs that cannot be removed manually. */
+  protectedUrls?: ReadonlySet<string>;
 }
 
-export function MediaCard({ workspaceId, onPendingChange }: MediaCardProps) {
+export function MediaCard({ workspaceId, onPendingChange, protectedUrls }: MediaCardProps) {
   const { control } = useFormContext<ProductFormValues>();
   const media = useFieldArray({ control, name: 'media', keyName: 'rowKey' });
   const uploads = useMediaUploads(workspaceId, (url) => media.append({ url, altText: '' }));
@@ -74,17 +76,21 @@ export function MediaCard({ workspaceId, onPendingChange }: MediaCardProps) {
           strategy={rectSortingStrategy}
         >
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
-            {media.fields.map((item, index) => (
-              <MediaTile
-                key={item.rowKey}
-                url={item.url}
-                altText={item.altText}
-                position={index + 1}
-                onAltTextChange={(altText) => media.update(index, { url: item.url, altText })}
-                onMakeMain={index > 0 ? () => media.move(index, 0) : undefined}
-                onRemove={() => media.remove(index)}
-              />
-            ))}
+            {media.fields.map((item, index) => {
+              const isProtected = protectedUrls?.has(item.url) ?? false;
+              return (
+                <MediaTile
+                  key={item.rowKey}
+                  url={item.url}
+                  altText={item.altText}
+                  position={index + 1}
+                  sourceManaged={isProtected}
+                  onAltTextChange={(altText) => media.update(index, { url: item.url, altText })}
+                  onMakeMain={index > 0 ? () => media.move(index, 0) : undefined}
+                  onRemove={isProtected ? undefined : () => media.remove(index)}
+                />
+              );
+            })}
             {Array.from({ length: uploads.pendingCount }, (_, index) => (
               <UploadingTile key={index} />
             ))}

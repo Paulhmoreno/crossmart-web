@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { ApiRequestError } from '@/api/api-error';
 import {
+  CatalogSourceKind,
   ChannelProductState,
   ListingDisplayState,
   ListingRetryErrorCode,
@@ -45,6 +46,8 @@ function row(state: ChannelProductState, options: RowOptions = {}): ChannelProdu
       id: 'p-1',
       handle: 'linen-shirt',
       title: 'Linen shirt',
+      sourceKind: CatalogSourceKind.MANUAL,
+      sourceExternalId: null,
       status: ProductStatus.ACTIVE,
       vendor: null,
       productType: null,

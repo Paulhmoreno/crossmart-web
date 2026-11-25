@@ -2,12 +2,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { WorkspaceRole, OutsideAgentChanges } from '@/api/schema';
+import {
+  CatalogSourceKind,
+  OutOfStockPolicy,
+  OutsideAgentChanges,
+  ProductStatus,
+  WorkspaceRole,
+} from '@/api/schema';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { useChannelConnections } from '@/features/channels/hooks/useChannelConnections';
 import type { Workspace } from '@/features/workspaces';
 import type * as MediaQueryHooks from '@/hooks/useMediaQuery';
 import { CREATE_BAR_COPY, EDITOR_FEEDBACK, MORE_DETAILS_COPY } from '../../catalog.constants';
+import type { Product } from '../../catalog.types';
 import { ProductEditor } from './ProductEditor';
 
 vi.mock('@/features/channels/hooks/useChannelConnections', () => ({
@@ -40,14 +47,19 @@ const WORKSPACE: Workspace = {
   permissions: [],
 };
 
-function renderEditor(readOnly: boolean, publishes = false) {
+function renderEditor(readOnly: boolean, publishes = false, product?: Product) {
   // The unsaved-changes guard needs a data router.
   const router = createMemoryRouter([
     {
       path: '/',
       element: (
         <TooltipProvider>
-          <ProductEditor workspace={WORKSPACE} readOnly={readOnly} publishes={publishes} />
+          <ProductEditor
+            workspace={WORKSPACE}
+            product={product}
+            readOnly={readOnly}
+            publishes={publishes}
+          />
         </TooltipProvider>
       ),
     },
@@ -58,6 +70,54 @@ function renderEditor(readOnly: boolean, publishes = false) {
     </QueryClientProvider>,
   );
 }
+
+const ODOO_PRODUCT: Product = {
+  id: 'prod-odoo-1',
+  handle: 'sample-erp-widget',
+  title: 'Sample ERP Widget',
+  descriptionHtml: '<p>Sample product description</p>',
+  vendor: 'Sample Brand',
+  productType: 'Accessories',
+  tags: ['sample'],
+  status: ProductStatus.ACTIVE,
+  condition: null,
+  optionNames: [],
+  sourceKind: CatalogSourceKind.ODOO,
+  sourceConnectionId: 'conn-1',
+  sourceExternalId: '1001',
+  sourceMetadata: null,
+  documents: [],
+  variants: [
+    {
+      id: 'var-1',
+      position: 0,
+      sku: 'ERP-SKU-001',
+      barcode: '0000000000001',
+      optionValues: [],
+      price: '12.00',
+      compareAtPrice: null,
+      cost: '4.50',
+      weightGrams: null,
+      requiresShipping: true,
+      taxable: true,
+      outOfStockPolicy: OutOfStockPolicy.STOP_SELLING,
+      tracked: true,
+      available: 5,
+      sourceExternalId: '1001',
+    },
+  ],
+  media: [
+    {
+      id: 'med-1',
+      position: 0,
+      url: 'http://localhost:3300/media/sample.webp',
+      altText: 'Sample ERP Widget',
+      sourceManaged: true,
+    },
+  ],
+  createdAt: '2026-11-25T00:00:00Z',
+  updatedAt: '2026-11-25T00:00:00Z',
+};
 
 describe('ProductEditor', () => {
   it('lets members who may edit change the fields', () => {
@@ -100,5 +160,16 @@ describe('ProductEditor', () => {
 
     expect(screen.getByRole('button', { name: CREATE_BAR_COPY.publish })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: CREATE_BAR_COPY.draft })).toBeInTheDocument();
+  });
+
+  it('disables ERP-managed fields for Odoo products while keeping commercial fields editable', () => {
+    renderEditor(false, false, ODOO_PRODUCT);
+
+    expect(screen.getByLabelText('Title')).toBeEnabled();
+    expect(screen.getByLabelText('Price')).toBeDisabled();
+    expect(screen.getByLabelText('Quantity')).toBeDisabled();
+    expect(screen.getByLabelText('SKU')).toBeDisabled();
+    expect(screen.getByLabelText('Barcode')).toBeDisabled();
+    expect(screen.getByLabelText('Track stock')).toBeDisabled();
   });
 });

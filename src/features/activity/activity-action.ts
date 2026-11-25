@@ -67,4 +67,9 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   [ActivityAction.suggestion_rejected]: 'Suggestion rejected',
   [ActivityAction.agent_proposal_rejected]: 'Agent proposal rejected',
   [ActivityAction.suggestions_bulk_approved]: 'Suggestions approved in bulk',
+  [ActivityAction.odoo_connected]: 'Odoo conectado',
+  [ActivityAction.odoo_credentials_updated]: 'Credenciales de Odoo actualizadas',
+  [ActivityAction.odoo_disconnected]: 'Odoo desconectado',
+  [ActivityAction.odoo_sync_requested]: 'Sincronización de Odoo iniciada',
+  [ActivityAction.odoo_sync_completed]: 'Sincronización de Odoo completada',
 };

@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { FormProvider } from 'react-hook-form';
-import { Eye } from 'lucide-react';
+import { Database, Eye, Lock } from 'lucide-react';
+import { CatalogSourceKind } from '@/api/schema';
 import { FormError } from '@/components/feedback/FormError';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ODOO_COPY } from '@/features/odoo/odoo.constants';
 import type { Workspace } from '@/features/workspaces';
 import { EDITOR_FEEDBACK } from '../../catalog.constants';
 import type { Product } from '../../catalog.types';
@@ -88,6 +90,10 @@ export function ProductEditor({
   const { afterCreate, publishes = false } = props;
   const editor = useProductEditorForm(workspace.id, product, { readOnly, afterCreate });
   const { isDirty, isSubmitting } = editor.form.formState;
+  const isOdooManaged = product?.sourceKind === CatalogSourceKind.ODOO;
+  const protectedMediaUrls = new Set(
+    (product?.media ?? []).filter((item) => item.sourceManaged).map((item) => item.url),
+  );
   return (
     <FormProvider {...editor.form}>
       {/* Room below the last section, so the floating save bar never covers it. */}
@@ -96,6 +102,13 @@ export function ProductEditor({
           {!readOnly && <EditorSaveBar editor={editor} isNew={!product} publishes={publishes} />}
           <UnsavedChangesGuard when={isDirty && !isSubmitting} />
           {readOnly && <ReadOnlyNotice />}
+          {isOdooManaged && (
+            <Alert className="mb-6">
+              <Database />
+              <AlertTitle>{ODOO_COPY.editorBannerTitle}</AlertTitle>
+              <AlertDescription>{ODOO_COPY.editorBannerDescription}</AlertDescription>
+            </Alert>
+          )}
           <FormError error={editor.saveError} className="mb-6" />
           <ProductEditorLayout
             workspaceId={workspace.id}
@@ -106,15 +119,24 @@ export function ProductEditor({
             aside={props.aside}
             channels={props.channels}
             readOnly={readOnly}
+            isOdooManaged={isOdooManaged}
+            protectedMediaUrls={protectedMediaUrls}
           />
         </form>
         {product && !readOnly && (
           <div className="mt-6">
-            <DeleteProductSection
-              workspaceId={workspace.id}
-              productId={product.id}
-              title={product.title}
-            />
+            {isOdooManaged ? (
+              <div className="flex items-center justify-end gap-2 border-t pt-6 text-xs text-muted-foreground">
+                <Lock className="size-3.5" aria-hidden="true" />
+                <span>{ODOO_COPY.cannotDeleteManaged}</span>
+              </div>
+            ) : (
+              <DeleteProductSection
+                workspaceId={workspace.id}
+                productId={product.id}
+                title={product.title}
+              />
+            )}
           </div>
         )}
       </div>

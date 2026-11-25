@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
+import { CatalogSourceKind } from '@/api/schema';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -19,6 +20,7 @@ import { ProductThumbnail } from './ProductThumbnail';
 import { StockLabel } from './StockLabel';
 // Imported from its file, not the feature's index, which itself uses the catalog.
 import { ProductStoreIcons } from '@/features/listings/components/ProductStoreIcons';
+import { OdooSourceBadge } from '@/features/odoo/components/OdooSourceBadge';
 
 const NO_VALUE = '—';
 
@@ -170,8 +172,11 @@ function ProductCell({ product, price }: { product: ProductSummary; price: strin
         >
           {product.title}
         </span>
-        <span className="hidden truncate text-xs text-muted-foreground sm:block">
-          {product.handle}
+        <span className="hidden items-center gap-1.5 truncate text-xs text-muted-foreground sm:flex">
+          <span className="truncate">{product.handle}</span>
+          {product.sourceKind === CatalogSourceKind.ODOO && (
+            <OdooSourceBadge className="h-4 px-1.5 text-[10px]" />
+          )}
         </span>
         {/* On narrow screens the status, price and stock columns fold into this cell. */}
         <span className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground md:hidden">

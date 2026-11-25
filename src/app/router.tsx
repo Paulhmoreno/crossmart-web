@@ -25,6 +25,13 @@ const settingsRoutes: RouteObject[] = [
       })),
   },
   {
+    path: ROUTES.odooSource,
+    lazy: () =>
+      import('@/pages/OdooSourcePage').then(({ OdooSourcePage }) => ({
+        Component: OdooSourcePage,
+      })),
+  },
+  {
     path: ROUTES.team,
     lazy: () => import('@/pages/TeamPage').then(({ TeamPage }) => ({ Component: TeamPage })),
   },

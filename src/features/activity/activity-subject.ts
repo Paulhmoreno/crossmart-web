@@ -30,6 +30,7 @@ const SUBJECT_ROUTES: Record<ActivitySubjectType, (subjectId: string) => string 
   [ActivitySubjectType.webhook_endpoint]: toWebhookEndpointRoute,
   [ActivitySubjectType.import_job]: toImportJobRoute,
   [ActivitySubjectType.channel_connection]: (subjectId) => toStoreRoute(subjectId),
+  [ActivitySubjectType.odoo_connection]: () => ROUTES.odooSource,
   [ActivitySubjectType.member]: () => ROUTES.team,
   [ActivitySubjectType.invitation]: () => ROUTES.team,
   [ActivitySubjectType.custom_role]: () => ROUTES.roles,

@@ -1,9 +1,10 @@
 import { type DraggableAttributes, type DraggableSyntheticListeners } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Star, Trash2 } from 'lucide-react';
+import { GripVertical, Lock, Star, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { ODOO_COPY } from '@/features/odoo/odoo.constants';
 import { AltTextPopover } from './AltTextPopover';
 
 interface MediaTileProps {
@@ -11,14 +12,22 @@ interface MediaTileProps {
   altText: string;
   /** 1-based; the first image is the one channels show first. */
   position: number;
+  sourceManaged?: boolean;
   onAltTextChange: (altText: string) => void;
   /** Absent on the main image. */
   onMakeMain?: () => void;
-  onRemove: () => void;
+  /** Absent when the photo is managed by an authoritative ERP source. */
+  onRemove?: () => void;
 }
 
 /** One image. Drag it, or move it with the keyboard from its handle. */
-export function MediaTile({ url, altText, position, ...actions }: MediaTileProps) {
+export function MediaTile({
+  url,
+  altText,
+  position,
+  sourceManaged = false,
+  ...actions
+}: MediaTileProps) {
   const { setNodeRef, transform, transition, isDragging, attributes, listeners } = useSortable({
     id: url,
   });
@@ -35,11 +44,22 @@ export function MediaTile({ url, altText, position, ...actions }: MediaTileProps
       )}
     >
       <img src={url} alt={altText} className="size-full object-cover" />
-      {isMain && (
-        <span className="absolute bottom-2 left-2 rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium">
-          Main image
-        </span>
-      )}
+      <div className="absolute bottom-2 left-2 flex items-center gap-1">
+        {isMain && (
+          <span className="rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium">
+            Main image
+          </span>
+        )}
+        {sourceManaged && (
+          <span
+            className="inline-flex items-center gap-1 rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium"
+            title={ODOO_COPY.managedFieldNote}
+          >
+            <Lock className="size-3" aria-hidden="true" />
+            Odoo
+          </span>
+        )}
+      </div>
       <TileActions
         name={altText || `image ${position}`}
         altText={altText}
@@ -95,15 +115,17 @@ function TileActions({
           </Button>
         )}
         <AltTextPopover altText={altText} imageName={name} onChange={onAltTextChange} />
-        <Button
-          type="button"
-          size="icon-sm"
-          variant="secondary"
-          onClick={onRemove}
-          aria-label={`Remove ${name}`}
-        >
-          <Trash2 />
-        </Button>
+        {onRemove && (
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="secondary"
+            onClick={onRemove}
+            aria-label={`Remove ${name}`}
+          >
+            <Trash2 />
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ interface TextFieldProps {
   labelAction?: ReactNode;
   /** Help shown on hover beside the label, instead of a line under the field. */
   hint?: string;
+  disabled?: boolean;
 }
 
 /** A field's label, with its help mark when it has one. */
@@ -66,6 +67,7 @@ export function TextField({
   isCode = false,
   labelAction,
   hint,
+  disabled = false,
 }: TextFieldProps) {
   const { register, getFieldState, formState } = useFormContext<ProductFormValues>();
   const { error } = getFieldState(name, formState);
@@ -75,16 +77,19 @@ export function TextField({
       <LabelRow action={labelAction}>
         <HintedLabel name={name} label={label} hint={hint} />
       </LabelRow>
-      <Input
-        id={name}
-        placeholder={placeholder}
-        inputMode={inputMode}
-        maxLength={maxLength}
-        aria-invalid={Boolean(error)}
-        aria-describedby={describedByIds(name, Boolean(description), Boolean(error))}
-        {...(isCode ? CODE_INPUT_PROPS : {})}
-        {...register(name)}
-      />
+      <fieldset disabled={disabled || undefined} className="min-w-0">
+        <Input
+          id={name}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          maxLength={maxLength}
+          readOnly={disabled || undefined}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedByIds(name, Boolean(description), Boolean(error))}
+          {...(isCode ? CODE_INPUT_PROPS : {})}
+          {...register(name)}
+        />
+      </fieldset>
       {description && <FieldDescription id={`${name}-description`}>{description}</FieldDescription>}
       <FieldError id={`${name}-error`} errors={[error]} />
     </Field>
@@ -97,23 +102,34 @@ interface MoneyFieldProps {
   currency: string;
   description?: ReactNode;
   hint?: string;
+  disabled?: boolean;
 }
 
-export function MoneyField({ name, label, currency, description, hint }: MoneyFieldProps) {
+export function MoneyField({
+  name,
+  label,
+  currency,
+  description,
+  hint,
+  disabled = false,
+}: MoneyFieldProps) {
   const { register, getFieldState, formState } = useFormContext<ProductFormValues>();
   const { error } = getFieldState(name, formState);
 
   return (
     <Field data-invalid={Boolean(error)}>
       <HintedLabel name={name} label={label} hint={hint} />
-      <MoneyInput
-        id={name}
-        currency={currency}
-        placeholder="0.00"
-        aria-invalid={Boolean(error)}
-        aria-describedby={describedByIds(name, Boolean(description), Boolean(error))}
-        {...register(name)}
-      />
+      <fieldset disabled={disabled || undefined} className="min-w-0">
+        <MoneyInput
+          id={name}
+          currency={currency}
+          placeholder="0.00"
+          readOnly={disabled || undefined}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedByIds(name, Boolean(description), Boolean(error))}
+          {...register(name)}
+        />
+      </fieldset>
       {description && <FieldDescription id={`${name}-description`}>{description}</FieldDescription>}
       <FieldError id={`${name}-error`} errors={[error]} />
     </Field>

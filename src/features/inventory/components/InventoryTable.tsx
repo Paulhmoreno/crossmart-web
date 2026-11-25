@@ -1,7 +1,9 @@
-import { History } from 'lucide-react';
+import { History, Lock } from 'lucide-react';
 import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
-import { StockLevel } from '@/api/schema';
+import { CatalogSourceKind, StockLevel } from '@/api/schema';
+import { OdooSourceBadge } from '@/features/odoo/components/OdooSourceBadge';
+import { ODOO_COPY } from '@/features/odoo/odoo.constants';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -85,6 +87,7 @@ interface InventoryRowProps {
 function InventoryRow({ workspaceId, item, onOpenHistory, canAdjust }: InventoryRowProps) {
   const quantity = (value: number) => (item.tracked ? value.toLocaleString() : NO_VALUE);
   const isOut = item.stockLevel === StockLevel.out_of_stock;
+  const isOdooManaged = item.sourceKind === CatalogSourceKind.ODOO;
 
   return (
     <TableRow>
@@ -108,8 +111,17 @@ function InventoryRow({ workspaceId, item, onOpenHistory, canAdjust }: Inventory
       </TableCell>
       <TableCell className={FIT_CELL}>
         <div className="flex items-center justify-end gap-1">
-          {item.tracked && canAdjust && (
-            <AdjustStockPopover workspaceId={workspaceId} item={item} compact />
+          {isOdooManaged ? (
+            <span
+              className="inline-flex items-center px-1.5 text-muted-foreground"
+              title={ODOO_COPY.managedFieldNote}
+              aria-label={ODOO_COPY.managedFieldNote}
+            >
+              <Lock className="size-3.5" aria-hidden="true" />
+            </span>
+          ) : (
+            item.tracked &&
+            canAdjust && <AdjustStockPopover workspaceId={workspaceId} item={item} compact />
           )}
           <Button
             variant="ghost"
@@ -135,8 +147,13 @@ function ProductCell({ item }: { item: InventoryItem }) {
     >
       <ProductThumbnail url={item.imageUrl} alt="" />
       <span className="flex min-w-0 flex-col">
-        <span className="truncate font-medium group-hover/product:underline">
-          {item.productTitle}
+        <span className="flex items-center gap-1.5">
+          <span className="truncate font-medium group-hover/product:underline">
+            {item.productTitle}
+          </span>
+          {item.sourceKind === CatalogSourceKind.ODOO && (
+            <OdooSourceBadge className="h-4 px-1.5 text-[10px]" />
+          )}
         </span>
         {variant && <span className="truncate text-xs text-muted-foreground">{variant}</span>}
         <span className="truncate font-mono text-xs text-muted-foreground lg:hidden">

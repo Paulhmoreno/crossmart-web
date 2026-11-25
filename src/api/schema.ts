@@ -1044,6 +1044,93 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/workspaces/{workspaceId}/sources/odoo': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get the workspace Odoo ERP source connection and recent sync runs */
+    get: operations['OdooSourceController_getStatus_v1'];
+    /** Connect Odoo or update credentials and optional advanced settings */
+    put: operations['OdooSourceController_upsert_v1'];
+    post?: never;
+    /** Disconnect Odoo and wipe stored credentials (imported products are preserved) */
+    delete: operations['OdooSourceController_disconnect_v1'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/sources/odoo/test': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Test read-only authentication and discover Odoo 18 capabilities */
+    post: operations['OdooSourceController_test_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/sources/odoo/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Search and preview products from Odoo read-only before selective sync */
+    get: operations['OdooSourceController_preview_v1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/sources/odoo/sync': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Queue a read-only sync from Odoo (selected products or full catalog) */
+    post: operations['OdooSourceController_startSync_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/sources/odoo/sync-runs/{runId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get live progress and issues for an Odoo sync run */
+    get: operations['OdooSourceController_getSyncRun_v1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/products': {
     parameters: {
       query?: never;
@@ -2885,6 +2972,8 @@ export interface components {
     /** @enum {string} */
     SortDirection: SortDirection;
     /** @enum {string} */
+    CatalogSourceKind: CatalogSourceKind;
+    /** @enum {string} */
     ProductCondition: ProductCondition;
     PriceRangeDto: {
       /**
@@ -2934,6 +3023,8 @@ export interface components {
       id: string;
       handle: string;
       title: string;
+      sourceKind: components['schemas']['CatalogSourceKind'];
+      sourceExternalId: string | null;
       status: components['schemas']['ProductStatus'];
       condition: components['schemas']['ProductCondition'] | null;
       vendor: string | null;
@@ -2960,6 +3051,7 @@ export interface components {
     VariantDto: {
       /** Format: uuid */
       id: string;
+      sourceExternalId: string | null;
       position: number;
       sku: string | null;
       /** @description GTIN, UPC, EAN or ISBN */
@@ -2992,12 +3084,33 @@ export interface components {
       url: string;
       altText: string | null;
       position: number;
+      /** @description True when synced from an authoritative source such as Odoo and protected */
+      sourceManaged: boolean;
+    };
+    /** @enum {string} */
+    ProductDocumentKind: ProductDocumentKind;
+    ProductDocumentDto: {
+      /** Format: uuid */
+      id: string;
+      sourceExternalId: string;
+      name: string;
+      mimetype: string;
+      byteSize: number | null;
+      kind: components['schemas']['ProductDocumentKind'];
+      isPublic: boolean;
+      /** Format: date-time */
+      createdAt: string;
     };
     ProductDto: {
       /** Format: uuid */
       id: string;
       handle: string;
       title: string;
+      sourceKind: components['schemas']['CatalogSourceKind'];
+      /** Format: uuid */
+      sourceConnectionId: string | null;
+      sourceExternalId: string | null;
+      sourceMetadata: Record<string, never> | null;
       descriptionHtml: string;
       vendor: string | null;
       productType: string | null;
@@ -3014,6 +3127,7 @@ export interface components {
       optionNames: string[];
       variants: components['schemas']['VariantDto'][];
       media: components['schemas']['MediaDto'][];
+      documents: components['schemas']['ProductDocumentDto'][];
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -3438,6 +3552,7 @@ export interface components {
       /** Format: uuid */
       productId: string;
       productTitle: string;
+      sourceKind: components['schemas']['CatalogSourceKind'];
       /** @description One value per product option, in order */
       optionValues: string[];
       sku: string | null;
@@ -3919,6 +4034,163 @@ export interface components {
        * @example 18201076875
        */
       processingProfileId: string | null;
+    };
+    /** @enum {string} */
+    OdooConnectionStatus: OdooConnectionStatus;
+    /** @enum {string} */
+    OdooStockField: OdooStockField;
+    OdooAdvancedSettingsDto: {
+      warehouseId?: number | null;
+      pricelistId?: number | null;
+      stockField?: components['schemas']['OdooStockField'];
+      brandField?: string | null;
+      customFields?: string[];
+      filterCategoryIds?: number[];
+      filterSaleOnly?: boolean;
+      syncIntervalMinutes?: number | null;
+    };
+    OdooWarehouseOptionDto: {
+      id: number;
+      name: string;
+      code: string;
+    };
+    OdooPricelistOptionDto: {
+      id: number;
+      name: string;
+      currency: string | null;
+    };
+    OdooCategoryOptionDto: {
+      id: number;
+      name: string;
+    };
+    OdooDiscoveredCapabilitiesDto: {
+      serverVersion: string;
+      companyName: string | null;
+      currency: string;
+      productCount: number;
+      warehouses: components['schemas']['OdooWarehouseOptionDto'][];
+      pricelists: components['schemas']['OdooPricelistOptionDto'][];
+      categories: components['schemas']['OdooCategoryOptionDto'][];
+      brandField: string | null;
+      hasProductDocuments: boolean;
+      hasProductImages: boolean;
+    };
+    /** @enum {string} */
+    OdooSyncMode: OdooSyncMode;
+    /** @enum {string} */
+    OdooSyncRunStatus: OdooSyncRunStatus;
+    OdooSyncIssueDto: {
+      externalId: string;
+      name: string;
+      message: string;
+    };
+    OdooSyncRunDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      connectionId: string;
+      mode: components['schemas']['OdooSyncMode'];
+      status: components['schemas']['OdooSyncRunStatus'];
+      totalCount: number;
+      processedCount: number;
+      createdCount: number;
+      updatedCount: number;
+      skippedCount: number;
+      failedCount: number;
+      errorMessage: string | null;
+      issues: components['schemas']['OdooSyncIssueDto'][];
+      /** Format: date-time */
+      startedAt: string | null;
+      /** Format: date-time */
+      finishedAt: string | null;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    OdooConnectionDto: {
+      /** Format: uuid */
+      id: string;
+      displayName: string;
+      url: string;
+      database: string;
+      username: string;
+      hasCredentials: boolean;
+      status: components['schemas']['OdooConnectionStatus'];
+      statusReason: string | null;
+      settings: components['schemas']['OdooAdvancedSettingsDto'];
+      discovered: components['schemas']['OdooDiscoveredCapabilitiesDto'] | null;
+      syncedProductCount: number;
+      /** Format: date-time */
+      lastTestedAt: string | null;
+      /** Format: date-time */
+      lastSyncedAt: string | null;
+      /** Format: date-time */
+      connectedAt: string;
+      /** Format: date-time */
+      disconnectedAt: string | null;
+      latestRun: components['schemas']['OdooSyncRunDto'] | null;
+      recentRuns: components['schemas']['OdooSyncRunDto'][];
+    };
+    OdooConnectionStateDto: {
+      connection: components['schemas']['OdooConnectionDto'] | null;
+    };
+    TestOdooConnectionDto: {
+      /** @example https://erp.example.com */
+      url?: string;
+      /** @example my_company_db */
+      database?: string;
+      /** @example sync@example.com */
+      username?: string;
+      /** @description Odoo API key (omit to test stored credentials) */
+      apiKey?: string;
+    };
+    OdooTestConnectionResponseDto: {
+      ok: boolean;
+      error: string | null;
+      discovered: components['schemas']['OdooDiscoveredCapabilitiesDto'] | null;
+    };
+    UpsertOdooConnectionDto: {
+      /** @example https://erp.example.com */
+      url: string;
+      /** @example my_company_db */
+      database: string;
+      /** @example sync@example.com */
+      username: string;
+      /** @description Odoo API key (required on first connect; optional when updating settings) */
+      apiKey?: string;
+      /** @example Odoo Principal */
+      displayName?: string;
+      settings?: components['schemas']['OdooAdvancedSettingsDto'];
+    };
+    OdooPreviewProductDto: {
+      templateId: number;
+      name: string;
+      sku: string | null;
+      barcode: string | null;
+      brand: string | null;
+      category: string | null;
+      listPrice: string;
+      qtyAvailable: number;
+      variantCount: number;
+      documentCount: number;
+      hasMainImage: boolean;
+      alreadySynced: boolean;
+      /** Format: uuid */
+      crossmartProductId: string | null;
+    };
+    OdooPreviewResponseDto: {
+      items: components['schemas']['OdooPreviewProductDto'][];
+    };
+    OdooSyncFilterDto: {
+      templateIds?: number[];
+      skus?: string[];
+      barcodes?: string[];
+      categoryIds?: number[];
+      saleOnly?: boolean;
+      limit?: number;
+    };
+    StartOdooSyncDto: {
+      mode: components['schemas']['OdooSyncMode'];
+      filter?: components['schemas']['OdooSyncFilterDto'];
     };
     /** @enum {string} */
     ChannelProductState: ChannelProductState;
@@ -7805,6 +8077,170 @@ export interface operations {
       };
     };
   };
+  OdooSourceController_getStatus_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooConnectionStateDto'];
+        };
+      };
+    };
+  };
+  OdooSourceController_upsert_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpsertOdooConnectionDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooConnectionDto'];
+        };
+      };
+    };
+  };
+  OdooSourceController_disconnect_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooConnectionDto'];
+        };
+      };
+    };
+  };
+  OdooSourceController_test_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TestOdooConnectionDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooTestConnectionResponseDto'];
+        };
+      };
+    };
+  };
+  OdooSourceController_preview_v1: {
+    parameters: {
+      query?: {
+        /** @description Search by name, SKU, or barcode */
+        search?: string;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooPreviewResponseDto'];
+        };
+      };
+    };
+  };
+  OdooSourceController_startSync_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['StartOdooSyncDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooSyncRunDto'];
+        };
+      };
+    };
+  };
+  OdooSourceController_getSyncRun_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OdooSyncRunDto'];
+        };
+      };
+    };
+  };
   ChannelProductsController_listProducts_v1: {
     parameters: {
       query?: {
@@ -10262,6 +10698,10 @@ export enum SortDirection {
   asc = 'asc',
   desc = 'desc',
 }
+export enum CatalogSourceKind {
+  MANUAL = 'MANUAL',
+  ODOO = 'ODOO',
+}
 export enum ProductCondition {
   NEW = 'NEW',
   NEW_OTHER = 'NEW_OTHER',
@@ -10327,6 +10767,12 @@ export enum OutOfStockPolicy {
   STOP_SELLING = 'STOP_SELLING',
   CONTINUE_SELLING = 'CONTINUE_SELLING',
 }
+export enum ProductDocumentKind {
+  DATASHEET = 'DATASHEET',
+  MANUAL = 'MANUAL',
+  INTERNAL = 'INTERNAL',
+  OTHER = 'OTHER',
+}
 export enum BulkProductAction {
   set_status = 'set_status',
   add_tags = 'add_tags',
@@ -10357,6 +10803,7 @@ export enum ImportIssueCode {
   duplicate_row = 'duplicate_row',
   unmatched_variant = 'unmatched_variant',
   already_linked = 'already_linked',
+  source_managed = 'source_managed',
 }
 export enum ImportJobStatus {
   PROCESSING = 'PROCESSING',
@@ -10439,6 +10886,11 @@ export enum ActivityAction {
   suggestion_rejected = 'suggestion_rejected',
   agent_proposal_rejected = 'agent_proposal_rejected',
   suggestions_bulk_approved = 'suggestions_bulk_approved',
+  odoo_connected = 'odoo_connected',
+  odoo_credentials_updated = 'odoo_credentials_updated',
+  odoo_disconnected = 'odoo_disconnected',
+  odoo_sync_requested = 'odoo_sync_requested',
+  odoo_sync_completed = 'odoo_sync_completed',
 }
 export enum ActivityOutcome {
   SUCCEEDED = 'SUCCEEDED',
@@ -10456,6 +10908,7 @@ export enum ActivitySubjectType {
   agent_proposal = 'agent_proposal',
   custom_role = 'custom_role',
   channel_connection = 'channel_connection',
+  odoo_connection = 'odoo_connection',
   webhook_endpoint = 'webhook_endpoint',
 }
 export enum ActivityActorType {
@@ -10603,6 +11056,25 @@ export enum CompareAtMode {
   adjust = 'adjust',
   keep = 'keep',
   omit = 'omit',
+}
+export enum OdooConnectionStatus {
+  CONNECTED = 'CONNECTED',
+  ERROR = 'ERROR',
+  DISCONNECTED = 'DISCONNECTED',
+}
+export enum OdooStockField {
+  free_qty = 'free_qty',
+  qty_available = 'qty_available',
+}
+export enum OdooSyncMode {
+  SELECTED = 'SELECTED',
+  FULL = 'FULL',
+}
+export enum OdooSyncRunStatus {
+  QUEUED = 'QUEUED',
+  RUNNING = 'RUNNING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
 }
 export enum ChannelProductState {
   listed = 'listed',

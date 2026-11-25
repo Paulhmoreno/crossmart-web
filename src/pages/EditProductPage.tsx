@@ -16,7 +16,8 @@ import {
 } from '@/features/catalog';
 import { ProductEditor } from '@/features/catalog/editor';
 import { ProductChannelsCard, PublishResultAlert, useProductStoreNames } from '@/features/listings';
-import { WorkspacePermission } from '@/api/schema';
+import { CatalogSourceKind, WorkspacePermission } from '@/api/schema';
+import { OdooDocumentsCard, OdooSourceBadge } from '@/features/odoo';
 import { useScrollToSection } from '@/hooks/useScrollToSection';
 import { hasPermission, type Workspace } from '@/features/workspaces';
 
@@ -30,7 +31,12 @@ const PRODUCT_PAGE_COPY: ResourcePageCopy = {
 /** "Mark as sold", naming the stores it comes off; for members who may edit products. */
 function ProductActions({ workspace, product }: { workspace: Workspace; product: Product }) {
   const storeNames = useProductStoreNames(workspace.id, product.id);
-  if (!hasPermission(workspace, WorkspacePermission.products_edit)) return null;
+  if (
+    !hasPermission(workspace, WorkspacePermission.products_edit) ||
+    product.sourceKind === CatalogSourceKind.ODOO
+  ) {
+    return null;
+  }
   return (
     <MarkSoldButton
       workspaceId={workspace.id}
@@ -48,38 +54,47 @@ function EditProduct({ workspace, productId }: { workspace: Workspace; productId
   useScrollToSection(query.isSuccess);
   return (
     <ResourcePage query={query} copy={PRODUCT_PAGE_COPY} parents={parents}>
-      {(product) => (
-        <Page
-          name={product.title}
-          parents={parents}
-          actions={<ProductActions workspace={workspace} product={product} />}
-          title={
-            <>
-              {product.title}
-              <ProductStatusBadge status={product.status} />
-            </>
-          }
-        >
-          <PublishResultAlert />
-          {/* Remount on a different product so the form starts from its values. */}
-          <ProductEditor
-            key={product.id}
-            workspace={workspace}
-            product={product}
-            readOnly={!canEdit}
-            aside={<RecentActivityCard workspaceId={workspace.id} productId={product.id} />}
-            channels={
-              <ProductChannelsCard
-                workspaceId={workspace.id}
-                productId={product.id}
-                catalogCurrency={workspace.currency}
-                canEdit={canEdit}
-                action={<AgentMapLink />}
-              />
+      {(product) => {
+        const isOdoo = product.sourceKind === CatalogSourceKind.ODOO;
+        return (
+          <Page
+            name={product.title}
+            parents={parents}
+            actions={<ProductActions workspace={workspace} product={product} />}
+            title={
+              <>
+                {product.title}
+                <ProductStatusBadge status={product.status} />
+                {isOdoo && <OdooSourceBadge />}
+              </>
             }
-          />
-        </Page>
-      )}
+          >
+            <PublishResultAlert />
+            {/* Remount on a different product so the form starts from its values. */}
+            <ProductEditor
+              key={product.id}
+              workspace={workspace}
+              product={product}
+              readOnly={!canEdit}
+              aside={
+                <>
+                  {isOdoo && <OdooDocumentsCard workspaceId={workspace.id} product={product} />}
+                  <RecentActivityCard workspaceId={workspace.id} productId={product.id} />
+                </>
+              }
+              channels={
+                <ProductChannelsCard
+                  workspaceId={workspace.id}
+                  productId={product.id}
+                  catalogCurrency={workspace.currency}
+                  canEdit={canEdit}
+                  action={<AgentMapLink />}
+                />
+              }
+            />
+          </Page>
+        );
+      }}
     </ResourcePage>
   );
 }

@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import {
+  CatalogSourceKind,
   ChannelProductState,
   ChannelProductView,
   ListingDisplayState,
@@ -37,6 +38,8 @@ const ROW: ChannelProduct = {
     id: 'p-1',
     handle: 'linen-shirt',
     title: 'Linen shirt',
+    sourceKind: CatalogSourceKind.MANUAL,
+    sourceExternalId: null,
     status: ProductStatus.ACTIVE,
     vendor: null,
     productType: null,

@@ -3,7 +3,8 @@ import { ErrorState } from '@/components/feedback/ErrorState';
 import { ListSkeleton } from '@/components/lists/ListSkeleton';
 import { TablePagination } from '@/components/lists/TablePagination';
 import { useState } from 'react';
-import type { InventoryMovementReason } from '@/api/schema';
+import { CatalogSourceKind, type InventoryMovementReason } from '@/api/schema';
+import { OdooFieldLockNote } from '@/features/odoo/components/OdooSourceBadge';
 import { FilterSelect } from '@/components/lists/FilterSelect';
 import { toEnumOptions } from '@/lib/enum';
 import { SortSelect } from '@/components/lists/SortSelect';
@@ -62,10 +63,17 @@ export function StockHistorySheet({
         {item && (
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
             <StockSummary item={item} />
-            {item.tracked && canAdjust && (
-              <div className="flex justify-end">
-                <AdjustStockPopover workspaceId={workspaceId} item={item} />
+            {item.sourceKind === CatalogSourceKind.ODOO ? (
+              <div className="rounded-md border bg-muted/40 px-3 py-2">
+                <OdooFieldLockNote />
               </div>
+            ) : (
+              item.tracked &&
+              canAdjust && (
+                <div className="flex justify-end">
+                  <AdjustStockPopover workspaceId={workspaceId} item={item} />
+                </div>
+              )
             )}
             <HistoryBody
               key={item.inventoryItemId}

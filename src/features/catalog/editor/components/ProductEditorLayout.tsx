@@ -20,6 +20,10 @@ interface ProductEditorLayoutProps {
   channels?: ReactNode;
   /** Disables the product's own fields; the channels and side cards keep their links. */
   readOnly?: boolean;
+  /** True when the product is synced from Odoo (selective ERP-owned field locking). */
+  isOdooManaged?: boolean;
+  /** Original ERP photo URLs that cannot be removed manually. */
+  protectedMediaUrls?: ReadonlySet<string>;
 }
 
 /** The product's own fields, disabled together for roles that may not edit them. */
@@ -36,7 +40,15 @@ function FieldGroup({ readOnly, children }: { readOnly: boolean; children: React
  * status and stores on the right. A new product has no status card: its save buttons choose.
  */
 export function ProductEditorLayout(props: ProductEditorLayoutProps) {
-  const { workspaceId, productId, currency, hasOptions, readOnly = false } = props;
+  const {
+    workspaceId,
+    productId,
+    currency,
+    hasOptions,
+    readOnly = false,
+    isOdooManaged = false,
+    protectedMediaUrls,
+  } = props;
   // On one column, status comes first: it is what sellers check before anything else.
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
   const status = productId && (
@@ -49,10 +61,18 @@ export function ProductEditorLayout(props: ProductEditorLayoutProps) {
     <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <FieldGroup readOnly={readOnly}>
         {!isDesktop && status}
-        <MediaCard workspaceId={workspaceId} onPendingChange={props.onPendingUploadsChange} />
+        <MediaCard
+          workspaceId={workspaceId}
+          onPendingChange={props.onPendingUploadsChange}
+          protectedUrls={protectedMediaUrls}
+        />
         <TitleDescriptionCard aiTarget={productId ? { workspaceId, productId } : undefined} />
-        <EssentialsCard currency={currency} hasOptions={hasOptions} />
-        <MoreDetailsCard currency={currency} hasOptions={hasOptions} />
+        <EssentialsCard currency={currency} hasOptions={hasOptions} isOdooManaged={isOdooManaged} />
+        <MoreDetailsCard
+          currency={currency}
+          hasOptions={hasOptions}
+          isOdooManaged={isOdooManaged}
+        />
       </FieldGroup>
       <div className="flex min-w-0 flex-col gap-6">
         {isDesktop && status}

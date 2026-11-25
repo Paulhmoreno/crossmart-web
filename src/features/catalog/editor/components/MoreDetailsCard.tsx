@@ -19,6 +19,7 @@ interface MoreDetailsCardProps {
   currency: string;
   /** With options, every variant's price and stock is here, so it starts open. */
   hasOptions: boolean;
+  isOdooManaged?: boolean;
 }
 
 /** Opens by itself for variants, an invalid field inside, or a link to a section inside. */
@@ -29,8 +30,12 @@ function useForcedOpen(hasOptions: boolean): boolean {
 }
 
 /** Everything a one-of-a-kind listing rarely needs, folded away until asked for. */
-export function MoreDetailsCard({ currency, hasOptions }: MoreDetailsCardProps) {
-  const [opened, setOpened] = useState(false);
+export function MoreDetailsCard({
+  currency,
+  hasOptions,
+  isOdooManaged = false,
+}: MoreDetailsCardProps) {
+  const [opened, setOpened] = useState(isOdooManaged);
   const forcedOpen = useForcedOpen(hasOptions);
   const open = opened || forcedOpen;
   return (
@@ -57,7 +62,7 @@ export function MoreDetailsCard({ currency, hasOptions }: MoreDetailsCardProps) 
               <>
                 <PriceExtrasSection currency={currency} />
                 <Separator />
-                <InventorySection />
+                <InventorySection isOdooManaged={isOdooManaged} />
                 <Separator />
                 <ShippingSection />
                 <Separator />
@@ -65,7 +70,7 @@ export function MoreDetailsCard({ currency, hasOptions }: MoreDetailsCardProps) 
             )}
             <OrganizationSection />
             <Separator />
-            <VariantsSection currency={currency} />
+            <VariantsSection currency={currency} isOdooManaged={isOdooManaged} />
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
