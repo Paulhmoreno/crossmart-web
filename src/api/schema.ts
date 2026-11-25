@@ -5511,6 +5511,17 @@ export interface components {
       title: string | null;
       /** @description Null when not asked for */
       descriptionHtml: string | null;
+      /** @description Plain-text commercial summary when requested */
+      shortDescription?: string | null;
+      /** @description Suggested commercial search tags when requested */
+      tags?: string[] | null;
+      /**
+       * @description Commercial verification tier for the generated draft
+       * @enum {string|null}
+       */
+      qualityTier?: ContentDraftDtoQualityTier;
+      /** @description Short explanation of the assigned quality tier */
+      qualityNote?: string | null;
     };
     /** @enum {string} */
     AgentWorkerEventType: AgentWorkerEventType;
@@ -11590,6 +11601,13 @@ export enum AiFeature {
 export enum ContentField {
   title = 'title',
   description = 'description',
+  short_description = 'short_description',
+  tags = 'tags',
+}
+export enum ContentDraftDtoQualityTier {
+  verified_with_sources = 'verified_with_sources',
+  commercial_assisted = 'commercial_assisted',
+  generic_provisional = 'generic_provisional',
 }
 export enum AgentWorkerEventType {
   turn_started = 'turn_started',

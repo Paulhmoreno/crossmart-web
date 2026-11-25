@@ -57,7 +57,7 @@ export const SUGGESTIONS_FEEDBACK = {
 export const AI_COPY = {
   notConfiguredTitle: 'AI is not configured',
   notConfiguredDescription:
-    'Set ANTHROPIC_API_KEY on the server and restart it to turn on AI content and suggestions.',
+    'Configura un proveedor en Settings → Inteligencia artificial para activar la generación de contenido y sugerencias.',
   generate: 'Generate with AI',
 } as const;
 
