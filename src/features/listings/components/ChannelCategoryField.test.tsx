@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ChannelType } from '@/api/schema';
 import { useCategorySuggestions, useChooseListingCategory } from '../hooks/useListingCategory';
 import { ChannelCategoryField } from './ChannelCategoryField';
 
@@ -67,5 +68,20 @@ describe('ChannelCategoryField', () => {
     render(<ChannelCategoryField channelRef={REF} category={null} />);
 
     expect(screen.getByText(/eBay suggested no category/)).toBeInTheDocument();
+  });
+
+  it('uses WooCommerce Spanish labels when channel is woocommerce', () => {
+    setup();
+    render(
+      <ChannelCategoryField
+        channelRef={REF}
+        category={{ id: '63', name: 'Electronics' }}
+        channel={ChannelType.woocommerce}
+      />,
+    );
+
+    expect(screen.getByText('Categoría de WooCommerce')).toBeInTheDocument();
+    expect(screen.getByLabelText('Buscar categorías de WooCommerce')).toBeInTheDocument();
+    expect(screen.queryByText('eBay category')).not.toBeInTheDocument();
   });
 });

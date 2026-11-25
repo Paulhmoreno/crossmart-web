@@ -11,7 +11,13 @@ describe('visibleSettingsTabs', () => {
   it('shows every tab to a role that holds every permission', () => {
     expect(
       tabsFor([WorkspacePermission.workspace_manage, WorkspacePermission.billing_view]),
-    ).toEqual([SettingsTab.General, SettingsTab.Team, SettingsTab.Billing, SettingsTab.Developers]);
+    ).toEqual([
+      SettingsTab.General,
+      SettingsTab.Ai,
+      SettingsTab.Team,
+      SettingsTab.Billing,
+      SettingsTab.Developers,
+    ]);
   });
 
   it('hides General and Billing from a role that cannot use them', () => {

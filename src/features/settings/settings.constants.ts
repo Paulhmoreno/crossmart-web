@@ -4,6 +4,7 @@ import { ROUTES } from '@/config/routes';
 export enum SettingsTab {
   General = 'general',
   Odoo = 'odoo',
+  Ai = 'ai',
   Team = 'team',
   Billing = 'billing',
   Developers = 'developers',
@@ -30,6 +31,12 @@ export const SETTINGS_TABS: readonly SettingsTabInfo[] = [
     label: 'Odoo ERP',
     to: ROUTES.odooSource,
     anyOf: [WorkspacePermission.channels_view, WorkspacePermission.channels_manage],
+  },
+  {
+    tab: SettingsTab.Ai,
+    label: 'Inteligencia artificial',
+    to: ROUTES.aiSettings,
+    anyOf: [WorkspacePermission.workspace_manage],
   },
   { tab: SettingsTab.Team, label: 'Team', to: ROUTES.team },
   {

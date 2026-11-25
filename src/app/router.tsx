@@ -32,6 +32,13 @@ const settingsRoutes: RouteObject[] = [
       })),
   },
   {
+    path: ROUTES.aiSettings,
+    lazy: () =>
+      import('@/pages/AiSettingsPage').then(({ AiSettingsPage }) => ({
+        Component: AiSettingsPage,
+      })),
+  },
+  {
     path: ROUTES.team,
     lazy: () => import('@/pages/TeamPage').then(({ TeamPage }) => ({ Component: TeamPage })),
   },

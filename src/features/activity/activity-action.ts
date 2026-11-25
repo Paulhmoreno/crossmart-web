@@ -72,4 +72,6 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   [ActivityAction.odoo_disconnected]: 'Odoo desconectado',
   [ActivityAction.odoo_sync_requested]: 'Sincronización de Odoo iniciada',
   [ActivityAction.odoo_sync_completed]: 'Sincronización de Odoo completada',
+  [ActivityAction.ai_config_updated]: 'Configuración de IA actualizada',
+  [ActivityAction.ai_config_cleared]: 'Configuración de IA eliminada',
 };

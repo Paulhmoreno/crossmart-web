@@ -108,7 +108,7 @@ export const STORE_NOT_CONNECTED_COPY = {
   action: 'Reconnect it',
 } as const;
 
-/** What the eBay category field in the override sheet says. */
+/** What the channel category field in the override sheet says. */
 export const CATEGORY_COPY = {
   label: 'eBay category',
   automatic: 'Picked from eBay’s suggestions for the title when it is first published.',
@@ -118,6 +118,17 @@ export const CATEGORY_COPY = {
   noResults: 'eBay suggested no category. Try other keywords.',
   useSuggested: 'Let eBay suggest',
   savedNote: 'Changing it updates the listing on eBay.',
+} as const;
+
+export const WOOCOMMERCE_CATEGORY_COPY = {
+  label: 'Categoría de WooCommerce',
+  automatic: 'Se seleccionará automáticamente según las categorías de tu tienda al publicar.',
+  searchLabel: 'Buscar categorías de WooCommerce',
+  searchPlaceholder: 'Palabras clave o deja vacío para usar el título',
+  search: 'Buscar',
+  noResults: 'No se encontraron categorías en WooCommerce. Prueba otras palabras.',
+  useSuggested: 'Usar sugerencia automática',
+  savedNote: 'Al cambiarla se actualizará la categoría del producto en WooCommerce.',
 } as const;
 
 /** What the eBay item specifics section of the override sheet says. */

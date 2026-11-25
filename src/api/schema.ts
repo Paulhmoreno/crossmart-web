@@ -1740,10 +1740,63 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Whether AI features are available on this server */
+    /** Whether AI features are available for this workspace */
     get: operations['AiController_status_v1'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/ai/config': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read the workspace AI provider configuration (never returns secrets) */
+    get: operations['AiController_getConfig_v1'];
+    /** Save the workspace AI provider configuration with encrypted API key */
+    put: operations['AiController_saveConfig_v1'];
+    post?: never;
+    /** Clear the workspace AI provider configuration and wipe its stored key */
+    delete: operations['AiController_clearConfig_v1'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/ai/config/test': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Test AI provider credentials and probe model capabilities */
+    post: operations['AiController_testConfig_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/ai/config/models': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** List models exposed by an OpenAI-compatible endpoint when supported */
+    post: operations['AiController_listModels_v1'];
     delete?: never;
     options?: never;
     head?: never;
@@ -5311,6 +5364,90 @@ export interface components {
       provider: string;
       /** @example claude-sonnet-5-5 */
       model: string;
+    };
+    /** @enum {string} */
+    AiConfigSource: AiConfigSource;
+    /** @enum {string} */
+    AiProviderName: AiProviderName;
+    /** @enum {string} */
+    AiConfigStatus: AiConfigStatus;
+    AiCapabilitiesDto: {
+      structuredOutput: boolean;
+      jsonSchema: boolean;
+      streaming: boolean;
+      toolCalling: boolean;
+      vision: boolean;
+      modelsEndpoint: boolean;
+    };
+    AiConfigDto: {
+      configured: boolean;
+      source: components['schemas']['AiConfigSource'];
+      provider: components['schemas']['AiProviderName'];
+      /** @example https://api.openai.com/v1 */
+      baseUrl: string | null;
+      /** @example gpt-4o-mini */
+      model: string;
+      /** @description True when an encrypted API key is stored; the key is never returned */
+      hasApiKey: boolean;
+      status: components['schemas']['AiConfigStatus'];
+      capabilities: components['schemas']['AiCapabilitiesDto'];
+      lastError: string | null;
+      /** Format: date-time */
+      lastTestedAt: string | null;
+      /** Format: date-time */
+      updatedAt: string | null;
+    };
+    SaveAiConfigDto: {
+      provider: components['schemas']['AiProviderName'];
+      /**
+       * @description API base URL for OpenAI-compatible servers
+       * @example https://api.openai.com/v1
+       */
+      baseUrl?: string | null;
+      /** @description Provider API key. Omit to keep the encrypted key already saved for this provider. */
+      apiKey?: string | null;
+      /**
+       * @description Model identifier
+       * @example gpt-4o-mini
+       */
+      model: string;
+    };
+    TestAiConfigDto: {
+      provider: components['schemas']['AiProviderName'];
+      /**
+       * @description API base URL for OpenAI-compatible servers
+       * @example https://api.openai.com/v1
+       */
+      baseUrl?: string | null;
+      /** @description Provider API key. Omit to keep the encrypted key already saved for this provider. */
+      apiKey?: string | null;
+      /**
+       * @description Model identifier
+       * @example gpt-4o-mini
+       */
+      model: string;
+    };
+    TestAiConfigResultDto: {
+      ok: boolean;
+      provider: components['schemas']['AiProviderName'];
+      resolvedModel: string | null;
+      latencyMs: number;
+      capabilities: components['schemas']['AiCapabilitiesDto'];
+      error: string | null;
+    };
+    ListAiModelsDto: {
+      provider: components['schemas']['AiProviderName'];
+      baseUrl?: string | null;
+      apiKey?: string | null;
+    };
+    AiModelOptionDto: {
+      id: string;
+      ownedBy: string | null;
+    };
+    ListAiModelsResultDto: {
+      supported: boolean;
+      models: components['schemas']['AiModelOptionDto'][];
+      error: string | null;
     };
     AiUsageTotalsDto: {
       calls: number;
@@ -9321,7 +9458,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        workspaceId: unknown;
+        workspaceId: string;
       };
       cookie?: never;
     };
@@ -9333,6 +9470,123 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['AiStatusDto'];
+        };
+      };
+    };
+  };
+  AiController_getConfig_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AiConfigDto'];
+        };
+      };
+    };
+  };
+  AiController_saveConfig_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SaveAiConfigDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AiConfigDto'];
+        };
+      };
+    };
+  };
+  AiController_clearConfig_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AiConfigDto'];
+        };
+      };
+    };
+  };
+  AiController_testConfig_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TestAiConfigDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TestAiConfigResultDto'];
+        };
+      };
+    };
+  };
+  AiController_listModels_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListAiModelsDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListAiModelsResultDto'];
         };
       };
     };
@@ -11010,6 +11264,8 @@ export enum ActivityAction {
   odoo_disconnected = 'odoo_disconnected',
   odoo_sync_requested = 'odoo_sync_requested',
   odoo_sync_completed = 'odoo_sync_completed',
+  ai_config_updated = 'ai_config_updated',
+  ai_config_cleared = 'ai_config_cleared',
 }
 export enum ActivityOutcome {
   SUCCEEDED = 'SUCCEEDED',
@@ -11310,6 +11566,20 @@ export enum SuggestionCreatorType {
 }
 export enum SuggestionAgent {
   content_generator = 'content_generator',
+}
+export enum AiConfigSource {
+  workspace = 'workspace',
+  environment = 'environment',
+  none = 'none',
+}
+export enum AiProviderName {
+  anthropic = 'anthropic',
+  openai_compatible = 'openai_compatible',
+}
+export enum AiConfigStatus {
+  CONNECTED = 'CONNECTED',
+  ERROR = 'ERROR',
+  DISABLED = 'DISABLED',
 }
 export enum AiFeature {
   content_generation = 'content_generation',

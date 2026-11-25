@@ -50,6 +50,8 @@ export const ROUTES = {
   developers: '/settings/developers',
   /** Read-only Odoo 18 ERP catalog source connection. */
   odooSource: '/settings/odoo',
+  /** Workspace AI provider configuration (Anthropic or OpenAI-compatible). */
+  aiSettings: '/settings/ai',
   webhookEndpoint: `/settings/developers/webhooks/:${ROUTE_PARAMS.endpointId}`,
   /** The signed-in person's own account, from the user menu. */
   account: '/account',

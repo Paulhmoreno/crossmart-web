@@ -37,7 +37,11 @@ export function StoreOnlyFields() {
         {LISTING_EDITOR_COPY.storeOnly}
       </h3>
       {category.supported && (
-        <ChannelCategoryField channelRef={listingRef} category={category.value} />
+        <ChannelCategoryField
+          channelRef={listingRef}
+          category={category.value}
+          channel={listing.connection.channel}
+        />
       )}
       {itemSpecifics.supported && <ItemSpecifics hasCategory={category.value !== null} />}
     </section>
