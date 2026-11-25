@@ -13,4 +13,6 @@ export type EbayListingDefaultsBody = components['schemas']['UpdateEbayListingDe
 export type EbayPolicy = components['schemas']['EbayPolicyDto'];
 export type GoogleMerchantSettings = components['schemas']['GoogleMerchantSettingsDto'];
 export type FalabellaSettings = components['schemas']['FalabellaSettingsDto'];
+export type WooCommerceSettings = components['schemas']['WooCommerceSettingsDto'];
+export type TestedCredentials = components['schemas']['TestedCredentialsDto'];
 export type GoogleListingSetupBody = components['schemas']['UpdateGoogleListingSetupDto'];

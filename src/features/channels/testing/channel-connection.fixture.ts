@@ -30,6 +30,7 @@ export function connectionFixture(overrides: Partial<ChannelConnection> = {}): C
     etsy: null,
     mercadoLibre: null,
     falabella: null,
+    woocommerce: null,
     productSelection: null,
     failedListings: 0,
     publishReadiness: { ready: true, missing: [] },

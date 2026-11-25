@@ -8,6 +8,7 @@ import {
   FalabellaCountry,
   GoogleTargetCountry,
   MercadoLibreSiteId,
+  WooCommercePublishStatus,
 } from '@/api/schema';
 import amazonLogo from './assets/logos/amazon.svg';
 import bigcommerceLogo from './assets/logos/bigcommerce.svg';
@@ -31,6 +32,8 @@ export const CHANNEL_AUTHORIZATIONS_ENDPOINT =
   '/api/v1/workspaces/{workspaceId}/channel-connections/authorizations';
 export const CHANNEL_CREDENTIALS_ENDPOINT =
   '/api/v1/workspaces/{workspaceId}/channel-connections/credentials';
+export const CHANNEL_CREDENTIALS_TEST_ENDPOINT =
+  '/api/v1/workspaces/{workspaceId}/channel-connections/credentials/test';
 export const CHANNEL_DISCONNECT_ENDPOINT =
   '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/disconnect';
 export const CHANNEL_IMPORTS_ENDPOINT =
@@ -221,6 +224,9 @@ export interface OAuthConnectableChannel extends ConnectableChannelBase {
 /** What a merchant pastes: the credentials of `POST …/channel-connections/credentials`. */
 export type SellerCredentials = ConnectWithCredentialsBody['credentials'];
 
+type KeysOfUnion<Union> = Union extends unknown ? keyof Union : never;
+export type SellerCredentialKey = KeysOfUnion<SellerCredentials>;
+
 export enum CredentialFieldKind {
   Text = 'text',
   /** Masked while typed, such as an API key. */
@@ -229,11 +235,24 @@ export enum CredentialFieldKind {
 }
 
 export interface CredentialFieldPrompt {
-  key: keyof SellerCredentials;
+  key: SellerCredentialKey;
   label: string;
   kind: CredentialFieldKind;
   placeholder?: string;
   options?: readonly AccountOption[];
+  optional?: boolean;
+  advanced?: boolean;
+}
+
+export interface CredentialsDialogCopyOverrides {
+  title?: string;
+  description?: string;
+  guide?: string;
+  submit?: string;
+  cancel?: string;
+  test?: string;
+  advancedToggle?: string;
+  advancedHint?: string;
 }
 
 /** The merchant pastes the API details the channel issued them. */
@@ -242,6 +261,9 @@ export interface CredentialsConnectableChannel extends ConnectableChannelBase {
   fields: readonly CredentialFieldPrompt[];
   /** The channel's page on where to find them. */
   guideUrl: string;
+  /** Whether the channel supports testing credentials before saving. */
+  supportsTest?: boolean;
+  copy?: CredentialsDialogCopyOverrides;
 }
 
 export type ConnectableChannel = OAuthConnectableChannel | CredentialsConnectableChannel;
@@ -251,7 +273,76 @@ export const CREDENTIALS_DIALOG_COPY = {
   description: 'Paste your API details from Seller Center.',
   guide: 'Where to find them',
   submit: 'Connect',
+  cancel: 'Cancel',
+  test: 'Test connection',
 } as const;
+
+export const WOOCOMMERCE_PUBLISH_STATUS_LABELS: Record<WooCommercePublishStatus, string> = {
+  [WooCommercePublishStatus.draft]: 'Borrador (recomendado)',
+  [WooCommercePublishStatus.publish]: 'Publicado',
+};
+
+const WOOCOMMERCE_GUIDE_URL =
+  'https://developer.woocommerce.com/docs/apis/rest-api/authentication/';
+
+const WOOCOMMERCE_FIELDS: readonly CredentialFieldPrompt[] = [
+  {
+    key: 'storeUrl',
+    label: 'URL de la tienda (HTTPS)',
+    kind: CredentialFieldKind.Text,
+    placeholder: 'https://tienda.ejemplo.com',
+  },
+  {
+    key: 'consumerKey',
+    label: 'Consumer Key',
+    kind: CredentialFieldKind.Secret,
+    placeholder: 'ck_...',
+  },
+  {
+    key: 'consumerSecret',
+    label: 'Consumer Secret',
+    kind: CredentialFieldKind.Secret,
+    placeholder: 'cs_...',
+  },
+  {
+    key: 'wpUsername',
+    label: 'Usuario de WordPress (para subir fotos)',
+    kind: CredentialFieldKind.Text,
+    placeholder: 'crossmart-media',
+    optional: true,
+    advanced: true,
+  },
+  {
+    key: 'wpAppPassword',
+    label: 'Contraseña de aplicación de WordPress',
+    kind: CredentialFieldKind.Secret,
+    optional: true,
+    advanced: true,
+  },
+  {
+    key: 'defaultStatus',
+    label: 'Estado inicial al publicar',
+    kind: CredentialFieldKind.Select,
+    optional: true,
+    advanced: true,
+    options: Object.values(WooCommercePublishStatus).map((status) => ({
+      value: status,
+      label: WOOCOMMERCE_PUBLISH_STATUS_LABELS[status],
+    })),
+  },
+];
+
+const WOOCOMMERCE_DIALOG_COPY: CredentialsDialogCopyOverrides = {
+  title: 'Conectar WooCommerce',
+  description: 'Ingresa la URL HTTPS y las claves de API REST v3 de tu tienda WooCommerce.',
+  guide: 'Cómo obtener las claves',
+  submit: 'Conectar',
+  cancel: 'Cancelar',
+  test: 'Probar conexión',
+  advancedToggle: 'Opciones avanzadas (fotos de WordPress y estado inicial)',
+  advancedHint:
+    'Para subir fotografías almacenadas localmente en Crossmart hacia tu tienda remota sin exponer tu servidor, agrega un usuario de WordPress con contraseña de aplicación y permiso upload_files.',
+};
 
 export const FALABELLA_COUNTRY_LABELS: Record<FalabellaCountry, string> = {
   [FalabellaCountry.facl]: 'Chile',
@@ -562,9 +653,19 @@ export const CHANNELS: readonly ChannelInfo[] = [
   },
   {
     name: 'WooCommerce',
-    description: 'Sync with a WordPress store.',
-    status: ChannelStatus.Community,
+    description:
+      'Sincroniza productos, categorías, precios, inventario y fotografías con tu tienda WordPress/WooCommerce.',
+    status: ChannelStatus.Live,
     logo: { src: woocommerceLogo, tint: '#96588a' },
+    connect: {
+      method: ConnectMethod.Credentials,
+      type: ChannelType.woocommerce,
+      importsCatalog: true,
+      supportsTest: true,
+      fields: WOOCOMMERCE_FIELDS,
+      guideUrl: WOOCOMMERCE_GUIDE_URL,
+      copy: WOOCOMMERCE_DIALOG_COPY,
+    },
   },
   {
     name: 'BigCommerce',

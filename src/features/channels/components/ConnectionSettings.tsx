@@ -14,6 +14,7 @@ import { EbayListingDefaultsCard } from './EbayListingDefaultsCard';
 import { GoogleAccountDetails } from './GoogleAccountDetails';
 import { GoogleListingSetupCard } from './GoogleListingSetupCard';
 import { ShopifyAccountDetails } from './ShopifyAccountDetails';
+import { WooCommerceAccountDetails } from './WooCommerceAccountDetails';
 
 interface ConnectionSettingsProps {
   workspaceId: string;
@@ -34,6 +35,9 @@ function ChannelAccountDetails({ connection }: { connection: ChannelConnection }
   if (connection.ebay) return <EbayAccountDetails ebay={connection.ebay} />;
   if (connection.googleMerchant) return <GoogleAccountDetails google={connection.googleMerchant} />;
   if (connection.falabella) return <FalabellaAccountDetails falabella={connection.falabella} />;
+  if (connection.woocommerce) {
+    return <WooCommerceAccountDetails woocommerce={connection.woocommerce} />;
+  }
   return <ShopifyAccountDetails connection={connection} />;
 }
 

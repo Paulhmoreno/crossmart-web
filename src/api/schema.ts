@@ -864,6 +864,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/workspaces/{workspaceId}/channel-connections/credentials/test': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Test channel credentials with a read-only check without saving them */
+    post: operations['ChannelCredentialsController_test_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/workspaces/{workspaceId}/channel-connections/credentials': {
     parameters: {
       query?: never;
@@ -3834,6 +3851,26 @@ export interface components {
        */
       currencyCode: string;
     };
+    /** @enum {string} */
+    WooCommercePublishStatus: WooCommercePublishStatus;
+    WooCommerceSettingsDto: {
+      /** @example https://tienda.ejemplo.com */
+      storeUrl: string;
+      /** @example Mi Tienda */
+      storeName: string;
+      /** @example USD */
+      currencyCode: string;
+      pricesIncludeTax: boolean;
+      /** @example kg */
+      weightUnit: string;
+      /** @example cm */
+      dimensionUnit: string;
+      defaultStatus: components['schemas']['WooCommercePublishStatus'];
+      /** @description True when WordPress Application Password credentials for media upload are active */
+      hasWordPressMediaAuth: boolean;
+      wpUsername: string | null;
+      remoteProductCount: number | null;
+    };
     ProductSelectionFilterDto: {
       /** @description Matches title, handle or SKU */
       search?: string;
@@ -3921,6 +3958,8 @@ export interface components {
       mercadoLibre: components['schemas']['MercadoLibreSettingsDto'] | null;
       /** @description The Falabella account’s country, seller and user, for Falabella connections */
       falabella: components['schemas']['FalabellaSettingsDto'] | null;
+      /** @description The WooCommerce store details and media readiness, for WooCommerce connections */
+      woocommerce: components['schemas']['WooCommerceSettingsDto'] | null;
       /** @description Which products the connection lists; null lists every product */
       productSelection: components['schemas']['ProductSelectionRuleDto'] | null;
       /** @description How the connection prices variants; null sends catalog prices */
@@ -3979,16 +4018,40 @@ export interface components {
       /** @description The country the account sells in: facl Chile, faco Colombia, fape Peru */
       country: components['schemas']['FalabellaCountry'];
     };
+    WooCommerceCredentialsDto: {
+      /**
+       * @description HTTPS URL of the WooCommerce store. See https://developer.woocommerce.com/docs/apis/rest-api/authentication/
+       * @example https://tienda.ejemplo.com
+       */
+      storeUrl: string;
+      /** @description WooCommerce REST API v3 Consumer Key (`ck_...`). Stored encrypted; never returned. */
+      consumerKey: string;
+      /** @description WooCommerce REST API v3 Consumer Secret (`cs_...`). Stored encrypted; never returned. */
+      consumerSecret: string;
+      /**
+       * @description Optional WordPress username with upload_files capability for direct photo uploads from local storage.
+       * @example crossmart-media
+       */
+      wpUsername?: string;
+      /** @description Optional WordPress Application Password paired with wpUsername. Stored encrypted; never returned. */
+      wpAppPassword?: string;
+      /** @description Default status for newly created products (`draft` recommended). */
+      defaultStatus?: components['schemas']['WooCommercePublishStatus'];
+    };
     ConnectWithCredentialsDto: {
-      /** @description A channel connected with credentials: `falabella` */
+      /** @description A channel connected with credentials: `falabella` or `woocommerce` */
       channel: components['schemas']['ChannelType'];
       /** @description The credentials the channel issued, with the fields of its schema */
-      credentials: components['schemas']['FalabellaCredentialsDto'];
+      credentials:
+        | components['schemas']['FalabellaCredentialsDto']
+        | components['schemas']['WooCommerceCredentialsDto'];
     };
-    ConnectedChannelDto: {
-      connection: components['schemas']['ChannelConnectionDto'];
-      /** @description True when the account was connected before and got new keys */
-      reconnected: boolean;
+    TestedCredentialsDto: {
+      ok: boolean;
+      externalAccountId: string;
+      displayName: string;
+      falabella: components['schemas']['FalabellaSettingsDto'] | null;
+      woocommerce: components['schemas']['WooCommerceSettingsDto'] | null;
     };
     CredentialsRejectedErrorDto: {
       /** @example 422 */
@@ -3998,6 +4061,11 @@ export interface components {
       failure: components['schemas']['ConnectFailure'];
       /** @example Falabella rejected the user id or API key. Copy them again from Seller Center.: E007: Login failed. Signature mismatching */
       message: string;
+    };
+    ConnectedChannelDto: {
+      connection: components['schemas']['ChannelConnectionDto'];
+      /** @description True when the account was connected before and got new keys */
+      reconnected: boolean;
     };
     UpdateEbayListingDefaultsDto: {
       /** @description Shipping policy; null uses the account’s only one, when it has exactly one */
@@ -7828,6 +7896,56 @@ export interface operations {
       };
     };
   };
+  ChannelCredentialsController_test_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ConnectWithCredentialsDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TestedCredentialsDto'];
+        };
+      };
+      /** @description Missing permission, or (with `code: sandbox_claim_required`) the workspace is an unclaimed sandbox account an AI agent opened: the user must claim it from the emailed link first. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SandboxRestrictedErrorDto'];
+        };
+      };
+      /** @description The channel refused the credentials, or the account they name. `message` is its explanation. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CredentialsRejectedErrorDto'];
+        };
+      };
+      /** @description The channel is not responding */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   ChannelCredentialsController_connect_v1: {
     parameters: {
       query?: never;
@@ -10721,6 +10839,7 @@ export enum ChannelType {
   etsy = 'etsy',
   mercado_libre = 'mercado_libre',
   falabella = 'falabella',
+  woocommerce = 'woocommerce',
   amazon = 'amazon',
   walmart = 'walmart',
 }
@@ -11045,6 +11164,10 @@ export enum FalabellaCountry {
   facl = 'facl',
   faco = 'faco',
   fape = 'fape',
+}
+export enum WooCommercePublishStatus {
+  draft = 'draft',
+  publish = 'publish',
 }
 export enum PriceRounding {
   none = 'none',

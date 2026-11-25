@@ -5,6 +5,7 @@ import {
   ChannelType,
   EbayMarketplaceId,
   FalabellaCountry,
+  WooCommercePublishStatus,
 } from '@/api/schema';
 import {
   connectionFixture,
@@ -139,6 +140,39 @@ describe('ConnectionSettings', () => {
     expect(screen.getByText('me@shop.cl')).toBeInTheDocument();
     expect(screen.getByText('Chile (CLP)')).toBeInTheDocument();
     expect(screen.queryByText('Domain')).not.toBeInTheDocument();
+  });
+
+  it('shows a WooCommerce store URL, currency, remote count, default status and WordPress media readiness', () => {
+    renderSettings(
+      connectionFixture({
+        channel: ChannelType.woocommerce,
+        shopify: null,
+        woocommerce: {
+          storeUrl: 'https://tienda.ejemplo.com',
+          storeName: 'Tienda Demo EC',
+          currencyCode: 'USD',
+          pricesIncludeTax: true,
+          weightUnit: 'kg',
+          dimensionUnit: 'cm',
+          defaultStatus: WooCommercePublishStatus.draft,
+          hasWordPressMediaAuth: true,
+          wpUsername: 'crossmart-media',
+          remoteProductCount: 42,
+        },
+      }),
+    );
+
+    expect(screen.getByRole('link', { name: 'https://tienda.ejemplo.com' })).toHaveAttribute(
+      'href',
+      'https://tienda.ejemplo.com',
+    );
+    expect(screen.getByText('USD (impuestos incluidos)')).toBeInTheDocument();
+    expect(screen.getByText('42')).toBeInTheDocument();
+    expect(screen.getByText('Borrador (recomendado)')).toBeInTheDocument();
+    expect(screen.getByText('WordPress Media habilitado (crossmart-media)')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Import products from WooCommerce' }),
+    ).toBeInTheDocument();
   });
 
   it('counts an eBay account’s business policies', () => {

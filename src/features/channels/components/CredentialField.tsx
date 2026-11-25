@@ -25,7 +25,12 @@ export function CredentialField({ field, value, onChange, disabled }: Credential
     <Field>
       <FieldLabel htmlFor={id}>{field.label}</FieldLabel>
       {field.kind === CredentialFieldKind.Select ? (
-        <Select value={value} onValueChange={onChange} disabled={disabled} required>
+        <Select
+          value={value}
+          onValueChange={onChange}
+          disabled={disabled}
+          required={!field.optional}
+        >
           <SelectTrigger id={id} className="w-full">
             <SelectValue placeholder={field.label} />
           </SelectTrigger>
@@ -47,7 +52,7 @@ export function CredentialField({ field, value, onChange, disabled }: Credential
           spellCheck={false}
           placeholder={field.placeholder}
           disabled={disabled}
-          required
+          required={!field.optional}
         />
       )}
     </Field>

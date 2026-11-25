@@ -7,6 +7,7 @@ import {
   CHANNEL_AUTHORIZATIONS_ENDPOINT,
   CHANNEL_CONNECTIONS_ENDPOINT,
   CHANNEL_CREDENTIALS_ENDPOINT,
+  CHANNEL_CREDENTIALS_TEST_ENDPOINT,
   CHANNEL_DISCONNECT_ENDPOINT,
   CHANNEL_FEEDBACK,
 } from '../channels.constants';
@@ -16,6 +17,7 @@ import type {
   ConnectedChannel,
   ConnectWithCredentialsBody,
   StartedAuthorization,
+  TestedCredentials,
 } from '../channels.types';
 import { connectedStoresUrl } from '../connect-redirect';
 
@@ -43,6 +45,20 @@ export function useStartChannelAuthorization(workspaceId: string) {
         }),
       ),
     onSuccess: ({ authorizationUrl }) => window.location.assign(authorizationUrl),
+  });
+}
+
+/** Tests pasted credentials with the channel without saving a connection. */
+export function useTestChannelCredentials(workspaceId: string) {
+  return useMutation<TestedCredentials, Error, ConnectWithCredentialsBody>({
+    meta: { inlineError: true },
+    mutationFn: (body) =>
+      unwrap(
+        fetchClient.POST(CHANNEL_CREDENTIALS_TEST_ENDPOINT, {
+          params: { path: { workspaceId } },
+          body,
+        }),
+      ),
   });
 }
 

@@ -18,6 +18,8 @@ export function connectionCurrency(connection: ChannelConnection): string | unde
   return (
     connection.shopify?.currencyCode ??
     connection.ebay?.currencyCode ??
-    connection.mercadoLibre?.currencyCode
+    connection.mercadoLibre?.currencyCode ??
+    connection.falabella?.currencyCode ??
+    connection.woocommerce?.currencyCode
   );
 }
