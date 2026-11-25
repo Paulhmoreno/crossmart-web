@@ -334,14 +334,16 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                       <TableCell>
                         <Badge
                           variant={
-                            run.status === OdooSyncRunStatus.FAILED
+                            run.status === OdooSyncRunStatus.FAILED || run.failedCount > 0
                               ? 'destructive'
                               : run.status === OdooSyncRunStatus.COMPLETED
                                 ? 'default'
                                 : 'secondary'
                           }
                         >
-                          {ODOO_SYNC_RUN_STATUS_LABELS[run.status]}
+                          {run.status === OdooSyncRunStatus.COMPLETED && run.failedCount > 0
+                            ? 'Con incidencias'
+                            : ODOO_SYNC_RUN_STATUS_LABELS[run.status]}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
