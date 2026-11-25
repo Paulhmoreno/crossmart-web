@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import {
   ChannelConnectionStatus,
   ChannelType,
@@ -23,13 +24,15 @@ interface Access {
 function renderSettings(connection: ChannelConnection, access: Access = {}) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <ConnectionSettings
-        workspaceId="ws-1"
-        connection={connection}
-        canManage={access.canManage ?? true}
-        canImportProducts={access.canImportProducts ?? true}
-        onDisconnected={() => undefined}
-      />
+      <MemoryRouter>
+        <ConnectionSettings
+          workspaceId="ws-1"
+          connection={connection}
+          canManage={access.canManage ?? true}
+          canImportProducts={access.canImportProducts ?? true}
+          onDisconnected={() => undefined}
+        />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -173,6 +176,7 @@ describe('ConnectionSettings', () => {
     expect(
       screen.getByRole('button', { name: 'Import products from WooCommerce' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Actualizar credenciales' })).toBeInTheDocument();
   });
 
   it('counts an eBay account’s business policies', () => {

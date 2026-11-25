@@ -1,10 +1,12 @@
-import { Unplug } from 'lucide-react';
+import { KeyRound, Unplug } from 'lucide-react';
 import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import type { ChannelInfo, ConnectableChannel } from '../channels.constants';
 import type { ChannelConnection } from '../channels.types';
+import { reconnectAccountHandle } from '../connection-account';
 import { needsReconnect } from '../connection-status';
 import { useDisconnectChannel } from '../hooks/useChannelConnections';
+import { ConnectChannelDialog } from './ConnectChannelDialog';
 import { ReconnectButton } from './ReconnectButton';
 
 interface ConnectionActionsProps {
@@ -35,6 +37,20 @@ export function ConnectionActions({
           channel={channel}
           connect={connect}
           connection={connection}
+        />
+      )}
+      {!needsReconnect(connection.status) && connection.woocommerce && (
+        <ConnectChannelDialog
+          workspaceId={workspaceId}
+          channel={channel}
+          connect={connect}
+          initialAccount={reconnectAccountHandle(connection)}
+          trigger={
+            <Button variant="outline" size="sm">
+              <KeyRound data-icon="inline-start" />
+              Actualizar credenciales
+            </Button>
+          }
         />
       )}
       <ConfirmDialog

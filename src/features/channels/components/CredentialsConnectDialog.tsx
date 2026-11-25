@@ -1,5 +1,6 @@
 import { CheckCircle2, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { ChannelType } from '@/api/schema';
 import { FormError } from '@/components/feedback/FormError';
 import { Button } from '@/components/ui/button';
 import {
@@ -228,19 +229,32 @@ function CredentialsDialogActions({
   );
 }
 
+function initialValuesFor(
+  connect: CredentialsConnectableChannel,
+  initialAccount?: string,
+): CredentialValues {
+  if (connect.type === ChannelType.woocommerce && initialAccount) {
+    return { storeUrl: initialAccount };
+  }
+  return NO_VALUES;
+}
+
 /** Asks for the API details the channel issued, optionally tests them, and connects. */
 export function CredentialsConnectDialog({
   workspaceId,
   channel,
   connect,
   trigger,
+  initialAccount,
   open: controlledOpen,
   onOpenChange,
 }: ConnectDialogProps<CredentialsConnectableChannel>) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [advancedExpanded, setAdvancedExpanded] = useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
-  const [values, setValues] = useState<CredentialValues>(NO_VALUES);
+  const [values, setValues] = useState<CredentialValues>(() =>
+    initialValuesFor(connect, initialAccount),
+  );
   const connectStore = useConnectWithCredentials(workspaceId);
   const testStore = useTestChannelCredentials(workspaceId);
   const isBusy = connectStore.isPending || testStore.isPending;
@@ -258,7 +272,7 @@ export function CredentialsConnectDialog({
     setUncontrolledOpen(nextOpen);
     onOpenChange?.(nextOpen);
     if (!nextOpen) {
-      setValues(NO_VALUES);
+      setValues(initialValuesFor(connect, initialAccount));
       setAdvancedExpanded(false);
       connectStore.reset();
       testStore.reset();

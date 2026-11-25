@@ -9,6 +9,7 @@ export function reconnectAccountHandle(connection: ChannelConnection): string {
   return (
     connection.ebay?.marketplaceId ??
     connection.mercadoLibre?.siteId ??
+    connection.woocommerce?.storeUrl ??
     connection.externalAccountId
   );
 }
