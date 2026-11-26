@@ -107,7 +107,7 @@ export function storeListingViewCounts(
 ): Record<StoreListingView, number> {
   return {
     [StoreListingView.All]: sum(counts, IN_STORE_STATES),
-    [StoreListingView.Live]: counts[ChannelProductState.listed],
+    [StoreListingView.Live]: counts.live ?? counts[ChannelProductState.listed],
     [StoreListingView.NeedsAttention]: counts.needsAttention,
     [StoreListingView.NotListed]: sum(counts, NOT_LISTED_STATES),
   };

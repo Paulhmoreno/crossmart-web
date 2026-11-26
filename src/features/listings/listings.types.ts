@@ -17,7 +17,10 @@ export type ProductChannel = Schemas['ProductChannelDto'];
 export type ChannelVariant = Schemas['ChannelVariantDto'];
 export type ChannelCategory = Schemas['ChannelCategoryDto'];
 export type ChannelProduct = components['schemas']['ChannelProductDto'];
-export type ChannelProductCounts = components['schemas']['ChannelProductCountsDto'];
+export type ChannelProductCounts = components['schemas']['ChannelProductCountsDto'] & {
+  /** Active (live) listings count, excluding INACTIVE drafts; absent on older API responses. */
+  live?: number;
+};
 export type ChannelProductPage = components['schemas']['ChannelProductPageDto'];
 export type ProductStore = components['schemas']['ProductStoreBadgeDto'];
 export type CategoryAspect = Schemas['CategoryAspectDto'];
