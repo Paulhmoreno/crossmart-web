@@ -1131,4 +1131,6 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   Classic: 'Clásica',
   Premium: 'Premium',
   'Choose listing type': 'Elige tipo de publicación',
+  'Listing setup': 'Configuración de publicación',
+  'Save setup': 'Guardar configuración',
 };
