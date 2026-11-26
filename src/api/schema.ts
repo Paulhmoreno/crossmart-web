@@ -1061,6 +1061,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/workspaces/{workspaceId}/channel-connections/mercado-libre/app-config': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Mercado Libre OAuth app configuration status and effective Redirect URI
+     * @description Never returns the Secret Key.
+     */
+    get: operations['MercadoLibreAccountController_getAppConfig_v1'];
+    /**
+     * Save encrypted Mercado Libre OAuth App ID and Secret Key
+     * @description Restricted to instance administrators. Persists credentials encrypted with EnvelopeEncryption and resolves them dynamically across API and worker without restarts.
+     */
+    put: operations['MercadoLibreAccountController_saveAppConfig_v1'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/listing-setup': {
     parameters: {
       query?: never;
@@ -4229,6 +4253,34 @@ export interface components {
        * @example 18201076875
        */
       processingProfileId: string | null;
+    };
+    MercadoLibreAppConfigDto: {
+      /** @description Whether Mercado Libre OAuth app credentials are configured */
+      configured: boolean;
+      /**
+       * @description Active credential source (database takes precedence over env)
+       * @enum {string}
+       */
+      source: MercadoLibreAppConfigDtoSource;
+      /** @example 5503910054141466 */
+      clientId: string | null;
+      /** @description True when a Secret Key is stored; secret is never returned */
+      hasClientSecret: boolean;
+      /**
+       * @description Effective OAuth Redirect URI to register in Mercado Libre DevCenter
+       * @example https://api.example.com/api/v1/channels/mercado_libre/oauth/callback
+       */
+      redirectUri: string;
+      /** @description Number of active Mercado Libre store connections on this instance */
+      activeConnections: number;
+      /** @description Whether the signed-in user may configure OAuth app credentials */
+      canManage: boolean;
+    };
+    UpdateMercadoLibreAppConfigDto: {
+      /** @example 5503910054141466 */
+      clientId: string;
+      /** @description Mercado Libre Secret Key; optional when keeping the stored secret for the same App ID */
+      clientSecret?: string;
     };
     UpdateMercadoLibreListingSetupDto: {
       /** @example gold_special */
@@ -8428,6 +8480,52 @@ export interface operations {
       };
     };
   };
+  MercadoLibreAccountController_getAppConfig_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MercadoLibreAppConfigDto'];
+        };
+      };
+    };
+  };
+  MercadoLibreAccountController_saveAppConfig_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateMercadoLibreAppConfigDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MercadoLibreAppConfigDto'];
+        };
+      };
+    };
+  };
   MercadoLibreAccountController_saveListingSetup_v1: {
     parameters: {
       query?: never;
@@ -11586,6 +11684,11 @@ export enum CompareAtMode {
   adjust = 'adjust',
   keep = 'keep',
   omit = 'omit',
+}
+export enum MercadoLibreAppConfigDtoSource {
+  database = 'database',
+  env = 'env',
+  none = 'none',
 }
 export enum OdooConnectionStatus {
   CONNECTED = 'CONNECTED',

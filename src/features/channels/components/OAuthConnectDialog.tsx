@@ -1,4 +1,5 @@
 import { type FormEvent, type ReactNode, useState } from 'react';
+import { ChannelType } from '@/api/schema';
 import { FormError } from '@/components/feedback/FormError';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +16,7 @@ import { useI18n } from '@/lib/i18n';
 import type { ChannelInfo, OAuthConnectableChannel } from '../channels.constants';
 import { useStartChannelAuthorization } from '../hooks/useChannelConnections';
 import { AccountField } from './AccountField';
+import { MercadoLibreAppConfigSection } from './MercadoLibreAppConfigSection';
 
 const FORM_ID = 'connect-channel-form';
 
@@ -45,6 +47,8 @@ export function OAuthConnectDialog({
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
   const [account, setAccount] = useState(initialAccount);
+  const isMercadoLibre = connect.type === ChannelType.mercado_libre;
+  const [appConfigured, setAppConfigured] = useState(!isMercadoLibre);
   const start = useStartChannelAuthorization(workspaceId);
   // After success the browser is leaving for the channel, so the form stays busy.
   const isBusy = start.isPending || start.isSuccess;
@@ -77,19 +81,30 @@ export function OAuthConnectDialog({
           </DialogDescription>
         </DialogHeader>
         <FormError error={start.error} />
+        {isMercadoLibre && (
+          <MercadoLibreAppConfigSection
+            workspaceId={workspaceId}
+            open={open}
+            onConfiguredChange={setAppConfigured}
+          />
+        )}
         <form id={FORM_ID} onSubmit={handleSubmit}>
           <AccountField
             prompt={connect.account}
             value={account}
             onChange={setAccount}
-            disabled={isBusy}
+            disabled={isBusy || (isMercadoLibre && !appConfigured)}
           />
         </form>
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isBusy}>
             {t('Cancel')}
           </Button>
-          <Button type="submit" form={FORM_ID} disabled={isBusy || !account.trim()}>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            disabled={isBusy || !account.trim() || (isMercadoLibre && !appConfigured)}
+          >
             {isBusy && <Spinner data-icon="inline-start" />}
             {t('Continue to {channel}', { channel: channel.name })}
           </Button>

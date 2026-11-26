@@ -1110,4 +1110,16 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   'You will approve Crossmart on {channel}, then come back here.':
     'Autorizarás a Crossmart en {channel} y luego regresarás aquí.',
   'Continue to {channel}': 'Continuar a {channel}',
+  'App ID': 'App ID',
+  'Secret Key': 'Secret Key',
+  'Redirect URI': 'URL de redirección',
+  'Copy redirect URI': 'Copiar URL de redirección',
+  'Redirect URI copied': 'URL de redirección copiada',
+  'Edit app credentials': 'Editar credenciales de la app',
+  'Save credentials': 'Guardar credenciales',
+  'Paste Secret Key': 'Pega tu Secret Key',
+  'Leave blank to keep current secret': 'Déjalo vacío para conservar el secreto actual',
+  'Mercado Libre app credentials saved': 'Credenciales de la app de Mercado Libre guardadas',
+  'An instance administrator must configure Mercado Libre OAuth credentials.':
+    'Un administrador de la instancia debe configurar las credenciales OAuth de Mercado Libre.',
 };

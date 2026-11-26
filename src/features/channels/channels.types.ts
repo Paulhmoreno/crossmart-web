@@ -16,6 +16,9 @@ export type FalabellaSettings = components['schemas']['FalabellaSettingsDto'];
 export type MercadoLibreSettings = components['schemas']['MercadoLibreSettingsDto'];
 export type MercadoLibreListingSetupBody =
   components['schemas']['UpdateMercadoLibreListingSetupDto'];
+export type MercadoLibreAppConfig = components['schemas']['MercadoLibreAppConfigDto'];
+export type UpdateMercadoLibreAppConfigBody =
+  components['schemas']['UpdateMercadoLibreAppConfigDto'];
 export type WooCommerceSettings = components['schemas']['WooCommerceSettingsDto'];
 export type TestedCredentials = components['schemas']['TestedCredentialsDto'];
 export type GoogleListingSetupBody = components['schemas']['UpdateGoogleListingSetupDto'];

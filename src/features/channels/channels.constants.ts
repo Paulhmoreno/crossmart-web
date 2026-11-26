@@ -54,6 +54,8 @@ export const MERCADOLIBRE_LISTING_SETUP_ENDPOINT =
   '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/listing-setup';
 export const MERCADOLIBRE_REFRESH_ENDPOINT =
   '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/refresh';
+export const MERCADOLIBRE_APP_CONFIG_ENDPOINT =
+  '/api/v1/workspaces/{workspaceId}/channel-connections/mercado-libre/app-config';
 
 /** Where a channel stands on the roadmap, with the same labels as crossmart.io. */
 export enum ChannelStatus {
