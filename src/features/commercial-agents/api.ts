@@ -47,6 +47,9 @@ export interface ChatwootConnectionView {
   hasApiAccessToken: boolean;
   hasAgentBotToken: boolean;
   hasWebhookSecret: boolean;
+  agentBotReady: boolean;
+  webhookAuthReady: boolean;
+  operationalReady: boolean;
   webhookUrl: string;
   status: 'CONNECTED' | 'ERROR' | 'DISABLED';
   lastError: string | null;

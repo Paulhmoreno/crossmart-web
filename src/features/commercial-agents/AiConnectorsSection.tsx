@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bot, Cpu, Plus, RefreshCw, Settings2, Sparkles, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Settings2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ChannelConnectionStatus } from '@/api/schema';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -15,13 +16,23 @@ import {
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import type { ChannelLogo as ChannelLogoInfo } from '@/features/channels/channels.constants';
+import { ChannelLogo } from '@/features/channels/components/ChannelLogo';
+import { ConnectionStatusBadge } from '@/features/channels/components/ConnectionStatusBadge';
 import { useI18n } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { type AiConnectionView, type AiProviderFamily, commercialAgentsApi } from './api';
+import claudeCompatibleLogo from './assets/logos/claude-compatible.svg';
+import claudeLogo from './assets/logos/claude.svg';
+import geminiLogo from './assets/logos/gemini.svg';
+import openaiCompatibleLogo from './assets/logos/openai-compatible.svg';
+import openaiLogo from './assets/logos/openai.svg';
 
 interface ProviderFamilyMeta {
   family: AiProviderFamily;
   title: string;
   description: string;
+  logo: ChannelLogoInfo;
   needsBaseUrl: boolean;
   defaultBaseUrl: string;
 }
@@ -31,6 +42,7 @@ const AI_FAMILIES: readonly ProviderFamilyMeta[] = [
     family: 'openai',
     title: 'OpenAI (GPT)',
     description: 'Official OpenAI API for GPT models and tool calling.',
+    logo: { src: openaiLogo, tint: 'currentColor' },
     needsBaseUrl: false,
     defaultBaseUrl: 'https://api.openai.com/v1',
   },
@@ -38,6 +50,7 @@ const AI_FAMILIES: readonly ProviderFamilyMeta[] = [
     family: 'anthropic',
     title: 'Claude (Anthropic)',
     description: 'Official Anthropic Messages API for Claude models.',
+    logo: { src: claudeLogo, tint: '#D97757' },
     needsBaseUrl: false,
     defaultBaseUrl: '',
   },
@@ -45,6 +58,7 @@ const AI_FAMILIES: readonly ProviderFamilyMeta[] = [
     family: 'gemini',
     title: 'Gemini (Google)',
     description: 'Official Google Gemini API with model discovery and tools.',
+    logo: { src: geminiLogo },
     needsBaseUrl: false,
     defaultBaseUrl: '',
   },
@@ -52,6 +66,7 @@ const AI_FAMILIES: readonly ProviderFamilyMeta[] = [
     family: 'openai_compatible',
     title: 'OpenAI-compatible',
     description: 'Custom OpenAI-compatible servers, gateways, or local endpoints.',
+    logo: { src: openaiCompatibleLogo },
     needsBaseUrl: true,
     defaultBaseUrl: '',
   },
@@ -59,10 +74,28 @@ const AI_FAMILIES: readonly ProviderFamilyMeta[] = [
     family: 'anthropic_compatible',
     title: 'Claude-compatible',
     description: 'Anthropic Messages-compatible gateways and self-hosted proxies.',
+    logo: { src: claudeCompatibleLogo },
     needsBaseUrl: true,
     defaultBaseUrl: '',
   },
 ];
+
+function familyHeadlineStatus(
+  familyConns: readonly AiConnectionView[],
+): ChannelConnectionStatus | 'DISABLED' | null {
+  if (familyConns.length === 0) return null;
+  if (familyConns.some((conn) => conn.status === 'ERROR')) return ChannelConnectionStatus.ERROR;
+  if (familyConns.some((conn) => conn.status === 'CONNECTED')) {
+    return ChannelConnectionStatus.CONNECTED;
+  }
+  return 'DISABLED';
+}
+
+function connectionDotClass(status: AiConnectionView['status']): string {
+  if (status === 'CONNECTED') return 'bg-emerald-500';
+  if (status === 'ERROR') return 'bg-destructive';
+  return 'bg-muted-foreground/50';
+}
 
 interface AiConnectionDialogProps {
   workspaceId: string;
@@ -296,7 +329,7 @@ function AiConnectionDialog({
   );
 }
 
-/** AI provider family cards (5 families), supporting multiple simultaneous connections per family. */
+/** AI provider family cards (5 families), matching native Crossmart store cards. */
 export function AiConnectorsSection({
   workspaceId,
   canManage,
@@ -320,36 +353,30 @@ export function AiConnectorsSection({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {AI_FAMILIES.map((family) => {
           const familyConns = connections.filter((conn) => conn.provider === family.family);
-          const connected = familyConns.some((conn) => conn.status === 'CONNECTED');
-          const hasError = familyConns.some((conn) => conn.status === 'ERROR');
-          const Icon =
-            family.family === 'gemini'
-              ? Sparkles
-              : family.family.includes('compatible')
-                ? Cpu
-                : Bot;
+          const status = familyHeadlineStatus(familyConns);
 
           return (
             <Card key={family.family}>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted/40">
-                      <Icon className="size-5 text-foreground" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold">{t(family.title)}</h3>
-                      <p className="text-xs text-muted-foreground">{t(family.description)}</p>
-                    </div>
-                  </div>
-                  <Badge variant={connected ? 'secondary' : hasError ? 'destructive' : 'outline'}>
-                    {connected ? t('Connected') : hasError ? t('Error') : t('Available')}
-                  </Badge>
+                  <ChannelLogo logo={family.logo} />
+                  {status === 'DISABLED' ? (
+                    <Badge variant="outline">{t('Disabled')}</Badge>
+                  ) : status ? (
+                    <ConnectionStatusBadge status={status} />
+                  ) : (
+                    <Badge variant="outline">{t('Available')}</Badge>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <h2 className="font-medium">{t(family.title)}</h2>
+                  <p className="text-sm text-muted-foreground">{t(family.description)}</p>
                 </div>
 
                 {familyConns.length > 0 && (
                   <div className="flex flex-col gap-1.5">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {tp(familyConns.length, '1 connection', '{count} connections')}
                     </p>
                     {familyConns.map((conn) => (
@@ -357,26 +384,35 @@ export function AiConnectorsSection({
                         key={conn.id}
                         className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-xs"
                       >
-                        <div className="min-w-0 truncate">
-                          <span className="font-medium">{conn.name}</span>
-                          <span className="text-muted-foreground"> · {conn.defaultModel}</span>
-                          {conn.isDefault && (
-                            <Badge variant="secondary" className="ml-1.5 text-[10px]">
-                              {t('Default')}
-                            </Badge>
-                          )}
-                          {conn.usedByAgents.length > 0 && (
-                            <span className="ml-1.5 text-muted-foreground">
-                              ({conn.usedByAgents.join(', ')})
-                            </span>
-                          )}
+                        <div className="flex min-w-0 items-center gap-2 truncate">
+                          <span
+                            className={cn(
+                              'size-1.5 shrink-0 rounded-full',
+                              connectionDotClass(conn.status),
+                            )}
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0 truncate">
+                            <span className="font-medium">{conn.name}</span>
+                            <span className="text-muted-foreground"> · {conn.defaultModel}</span>
+                            {conn.isDefault && (
+                              <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                                {t('Default')}
+                              </Badge>
+                            )}
+                            {conn.usedByAgents.length > 0 && (
+                              <span className="ml-1.5 text-muted-foreground">
+                                ({conn.usedByAgents.join(', ')})
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {canManage && (
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2"
+                            className="h-6 shrink-0 px-2"
                             onClick={() => setDialogState({ family, editing: conn })}
                           >
                             <Settings2 className="size-3.5" />
