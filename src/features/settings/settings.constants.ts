@@ -26,18 +26,6 @@ export const SETTINGS_TABS: readonly SettingsTabInfo[] = [
     to: ROUTES.generalSettings,
     anyOf: [WorkspacePermission.workspace_manage, WorkspacePermission.workspace_delete],
   },
-  {
-    tab: SettingsTab.Odoo,
-    label: 'Odoo ERP',
-    to: ROUTES.odooSource,
-    anyOf: [WorkspacePermission.channels_view, WorkspacePermission.channels_manage],
-  },
-  {
-    tab: SettingsTab.Ai,
-    label: 'AI',
-    to: ROUTES.aiSettings,
-    anyOf: [WorkspacePermission.workspace_manage],
-  },
   { tab: SettingsTab.Team, label: 'Team', to: ROUTES.team },
   {
     tab: SettingsTab.Billing,

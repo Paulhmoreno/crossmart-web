@@ -34,7 +34,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Home', to: ROUTES.home, icon: House, end: true, also: [ROUTES.activity] },
   { label: 'Products', to: ROUTES.products, icon: Package, also: [ROUTES.imports] },
   { label: 'Orders', to: ROUTES.orders, icon: ShoppingBag },
-  { label: 'Stores', to: ROUTES.stores, icon: Store, badge: NavBadge.ChannelErrors },
+  {
+    label: 'Connectors',
+    to: ROUTES.stores,
+    icon: Store,
+    also: [ROUTES.odooSource, ROUTES.aiSettings],
+    badge: NavBadge.ChannelErrors,
+  },
   { label: 'Agent', to: ROUTES.agent, icon: Sparkles, badge: NavBadge.PendingReview },
   { label: 'Settings', to: ROUTES.settings, icon: Settings },
 ];
@@ -75,7 +81,7 @@ export const PAGE_PARENTS = {
     { label: 'Products', to: ROUTES.products },
     { label: 'Imports', to: ROUTES.imports },
   ],
-  stores: [{ label: 'Stores', to: ROUTES.stores }],
+  stores: [{ label: 'Connectors', to: ROUTES.stores }],
   orders: [{ label: 'Orders', to: ROUTES.orders }],
   agent: [{ label: 'Agent', to: ROUTES.agent }],
   platform: [{ label: 'Platform' }],

@@ -51,7 +51,7 @@ describe('AppSidebar', () => {
       'Home',
       'Products',
       'Orders',
-      'Stores',
+      'Connectors',
       'Agent',
       'Settings',
     ]);
