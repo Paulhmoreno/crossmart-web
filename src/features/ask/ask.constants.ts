@@ -24,7 +24,7 @@ export const ASK_COPY = {
     'An AI assistant that answers from the Crossmart docs. It can be wrong, so check the sources it links.',
   suggestionsLabel: 'Try asking',
   questionLabel: 'Your question',
-  questionPlaceholder: 'Ask about channels, plans, the API…',
+  questionPlaceholder: 'Ask about channels, catalog, or the API…',
   keyboardHint: 'to ask, Shift + Enter for a new line',
   submit: 'Ask',
   thinking: 'Looking through the docs…',

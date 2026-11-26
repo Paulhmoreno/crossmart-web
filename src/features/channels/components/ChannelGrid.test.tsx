@@ -3,9 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { ChannelType, WorkspacePermission, WorkspaceRole, OutsideAgentChanges } from '@/api/schema';
-import { channelRequestMailto } from '@/config/links';
-import type * as Workspaces from '@/features/workspaces';
-import { useMe, type Workspace } from '@/features/workspaces';
+import type { Workspace } from '@/features/workspaces';
 import {
   CHANNEL_PREVIEW_COPY,
   CHANNEL_STATUS_LABELS,
@@ -22,10 +20,6 @@ import { ChannelGrid } from './ChannelGrid';
 vi.mock('../hooks/useChannelConnections', async (importOriginal) => ({
   ...(await importOriginal<typeof ChannelConnectionHooks>()),
   useChannelConnections: vi.fn<typeof useChannelConnections>(),
-}));
-vi.mock('@/features/workspaces', async (importOriginal) => ({
-  ...(await importOriginal<typeof Workspaces>()),
-  useMe: vi.fn<typeof useMe>(),
 }));
 
 const WORKSPACE: Workspace = {
@@ -48,10 +42,8 @@ const MANAGE_ACTION = 'Manage';
 
 function renderGrid(
   connections: ChannelConnection[] = [],
-  platformAdmin = false,
   { url = '/stores', workspace = WORKSPACE }: { url?: string; workspace?: Workspace } = {},
 ) {
-  vi.mocked(useMe).mockReturnValue({ data: { platformAdmin } } as ReturnType<typeof useMe>);
   vi.mocked(useChannelConnections).mockReturnValue({
     data: connections,
   } as unknown as ReturnType<typeof useChannelConnections>);
@@ -97,7 +89,7 @@ describe('ChannelGrid', () => {
     }
   });
 
-  it('leaves channels that cannot be connected out, with one way to request a marketplace', () => {
+  it('leaves incomplete channels and marketplace request link out', () => {
     renderGrid();
 
     for (const status of [
@@ -109,10 +101,10 @@ describe('ChannelGrid', () => {
         expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument();
       }
     }
-    expect(screen.getByRole('link', { name: REQUEST_CHANNEL_COPY.action })).toHaveAttribute(
-      'href',
-      channelRequestMailto(),
-    );
+    expect(
+      screen.queryByRole('link', { name: REQUEST_CHANNEL_COPY.action }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(CHANNEL_PREVIEW_COPY.note)).not.toBeInTheDocument();
   });
 
   it('keeps stores already connected to a channel that is coming soon reachable', () => {
@@ -134,87 +126,15 @@ describe('ChannelGrid', () => {
     ).not.toBeInTheDocument();
   });
 
-  describe('as a platform admin', () => {
-    it('lets them connect channels that are coming soon, as a preview', async () => {
-      renderGrid([], true);
-
-      for (const name of channelNames(ChannelStatus.ComingSoon)) {
-        const previewCard = within(card(name));
-        expect(
-          previewCard.getByText(CHANNEL_STATUS_LABELS[ChannelStatus.ComingSoon]),
-        ).toBeInTheDocument();
-        expect(previewCard.getByText(CHANNEL_PREVIEW_COPY.note)).toBeInTheDocument();
-      }
-
-      await userEvent.click(
-        within(card('Google Merchant Center')).getByRole('button', {
-          name: CHANNEL_PREVIEW_COPY.connect,
-        }),
-      );
-      expect(
-        screen.getByRole('dialog', { name: 'Connect Google Merchant Center' }),
-      ).toBeInTheDocument();
-      expect(screen.getByLabelText('Merchant Center ID')).toBeInTheDocument();
-    });
-
-    it('lets them connect Mercado Libre by picking the country', async () => {
-      renderGrid([], true);
-
-      await userEvent.click(
-        within(card('Mercado Libre')).getByRole('button', { name: CHANNEL_PREVIEW_COPY.connect }),
-      );
-
-      expect(screen.getByRole('dialog', { name: 'Connect Mercado Libre' })).toBeInTheDocument();
-      expect(screen.getByText('Country')).toBeInTheDocument();
-    });
-
-    it('still leaves planned and community channels out', () => {
-      renderGrid([], true);
-
-      for (const name of [
-        ...channelNames(ChannelStatus.Planned),
-        ...channelNames(ChannelStatus.Community),
-      ]) {
-        expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument();
-      }
-    });
-
-    it('marks a previewed channel that already has stores', () => {
-      renderGrid(
-        [
-          connectionFixture({
-            id: 'c-google',
-            channel: ChannelType.google_merchant,
-            shopify: null,
-          }),
-        ],
-        true,
-      );
-
-      const googleCard = within(card('Google Merchant Center'));
-      expect(googleCard.getByRole('link', { name: MANAGE_ACTION })).toBeInTheDocument();
-      expect(googleCard.getByText(CHANNEL_PREVIEW_COPY.note)).toBeInTheDocument();
-    });
-  });
-
-  it('never shows the preview to people who do not run the instance', () => {
-    renderGrid();
-
-    expect(screen.queryByText(CHANNEL_PREVIEW_COPY.note)).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: CHANNEL_PREVIEW_COPY.connect }),
-    ).not.toBeInTheDocument();
-  });
-
   describe('with ?connect=<channel>, as an AI agent links the seller', () => {
     it('opens that channel’s connect dialog at once', () => {
-      renderGrid([], false, { url: `/stores?connect=${ChannelType.shopify}` });
+      renderGrid([], { url: `/stores?connect=${ChannelType.shopify}` });
 
       expect(screen.getByRole('dialog', { name: 'Connect Shopify' })).toBeInTheDocument();
     });
 
     it('closes it for good on cancel', async () => {
-      renderGrid([], false, { url: `/stores?connect=${ChannelType.ebay}` });
+      renderGrid([], { url: `/stores?connect=${ChannelType.ebay}` });
 
       await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -222,16 +142,16 @@ describe('ChannelGrid', () => {
     });
 
     it('ignores a channel without a card, or an unknown one', () => {
-      renderGrid([], false, { url: `/stores?connect=${ChannelType.etsy}` });
+      renderGrid([], { url: `/stores?connect=${ChannelType.etsy}` });
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-      renderGrid([], false, { url: '/stores?connect=myspace' });
+      renderGrid([], { url: '/stores?connect=myspace' });
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('opens nothing for someone who may not connect stores', () => {
       const viewer = { ...WORKSPACE, role: WorkspaceRole.VIEWER, permissions: [] };
-      renderGrid([], false, { url: `/stores?connect=${ChannelType.shopify}`, workspace: viewer });
+      renderGrid([], { url: `/stores?connect=${ChannelType.shopify}`, workspace: viewer });
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });

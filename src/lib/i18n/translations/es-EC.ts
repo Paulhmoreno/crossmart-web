@@ -975,6 +975,65 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   Help: 'Ayuda',
   'Toggle Sidebar': 'Alternar barra lateral',
 
+  // Ask Crossmart (help panel)
+  'Ask Crossmart': 'Preguntar a Crossmart',
+  'An AI assistant that answers from the Crossmart docs. It can be wrong, so check the sources it links.':
+    'Un asistente de IA que responde usando la documentación de Crossmart. Puede equivocarse; verifica las fuentes enlazadas.',
+  'How do I connect my Shopify store?': '¿Cómo conecto mi tienda Shopify?',
+  'Can I publish one product to several channels?':
+    '¿Puedo publicar un producto en varios canales?',
+  'How do AI agents use Crossmart?': '¿Cómo usan Crossmart los agentes de IA?',
+  'Your question': 'Tu pregunta',
+  'Ask about channels, catalog, or the API…': 'Pregunta sobre canales, catálogo o la API…',
+  'to ask, Shift + Enter for a new line': 'para preguntar, Shift + Enter para nueva línea',
+  Ask: 'Preguntar',
+  'Looking through the docs…': 'Buscando en la documentación…',
+  'You asked': 'Preguntaste',
+  'Crossmart answered': 'Crossmart respondió',
+  Sources: 'Fuentes',
+  '(opens in a new tab)': '(se abre en una nueva pestaña)',
+  'Browse the docs': 'Explorar la documentación',
+  'Start over': 'Empezar de nuevo',
+  'That’s a lot of questions at once': 'Demasiadas preguntas seguidas',
+  'Ask Crossmart is not available right now': 'Preguntar a Crossmart no está disponible ahora',
+  'Crossmart could not be reached': 'No se pudo conectar con Crossmart',
+  'Something went wrong': 'Ocurrió un error',
+  'Wait a minute, then ask again. The docs are always open.':
+    'Espera un minuto e inténtalo de nuevo. La documentación siempre está disponible.',
+
+  // Auth brand panel & password reset
+  'One catalog. Every channel you sell on.': 'Un solo catálogo. Todos los canales donde vendes.',
+  'Import products or sync from your connected channels':
+    'Importa productos o sincroniza desde tus canales conectados',
+  'Variants, stock and images in one catalog':
+    'Variantes, inventario e imágenes en un solo catálogo',
+  'An API and MCP server for Claude or your own agent':
+    'API y servidor MCP para Claude o tu propio agente',
+  'Open source under AGPL-3.0': 'Código abierto bajo licencia AGPL-3.0',
+  'Reset your password': 'Restablecer tu contraseña',
+  'Enter your email and we will send you a link to choose a new password.':
+    'Ingresa tu correo y te enviaremos un enlace para elegir una nueva contraseña.',
+  'Remembered it?': '¿La recordaste?',
+  'Choose a new password': 'Elige una nueva contraseña',
+  'You will sign in with it from now on, on every device.':
+    'Iniciarás sesión con ella a partir de ahora en todos tus dispositivos.',
+  'Back to sign in': 'Volver a iniciar sesión',
+
+  // Products toolbar & import dialog
+  'Saved views': 'Vistas guardadas',
+  'Delete view {label}': 'Eliminar vista {label}',
+  'Import history': 'Historial de importaciones',
+  'Importing…': 'Importando…',
+  'Import finished': 'Importación finalizada',
+  'Import from a CSV file': 'Importar desde un archivo CSV',
+  'Here is what changed in your catalog.': 'Esto es lo que cambió en tu catálogo.',
+  'Add products, update the ones you have, or set stock levels.':
+    'Agrega productos, actualiza los existentes o define niveles de stock.',
+  'In {store}': 'En {store}',
+  'Not in {store}': 'No está en {store}',
+  'In no store': 'En ninguna tienda',
+  'With listing errors': 'Con errores de publicación',
+
   // Channel Map (nodes, statuses, controls & view toggle)
   live: 'en línea',
   pending: 'pendientes',

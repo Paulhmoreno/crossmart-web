@@ -30,4 +30,12 @@ describe('visibleSettingsTabs', () => {
   it('shows General to a role that may only delete the workspace', () => {
     expect(tabsFor([WorkspacePermission.workspace_delete])).toContain(SettingsTab.General);
   });
+
+  it('hides Billing when commercial billing is disabled on the instance', () => {
+    const tabs = visibleSettingsTabs(
+      workspaceFixture([WorkspacePermission.workspace_manage, WorkspacePermission.billing_view]),
+      { billingEnabled: false },
+    ).map(({ tab }) => tab);
+    expect(tabs).not.toContain(SettingsTab.Billing);
+  });
 });

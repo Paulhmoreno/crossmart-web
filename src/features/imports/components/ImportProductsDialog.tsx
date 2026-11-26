@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ROUTES } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { useImportProducts } from '../hooks/useImportProducts';
 import { DEFAULT_IMPORT_MODE, type FileImportMode } from '../imports.constants';
 import { ImportFileForm } from './ImportFileForm';
@@ -21,17 +22,19 @@ const IMPORT_FORM_ID = 'catalog-import-form';
 const HISTORY_LABEL = 'Import history';
 
 function HistoryLink() {
+  const { t } = useI18n();
   return (
     <Button variant="link" className="px-0 sm:mr-auto" asChild>
-      <Link to={ROUTES.imports}>{HISTORY_LABEL}</Link>
+      <Link to={ROUTES.imports}>{t(HISTORY_LABEL)}</Link>
     </Button>
   );
 }
 
 function ImportSubmitButton({ disabled, isPending }: { disabled: boolean; isPending: boolean }) {
+  const { t } = useI18n();
   return (
     <Button type="submit" form={IMPORT_FORM_ID} disabled={disabled || isPending}>
-      {isPending ? 'Importing…' : 'Import'}
+      {isPending ? t('Importing…') : t('Import')}
     </Button>
   );
 }
@@ -47,6 +50,7 @@ export function ImportProductsDialog({
   workspaceId,
   showHistoryLink = true,
 }: ImportProductsDialogProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<FileImportMode>(DEFAULT_IMPORT_MODE);
   const [file, setFile] = useState<File | null>(null);
@@ -67,16 +71,16 @@ export function ImportProductsDialog({
       <DialogTrigger asChild>
         <Button variant="outline">
           <Upload />
-          Import
+          {t('Import')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{result ? 'Import finished' : 'Import from a CSV file'}</DialogTitle>
+          <DialogTitle>{result ? t('Import finished') : t('Import from a CSV file')}</DialogTitle>
           <DialogDescription>
             {result
-              ? 'Here is what changed in your catalog.'
-              : 'Add products, update the ones you have, or set stock levels.'}
+              ? t('Here is what changed in your catalog.')
+              : t('Add products, update the ones you have, or set stock levels.')}
           </DialogDescription>
         </DialogHeader>
         {result ? (

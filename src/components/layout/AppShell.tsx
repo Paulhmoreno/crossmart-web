@@ -8,6 +8,7 @@ import { USER_MENU_LINKS } from '@/config/navigation';
 import { AgentWorkerLauncher, AgentWorkerProvider } from '@/features/agent-worker';
 import { AskLauncher } from '@/features/ask';
 import { UserMenu } from '@/features/auth';
+import { isBillingEnabled, useBillingAccess } from '@/features/billing';
 import { AccountNoticeBanners, NotificationBell } from '@/features/notifications';
 import { useCurrentWorkspace, useDefaultTimeZone, useMe } from '@/features/workspaces';
 import { bindLocaleUser, useI18n } from '@/lib/i18n';
@@ -25,10 +26,14 @@ const MAIN_CLASSES: Record<PageLayout, string> = {
     'flex h-[calc(100svh-var(--app-header-height))] w-full flex-col gap-3 overflow-hidden p-3 outline-none',
 };
 
-/** The user menu's links this person may open; platform pages only for those who run Crossmart. */
-function useUserMenuLinks() {
+/** The user menu's links this person may open; SaaS support admin pages stay hidden when self-hosted. */
+function useUserMenuLinks(workspaceId: string | undefined) {
   const isPlatformAdmin = useMe().data?.platformAdmin ?? false;
-  return USER_MENU_LINKS.filter((link) => !link.platformAdminOnly || isPlatformAdmin);
+  const { data: billingAccess } = useBillingAccess(workspaceId);
+  const billingEnabled = isBillingEnabled(billingAccess);
+  return USER_MENU_LINKS.filter(
+    (link) => !link.platformAdminOnly || (isPlatformAdmin && billingEnabled),
+  );
 }
 
 export function AppShell() {
@@ -36,10 +41,11 @@ export function AppShell() {
   const layout = usePageLayout();
   const sidebar = useShellSidebar(layout);
   const { data: me } = useMe();
+  const { workspace } = useCurrentWorkspace();
   const { t } = useI18n();
-  const userMenuLinks = useUserMenuLinks();
+  const userMenuLinks = useUserMenuLinks(workspace?.id);
   useFocusOnNavigation(mainRef);
-  useDefaultTimeZone(useCurrentWorkspace().workspace);
+  useDefaultTimeZone(workspace);
 
   useEffect(() => {
     bindLocaleUser(me?.id ?? null);

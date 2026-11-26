@@ -1,6 +1,6 @@
 import { ChannelConnectionStatus, WorkspacePermission } from '@/api/schema';
 import type { Workspace } from '@/features/workspaces';
-import { hasPermission, useMe } from '@/features/workspaces';
+import { hasPermission } from '@/features/workspaces';
 import {
   CHANNELS,
   ChannelStatus,
@@ -12,24 +12,16 @@ import { useChannelConnections } from '../hooks/useChannelConnections';
 import { useConnectChannelParam } from '../hooks/useConnectChannelParam';
 import { ConnectableChannelCard } from './ConnectableChannelCard';
 import { ConnectChannelDialog } from './ConnectChannelDialog';
-import { RequestChannelLink } from './RequestChannelLink';
 
 const NO_CONNECTIONS: readonly ChannelConnection[] = [];
 
-/** A channel that is coming soon and that platform admins may already connect, as a preview. */
-function isPreviewFor(channel: ChannelInfo, isPlatformAdmin: boolean): boolean {
-  return isPlatformAdmin && channel.status === ChannelStatus.ComingSoon && !!channel.connect;
-}
-
 /**
- * Whether the channel gets a card: a live one, one a platform admin previews, or one the
- * workspace already has stores on, which stay reachable. The rest are only a request away.
+ * Whether the channel gets a card: a live operational connector, or one the workspace already has
+ * stores on, which stay reachable. Incomplete connectors are not presented as available.
  */
-function isShown(channel: ChannelInfo, stores: number, isPlatformAdmin: boolean): boolean {
+function isShown(channel: ChannelInfo, stores: number): boolean {
   if (!channel.connect) return false;
-  return (
-    channel.status === ChannelStatus.Live || isPreviewFor(channel, isPlatformAdmin) || stores > 0
-  );
+  return channel.status === ChannelStatus.Live || stores > 0;
 }
 
 interface ShownChannel {
@@ -67,20 +59,17 @@ function RequestedConnectDialog({
   );
 }
 
-/** The channels a store can be connected on, each with its stores, then a way to ask for more. */
+/** The operational channels a store can be connected on, each with its stores. */
 export function ChannelGrid({ workspace }: { workspace: Workspace }) {
   const { data } = useChannelConnections(workspace.id);
   const active = (data ?? NO_CONNECTIONS).filter(
     (connection) => connection.status !== ChannelConnectionStatus.DISCONNECTED,
   );
   const canManage = hasPermission(workspace, WorkspacePermission.channels_manage);
-  const isPlatformAdmin = useMe().data?.platformAdmin ?? false;
   const cards: ShownChannel[] = CHANNELS.flatMap((channel) => {
     const stores = active.filter((connection) => connection.channel === channel.connect?.type);
     const { connect } = channel;
-    return connect && isShown(channel, stores.length, isPlatformAdmin)
-      ? [{ channel, connect, stores }]
-      : [];
+    return connect && isShown(channel, stores.length) ? [{ channel, connect, stores }] : [];
   });
 
   return (
@@ -94,11 +83,9 @@ export function ChannelGrid({ workspace }: { workspace: Workspace }) {
             connect={connect}
             connections={stores}
             canManage={canManage}
-            preview={isPreviewFor(channel, isPlatformAdmin)}
           />
         ))}
       </div>
-      <RequestChannelLink />
       <RequestedConnectDialog workspaceId={workspace.id} cards={cards} canManage={canManage} />
     </div>
   );

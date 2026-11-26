@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import { matchesFilters, type ProductListFilters } from '../../hooks/useProductListFilters';
 import { useDeleteProductView, useProductViews } from '../../hooks/useProductViews';
 import { SaveViewDialog } from './SaveViewDialog';
@@ -12,6 +13,7 @@ interface ProductViewsBarProps {
 
 /** "All products", then the workspace's saved views; the one on screen is highlighted. */
 export function ProductViewsBar({ workspaceId, filters }: ProductViewsBarProps) {
+  const { t } = useI18n();
   const { data: views = [] } = useProductViews(workspaceId);
   const deleteView = useDeleteProductView(workspaceId);
   const activeView = views.find((view) => matchesFilters(filters, view));
@@ -19,10 +21,14 @@ export function ProductViewsBar({ workspaceId, filters }: ProductViewsBarProps) 
 
   return (
     <nav
-      aria-label="Saved views"
+      aria-label={t('Saved views')}
       className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 pb-1"
     >
-      <ViewChip label="All products" isActive={!filters.isFiltered} onOpen={filters.clearAll} />
+      <ViewChip
+        label={t('All products')}
+        isActive={!filters.isFiltered}
+        onOpen={filters.clearAll}
+      />
       {views.map((view) => (
         <ViewChip
           key={view.id}
@@ -45,6 +51,7 @@ interface ViewChipProps {
 }
 
 function ViewChip({ label, isActive, onOpen, onDelete }: ViewChipProps) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -68,7 +75,7 @@ function ViewChip({ label, isActive, onOpen, onDelete }: ViewChipProps) {
           size="icon-xs"
           className="mr-0.5 opacity-0 group-focus-within/chip:opacity-100 group-hover/chip:opacity-100 pointer-coarse:opacity-100"
           onClick={onDelete}
-          aria-label={`Delete view ${label}`}
+          aria-label={t('Delete view {label}', { label })}
         >
           <X />
         </Button>

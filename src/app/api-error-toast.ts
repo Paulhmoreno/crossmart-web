@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import { isPlanLimitError, toApiErrorMessage } from '@/api/api-error';
 import { ROUTES } from '@/config/routes';
 import { BILLING_COPY } from '@/features/billing';
+import { t } from '@/lib/i18n';
 import { router } from './router';
 
 function openBilling(): void {
@@ -18,5 +19,5 @@ export function showApiErrorToast(error: unknown): void {
     toast.error(message);
     return;
   }
-  toast.error(message, { action: { label: BILLING_COPY.billingAction, onClick: openBilling } });
+  toast.error(message, { action: { label: t(BILLING_COPY.billingAction), onClick: openBilling } });
 }

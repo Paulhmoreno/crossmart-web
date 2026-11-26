@@ -1,3 +1,6 @@
+import { SubscriptionAccessState } from '@/api/schema';
+import { useBillingAccess } from '@/features/billing';
+import { useCurrentWorkspace } from '@/features/workspaces';
 import type { AskAnswer } from '../ask.types';
 import type { AskEscalation } from '../hooks/useAskEscalation';
 import { AskCitations } from './AskCitations';
@@ -10,8 +13,11 @@ interface AskAnswerViewProps {
   escalation?: AskEscalation;
 }
 
-/** The way to a person: the team itself when Ask offers it, else the support address. */
+/** The way to a person: hidden on self-hosted instances where commercial support is off. */
 function AskPersonAction({ answer, escalation }: AskAnswerViewProps) {
+  const { workspace } = useCurrentWorkspace();
+  const { data: billingAccess } = useBillingAccess(workspace?.id);
+  if (billingAccess?.state === SubscriptionAccessState.unrestricted) return null;
   if (answer.escalation.offered) {
     return escalation ? <AskContactPerson escalation={escalation} /> : null;
   }

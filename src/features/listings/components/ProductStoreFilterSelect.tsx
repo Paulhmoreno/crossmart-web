@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { connectionName, useChannelConnections } from '@/features/channels';
 import { parseEnum } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import { ANY_STORE, STORE_FILTER_LABELS } from '../listings.constants';
 
 interface StoreFilterChoice {
@@ -45,6 +46,7 @@ export function ProductStoreFilterSelect({
   value,
   onChange,
 }: ProductStoreFilterSelectProps) {
+  const { t } = useI18n();
   const { data } = useChannelConnections(workspaceId);
   const stores = (data ?? []).filter(
     (connection) => connection.status !== ChannelConnectionStatus.DISCONNECTED,
@@ -52,29 +54,29 @@ export function ProductStoreFilterSelect({
   if (stores.length === 0) return null;
   return (
     <Select value={toValue(value)} onValueChange={(next) => onChange(toChoice(next))}>
-      <SelectTrigger className="w-full sm:w-56" aria-label="Filter by store">
+      <SelectTrigger className="w-full sm:w-56" aria-label={t('Filter by store')}>
         <Share2 aria-hidden="true" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ANY_STORE}>All stores</SelectItem>
+        <SelectItem value={ANY_STORE}>{t('All stores')}</SelectItem>
         <SelectItem value={ProductStoreFilter.in_no_store}>
-          {STORE_FILTER_LABELS[ProductStoreFilter.in_no_store]}
+          {t(STORE_FILTER_LABELS[ProductStoreFilter.in_no_store] ?? 'In no store')}
         </SelectItem>
         <SelectItem value={ProductStoreFilter.with_errors}>
-          {STORE_FILTER_LABELS[ProductStoreFilter.with_errors]}
+          {t(STORE_FILTER_LABELS[ProductStoreFilter.with_errors] ?? 'With listing errors')}
         </SelectItem>
         {stores.map((store) => (
           <SelectGroup key={store.id}>
             <SelectSeparator />
             <SelectLabel>{connectionName(store)}</SelectLabel>
             <SelectItem value={toValue({ filter: ProductStoreFilter.in_store, storeId: store.id })}>
-              In {connectionName(store)}
+              {t('In {store}', { store: connectionName(store) })}
             </SelectItem>
             <SelectItem
               value={toValue({ filter: ProductStoreFilter.not_in_store, storeId: store.id })}
             >
-              Not in {connectionName(store)}
+              {t('Not in {store}', { store: connectionName(store) })}
             </SelectItem>
           </SelectGroup>
         ))}

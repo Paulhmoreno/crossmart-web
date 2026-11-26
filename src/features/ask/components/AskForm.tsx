@@ -5,6 +5,7 @@ import { Kbd } from '@/components/ui/kbd';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useI18n } from '@/lib/i18n';
 import { ASK_COPY, ASK_QUESTION_MAX_LENGTH, ASK_QUESTION_MIN_LENGTH } from '../ask.constants';
 
 const SUBMIT_KEY = 'Enter';
@@ -22,6 +23,7 @@ function isSubmitKey(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
 
 /** Where the question is typed. It clears once sent; the panel shows it above the reply. */
 export function AskForm({ isAsking, onAsk }: AskFormProps) {
+  const { t } = useI18n();
   const [question, setQuestion] = useState('');
   const inputId = useId();
   const hintId = useId();
@@ -38,7 +40,7 @@ export function AskForm({ isAsking, onAsk }: AskFormProps) {
   return (
     <form onSubmit={submit} className="flex flex-col gap-2 border-t p-4">
       <Label htmlFor={inputId} className="sr-only">
-        {ASK_COPY.questionLabel}
+        {t(ASK_COPY.questionLabel)}
       </Label>
       <div className="flex items-end gap-2">
         <Textarea
@@ -46,7 +48,7 @@ export function AskForm({ isAsking, onAsk }: AskFormProps) {
           rows={QUESTION_ROWS}
           dir="auto"
           maxLength={ASK_QUESTION_MAX_LENGTH}
-          placeholder={ASK_COPY.questionPlaceholder}
+          placeholder={t(ASK_COPY.questionPlaceholder)}
           aria-describedby={hintId}
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
@@ -57,12 +59,12 @@ export function AskForm({ isAsking, onAsk }: AskFormProps) {
           }}
           className="max-h-40 min-h-0 resize-none"
         />
-        <Button type="submit" size="icon" disabled={!canAsk} aria-label={ASK_COPY.submit}>
+        <Button type="submit" size="icon" disabled={!canAsk} aria-label={t(ASK_COPY.submit)}>
           {isAsking ? <Spinner /> : <SendHorizontal className="rtl:-scale-x-100" />}
         </Button>
       </div>
       <p id={hintId} className="text-xs text-muted-foreground">
-        <Kbd>{SUBMIT_KEY}</Kbd> {ASK_COPY.keyboardHint}
+        <Kbd>{SUBMIT_KEY}</Kbd> {t(ASK_COPY.keyboardHint)}
       </p>
     </form>
   );

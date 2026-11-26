@@ -10,4 +10,4 @@ export {
 } from './billing.constants';
 export { cancelledTrialNote, daysUntil } from './billing';
 export type { SubscriptionAccess } from './billing.types';
-export { useBillingAccess } from './hooks/useBillingAccess';
+export { isBillingEnabled, useBillingAccess } from './hooks/useBillingAccess';

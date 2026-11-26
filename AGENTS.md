@@ -10,6 +10,7 @@ Read [CLAUDE.md](CLAUDE.md) and [README.md](README.md). Follow upstream frontend
 - Preserve all validated functionality, security, permissions, source ownership, existing data, provider/model discovery and connection testing. UI cleanup is not a reason to remove functionality or rebuild forms.
 - Settings screens must be limited to configuring services and integrations, without duplicating operational modules, product listings, or dashboards.
 - Channel cards in Stores (including WooCommerce, Mercado Libre, and future integrations) must use brief single-sentence descriptions matching Shopify and eBay, visually balanced official logos inside the native logo container, and the identical shared card structure, buttons, statuses, and spacing.
+- Keep operational self-hosted features strictly separate from SaaS commercial surfaces. When commercial billing is disabled (`BILLING_DRIVER=none` / `SubscriptionAccessState.unrestricted`), hide commercial billing tabs, plan/upgrade prompts, marketplace request links, incomplete connector previews, SaaS support escalations, and SaaS support admin tools (`Ask insights`), while preserving the underlying modules, contracts, and routes intact. Future implementations must respect the original upstream design, centralized i18n, and self-hosted operation context.
 
 ## Engineering and scope
 
