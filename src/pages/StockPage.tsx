@@ -19,22 +19,38 @@ import {
   useInventoryListFilters,
 } from '@/features/inventory';
 import { WorkspacePermission } from '@/api/schema';
+import { useOdooConnection } from '@/features/odoo';
+import { OdooCatalogStatusIndicator } from '@/features/odoo/components/OdooCatalogStatusIndicator';
 import { hasPermission, type Workspace } from '@/features/workspaces';
 import { useI18n } from '@/lib/i18n';
 
 /** Products › Stock: what the stock is worth, the stock of every variant, and every change. */
 export function StockPage() {
+  return <WorkspaceGate>{(workspace) => <StockContent workspace={workspace} />}</WorkspaceGate>;
+}
+
+function StockContent({ workspace }: { workspace: Workspace }) {
   const { t } = useI18n();
   const filters = useInventoryListFilters();
+  const odooQuery = useOdooConnection(workspace.id);
+  const odooConnection = odooQuery.data?.connection ?? null;
+  const isOdooExclusive = Boolean(odooConnection);
 
   return (
-    <Page name={t('Stock')} title={t('Products')}>
+    <Page
+      name={t('Stock')}
+      title={t('Products')}
+      actions={odooConnection ? <OdooCatalogStatusIndicator connection={odooConnection} /> : undefined}
+    >
       <ProductViewTabs />
-      <WorkspaceGate>{(workspace) => <StockValueTiles workspaceId={workspace.id} />}</WorkspaceGate>
+      {isOdooExclusive && (
+        <p className="text-xs text-muted-foreground">
+          {t('Products and stock are managed from Odoo.')}
+        </p>
+      )}
+      <StockValueTiles workspaceId={workspace.id} />
       <InventoryFilters filters={filters} />
-      <WorkspaceGate>
-        {(workspace) => <InventoryResults workspace={workspace} filters={filters} />}
-      </WorkspaceGate>
+      <InventoryResults workspace={workspace} filters={filters} isOdooExclusive={isOdooExclusive} />
     </Page>
   );
 }
@@ -42,10 +58,11 @@ export function StockPage() {
 interface InventoryResultsProps {
   workspace: Workspace;
   filters: InventoryListFilters;
+  isOdooExclusive: boolean;
 }
 
-function InventoryResults({ workspace, filters }: InventoryResultsProps) {
-  const canAdjust = hasPermission(workspace, WorkspacePermission.inventory_edit);
+function InventoryResults({ workspace, filters, isOdooExclusive }: InventoryResultsProps) {
+  const canAdjust = !isOdooExclusive && hasPermission(workspace, WorkspacePermission.inventory_edit);
   const [historyItem, setHistoryItem] = useState<InventoryItem | null>(null);
   const pagination = useUrlPagination();
   const inventory = useInventory(

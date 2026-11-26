@@ -35,6 +35,8 @@ import { hasPermission, type Workspace } from '@/features/workspaces';
 import { ProductStoreFilterSelect, StoreMembershipMenu } from '@/features/listings';
 import { BulkGenerateMenu } from '@/features/suggestions';
 import { SortSelect } from '@/components/lists/SortSelect';
+import { useOdooConnection } from '@/features/odoo';
+import { OdooCatalogStatusIndicator } from '@/features/odoo/components/OdooCatalogStatusIndicator';
 import { useI18n } from '@/lib/i18n';
 
 function AddProductButton() {
@@ -69,11 +71,25 @@ function Products({ workspace }: { workspace: Workspace }) {
   const { t } = useI18n();
   const filters = useProductListFilters();
   const { data: stats } = useCatalogStats(workspace.id);
+  const odooQuery = useOdooConnection(workspace.id);
+  const odooConnection = odooQuery.data?.connection ?? null;
+  const isOdooExclusive = Boolean(odooConnection);
   const counts = stats && toStatusCounts(stats);
 
+  const pageActions = isOdooExclusive && odooConnection ? (
+    <OdooCatalogStatusIndicator connection={odooConnection} />
+  ) : (
+    <AddProductActions workspace={workspace} />
+  );
+
   return (
-    <Page name={t('Products')} actions={<AddProductActions workspace={workspace} />}>
+    <Page name={t('Products')} actions={pageActions}>
       <ProductViewTabs />
+      {isOdooExclusive && (
+        <p className="text-xs text-muted-foreground">
+          {t('Products and stock are managed from Odoo.')}
+        </p>
+      )}
       <ProductViewsBar workspaceId={workspace.id} filters={filters} />
       <ProductFilters
         search={filters.search}
@@ -98,7 +114,7 @@ function Products({ workspace }: { workspace: Workspace }) {
         </div>
         <SortSelect options={PRODUCT_SORTS} value={filters.sort.value} onChange={filters.setSort} />
       </div>
-      <ProductResults workspace={workspace} filters={filters} />
+      <ProductResults workspace={workspace} filters={filters} isOdooExclusive={isOdooExclusive} />
     </Page>
   );
 }
@@ -114,9 +130,10 @@ function rowMenuFor(workspace: Workspace) {
 interface ProductResultsProps {
   workspace: Workspace;
   filters: ProductListFilters;
+  isOdooExclusive: boolean;
 }
 
-function ProductResults({ workspace, filters }: ProductResultsProps) {
+function ProductResults({ workspace, filters, isOdooExclusive }: ProductResultsProps) {
   const selection = useListSelection(filters);
   const pagination = useUrlPagination();
   const products = useProducts(
@@ -148,7 +165,7 @@ function ProductResults({ workspace, filters }: ProductResultsProps) {
       <ProductsEmptyState
         isFiltered={filters.isFiltered}
         onClearFilters={filters.clearAll}
-        actions={<AddProductActions workspace={workspace} />}
+        actions={isOdooExclusive ? null : <AddProductActions workspace={workspace} />}
       />
     );
   }

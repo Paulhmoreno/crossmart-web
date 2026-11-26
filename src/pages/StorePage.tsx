@@ -33,6 +33,7 @@ import {
   toChannelTab,
   useChannelConnection,
 } from '@/features/listings';
+import { StoreOrderPolicyCard } from '@/features/orders/components/StoreOrderPolicyCard';
 import { hasPermission, type Workspace } from '@/features/workspaces';
 import { useScrollToSection } from '@/hooks/useScrollToSection';
 import { useI18n } from '@/lib/i18n';
@@ -60,33 +61,43 @@ function SettingsTab({ workspace, connection }: Omit<ChannelConnectionTabsProps,
   const ref = { workspaceId: workspace.id, connectionId: connection.id };
   useScrollToSection();
   return (
-    <ConnectionSettings
-      workspaceId={workspace.id}
-      connection={connection}
-      canManage={canManage}
-      canImportProducts={hasPermission(workspace, WorkspacePermission.products_edit)}
-      onDisconnected={() => void navigate(ROUTES.stores)}
-      resyncAction={
-        <ChannelSyncButton
-          {...ref}
-          channel={connection.channel}
-          disabled={connection.status !== ChannelConnectionStatus.CONNECTED}
-        />
-      }
-      pricing={
-        <PricingRuleCard
-          {...ref}
-          id={PageSection.StorePricing}
-          currency={connectionCurrency(connection) ?? workspace.currency}
-          catalogCurrency={workspace.currency}
-          rule={connection.pricing}
+    <div className="flex flex-col gap-6">
+      <ConnectionSettings
+        workspaceId={workspace.id}
+        connection={connection}
+        canManage={canManage}
+        canImportProducts={hasPermission(workspace, WorkspacePermission.products_edit)}
+        onDisconnected={() => void navigate(ROUTES.stores)}
+        resyncAction={
+          <ChannelSyncButton
+            {...ref}
+            channel={connection.channel}
+            disabled={connection.status !== ChannelConnectionStatus.CONNECTED}
+          />
+        }
+        pricing={
+          <PricingRuleCard
+            {...ref}
+            id={PageSection.StorePricing}
+            currency={connectionCurrency(connection) ?? workspace.currency}
+            catalogCurrency={workspace.currency}
+            rule={connection.pricing}
+            canManage={canManage}
+          />
+        }
+        automaticRule={
+          <ProductSelectionCard {...ref} rule={connection.productSelection} canManage={canManage} />
+        }
+      />
+      {(String(connection.channel).toUpperCase().includes('MERCADO') ||
+        String(connection.channel).toUpperCase().includes('WOO')) && (
+        <StoreOrderPolicyCard
+          workspaceId={workspace.id}
+          connection={connection}
           canManage={canManage}
         />
-      }
-      automaticRule={
-        <ProductSelectionCard {...ref} rule={connection.productSelection} canManage={canManage} />
-      }
-    />
+      )}
+    </div>
   );
 }
 
