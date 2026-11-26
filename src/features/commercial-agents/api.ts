@@ -76,10 +76,30 @@ export interface AgentConfigView {
   updatedAt: string | null;
 }
 
+export interface SalesChannelContext {
+  channelType?: string | null;
+  channelSlug?: string | null;
+  inboxId?: number | null;
+  inboxName?: string | null;
+  conversationId?: number | null;
+  messageId?: number | string | null;
+  contactId?: number | null;
+  contactName?: string | null;
+  listingId?: string | null;
+  productRef?: string | null;
+  sku?: string | null;
+  platformMetadata?: Record<string, unknown>;
+}
+
 export interface SalesConversationSummary {
   id: string;
-  source: string;
+  source: 'supervisor' | 'simulator' | 'chatwoot' | string;
   externalRef: string | null;
+  channelType: string | null;
+  inboxId: number | null;
+  inboxName: string | null;
+  contactName: string | null;
+  context: SalesChannelContext;
   title: string;
   handoffRequested: boolean;
   handoffReason: string | null;
@@ -97,6 +117,70 @@ export interface SalesMessageView {
 
 export interface SalesConversationDetail extends SalesConversationSummary {
   messages: SalesMessageView[];
+}
+
+export interface SalesKnowledgeEntryView {
+  id: string;
+  category: string;
+  scope: string;
+  title: string;
+  content: string;
+  status: 'ACTIVE' | 'ARCHIVED';
+  source: string;
+  version: number;
+  approvedAt: string;
+  updatedAt: string;
+}
+
+export interface SalesLearningProposalView {
+  id: string;
+  category: string;
+  scope: string;
+  title: string;
+  proposedContent: string;
+  rationale: string | null;
+  originType: string;
+  originConversationId: string | null;
+  originMessageId: string | null;
+  targetEntryId: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  reviewedAt: string | null;
+  createdAt: string;
+}
+
+export interface SalesEventView {
+  id: string;
+  type: string;
+  channelType: string | null;
+  conversationId: string | null;
+  summary: string;
+  details: Record<string, unknown>;
+  createdAt: string;
+}
+
+export type SalesNodeHealth = 'healthy' | 'warning' | 'error' | 'unconfigured';
+
+export interface SalesOperationalNode {
+  id: string;
+  label: string;
+  status: SalesNodeHealth;
+  detail: string;
+  meta: Record<string, unknown>;
+}
+
+export interface SalesOperationalOverview {
+  nodes: SalesOperationalNode[];
+  metrics: {
+    authorizedProducts: number;
+    inStockProducts: number;
+    realConversations: number;
+    repliesSent: number;
+    handoffs: number;
+    approvedKnowledge: number;
+    pendingProposals: number;
+    salesMode: SalesAgentMode;
+  };
+  events: SalesEventView[];
 }
 
 const HTTP_NO_CONTENT = 204;
@@ -199,22 +283,81 @@ export const commercialAgentsApi = {
     apiJson<AgentConfigView>(`/api/v1/workspaces/${wsId}/internal-agents/sales/stop`, {
       method: 'POST',
     }),
-  listSalesConversations: (wsId: string) =>
-    apiJson<SalesConversationSummary[]>(`/api/v1/workspaces/${wsId}/sales-agent/conversations`),
-  createSalesConversation: (wsId: string, title?: string) =>
+  getSalesOverview: (wsId: string) =>
+    apiJson<SalesOperationalOverview>(`/api/v1/workspaces/${wsId}/sales-agent/overview`),
+  listSalesEvents: (wsId: string) =>
+    apiJson<SalesEventView[]>(`/api/v1/workspaces/${wsId}/sales-agent/events`),
+  listSalesConversations: (wsId: string, source?: 'supervisor' | 'simulator' | 'chatwoot') =>
+    apiJson<SalesConversationSummary[]>(
+      `/api/v1/workspaces/${wsId}/sales-agent/conversations${source ? `?source=${source}` : ''}`,
+    ),
+  createSalesConversation: (
+    wsId: string,
+    body?: { source?: 'supervisor' | 'simulator'; title?: string; context?: SalesChannelContext },
+  ) =>
     apiJson<SalesConversationDetail>(`/api/v1/workspaces/${wsId}/sales-agent/conversations`, {
       method: 'POST',
-      body: JSON.stringify({ title }),
+      body: JSON.stringify(body ?? {}),
     }),
   getSalesConversation: (wsId: string, id: string) =>
     apiJson<SalesConversationDetail>(`/api/v1/workspaces/${wsId}/sales-agent/conversations/${id}`),
-  sendSimulatedBuyerMessage: (wsId: string, id: string, text: string) =>
+  sendSalesMessage: (wsId: string, id: string, text: string, context?: SalesChannelContext) =>
     apiJson<SalesConversationDetail>(
       `/api/v1/workspaces/${wsId}/sales-agent/conversations/${id}/messages`,
-      { method: 'POST', body: JSON.stringify({ text }) },
+      { method: 'POST', body: JSON.stringify({ text, ...(context ? { context } : {}) }) },
     ),
   deleteSalesConversation: (wsId: string, id: string) =>
     apiJson<void>(`/api/v1/workspaces/${wsId}/sales-agent/conversations/${id}`, {
       method: 'DELETE',
     }),
+  listSalesKnowledge: (wsId: string) =>
+    apiJson<SalesKnowledgeEntryView[]>(`/api/v1/workspaces/${wsId}/sales-agent/knowledge`),
+  updateSalesKnowledge: (
+    wsId: string,
+    entryId: string,
+    body: { category?: string; scope?: string; title?: string; content?: string },
+  ) =>
+    apiJson<SalesKnowledgeEntryView>(
+      `/api/v1/workspaces/${wsId}/sales-agent/knowledge/${entryId}`,
+      { method: 'PUT', body: JSON.stringify(body) },
+    ),
+  archiveSalesKnowledge: (wsId: string, entryId: string) =>
+    apiJson<void>(`/api/v1/workspaces/${wsId}/sales-agent/knowledge/${entryId}`, {
+      method: 'DELETE',
+    }),
+  listLearningProposals: (wsId: string) =>
+    apiJson<SalesLearningProposalView[]>(
+      `/api/v1/workspaces/${wsId}/sales-agent/learning-proposals`,
+    ),
+  createLearningProposal: (
+    wsId: string,
+    body: {
+      category: string;
+      scope?: string;
+      title: string;
+      proposedContent: string;
+      rationale?: string;
+      originType?: 'supervisor_chat' | 'simulation_feedback' | 'conversation_review';
+      originConversationId?: string;
+      originMessageId?: string;
+    },
+  ) =>
+    apiJson<SalesLearningProposalView>(
+      `/api/v1/workspaces/${wsId}/sales-agent/learning-proposals`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  approveLearningProposal: (
+    wsId: string,
+    proposalId: string,
+    body?: { category?: string; scope?: string; title?: string; content?: string },
+  ) =>
+    apiJson<{ proposal: SalesLearningProposalView; entry: SalesKnowledgeEntryView }>(
+      `/api/v1/workspaces/${wsId}/sales-agent/learning-proposals/${proposalId}/approve`,
+      { method: 'POST', body: JSON.stringify(body ?? {}) },
+    ),
+  rejectLearningProposal: (wsId: string, proposalId: string) =>
+    apiJson<SalesLearningProposalView>(
+      `/api/v1/workspaces/${wsId}/sales-agent/learning-proposals/${proposalId}/reject`,
+      { method: 'POST' },
+    ),
 };
