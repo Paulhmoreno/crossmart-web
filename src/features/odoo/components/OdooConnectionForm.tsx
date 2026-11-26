@@ -38,12 +38,18 @@ interface OdooConnectionFormProps {
   workspaceId: string;
   connection: OdooConnection | null;
   canManage: boolean;
+  /** When true, omits the outer Card wrapper so the form renders natively inside a Dialog. */
+  embedded?: boolean;
+  /** Called after saving a connection successfully (e.g. to close the initial connect modal). */
+  onSaved?: () => void;
 }
 
 export function OdooConnectionForm({
   workspaceId,
   connection,
   canManage,
+  embedded = false,
+  onSaved,
 }: OdooConnectionFormProps) {
   const { t, formatNumber } = useI18n();
   const [url, setUrl] = useState(connection?.url ?? '');
@@ -144,6 +150,7 @@ export function OdooConnectionForm({
       setApiKey('');
       setTestResult(null);
       toast.success(isConnected ? t('Odoo credentials updated') : t('Odoo connected'));
+      onSaved?.();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : t('Something went wrong. Please try again.'),
@@ -171,6 +178,254 @@ export function OdooConnectionForm({
         ? 'destructive'
         : 'secondary';
 
+  const formBody = (
+    <>
+      {connection?.status === OdooConnectionStatus.ERROR && connection.statusReason && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{t('Connection failed')}</AlertTitle>
+          <AlertDescription>{connection.statusReason}</AlertDescription>
+        </Alert>
+      )}
+
+      {testResult && (
+        <Alert variant={testResult.ok ? 'default' : 'destructive'} className="mb-4">
+          {testResult.ok && <CheckCircle2 className="size-4" />}
+          <AlertTitle>
+            {testResult.ok ? t('Connection verified') : t('Connection failed')}
+          </AlertTitle>
+          <AlertDescription>
+            {testResult.ok && testResult.discovered
+              ? `Odoo ${testResult.discovered.serverVersion} · ${testResult.discovered.companyName ?? database} · ${testResult.discovered.currency} · ${formatNumber(testResult.discovered.productCount)}`
+              : (testResult.error ?? t('Something went wrong. Please try again.'))}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
+        <fieldset disabled={!canManage} className="grid gap-4 sm:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="odoo-url">{t(ODOO_COPY.urlLabel)}</FieldLabel>
+            <Input
+              id="odoo-url"
+              type="url"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder={ODOO_COPY.urlPlaceholder}
+              required
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="odoo-db">{t(ODOO_COPY.databaseLabel)}</FieldLabel>
+            <Input
+              id="odoo-db"
+              value={database}
+              onChange={(event) => setDatabase(event.target.value)}
+              placeholder={ODOO_COPY.databasePlaceholder}
+              required
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="odoo-username">{t(ODOO_COPY.usernameLabel)}</FieldLabel>
+            <Input
+              id="odoo-username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder={ODOO_COPY.usernamePlaceholder}
+              required
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="odoo-api-key">{t(ODOO_COPY.apiKeyLabel)}</FieldLabel>
+            <Input
+              id="odoo-api-key"
+              type="password"
+              autoComplete="new-password"
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder={
+                connection?.hasCredentials
+                  ? t(ODOO_COPY.apiKeyStoredPlaceholder)
+                  : t(ODOO_COPY.apiKeyPlaceholder)
+              }
+            />
+          </Field>
+        </fieldset>
+
+        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+          <CollapsibleTrigger asChild>
+            <Button type="button" variant="ghost" size="sm" className="-ml-2 w-fit gap-1.5">
+              <span>{t(ODOO_COPY.advancedToggle)}</span>
+              <ChevronDown
+                className={`size-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
+                aria-hidden="true"
+              />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3 rounded-lg border p-4">
+            <fieldset disabled={!canManage} className="grid gap-4 sm:grid-cols-2">
+              <Field>
+                <FieldLabel htmlFor="odoo-warehouse">{t(ODOO_COPY.warehouseLabel)}</FieldLabel>
+                <Select value={warehouseId} onValueChange={setWarehouseId}>
+                  <SelectTrigger id="odoo-warehouse">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={AUTO_VALUE}>{t(ODOO_COPY.warehouseDefault)}</SelectItem>
+                    {(discovered?.warehouses ?? []).map((warehouse) => (
+                      <SelectItem key={warehouse.id} value={String(warehouse.id)}>
+                        {warehouse.name} ({warehouse.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="odoo-pricelist">{t(ODOO_COPY.pricelistLabel)}</FieldLabel>
+                <Select value={pricelistId} onValueChange={setPricelistId}>
+                  <SelectTrigger id="odoo-pricelist">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={AUTO_VALUE}>{t(ODOO_COPY.pricelistDefault)}</SelectItem>
+                    {(discovered?.pricelists ?? []).map((pricelist) => (
+                      <SelectItem key={pricelist.id} value={String(pricelist.id)}>
+                        {pricelist.name}
+                        {pricelist.currency ? ` (${pricelist.currency})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="odoo-stock-field">{t(ODOO_COPY.stockFieldLabel)}</FieldLabel>
+                <Select
+                  value={stockField}
+                  onValueChange={(value) => setStockField(value as OdooStockField)}
+                >
+                  <SelectTrigger id="odoo-stock-field">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(OdooStockField).map((field) => (
+                      <SelectItem key={field} value={field}>
+                        {t(ODOO_STOCK_FIELD_LABELS[field])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="odoo-brand-field">{t(ODOO_COPY.brandFieldLabel)}</FieldLabel>
+                <Input
+                  id="odoo-brand-field"
+                  value={brandField}
+                  onChange={(event) => setBrandField(event.target.value)}
+                  placeholder="brand_id"
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="odoo-custom-fields">
+                  {t(ODOO_COPY.customFieldsLabel)}
+                </FieldLabel>
+                <Input
+                  id="odoo-custom-fields"
+                  value={customFieldsText}
+                  onChange={(event) => setCustomFieldsText(event.target.value)}
+                  placeholder="x_field_1, x_field_2"
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="odoo-sync-interval">
+                  {t(ODOO_COPY.syncIntervalLabel)}
+                </FieldLabel>
+                <Input
+                  id="odoo-sync-interval"
+                  type="number"
+                  min={5}
+                  max={1440}
+                  value={syncInterval}
+                  onChange={(event) => setSyncInterval(event.target.value)}
+                  placeholder={t('Manual')}
+                />
+              </Field>
+
+              <div className="sm:col-span-2">
+                <Field orientation="horizontal">
+                  <Switch
+                    id="odoo-sale-only"
+                    checked={filterSaleOnly}
+                    onCheckedChange={setFilterSaleOnly}
+                  />
+                  <FieldLabel htmlFor="odoo-sale-only" className="font-normal">
+                    {t(ODOO_COPY.saleOnlyLabel)}
+                  </FieldLabel>
+                </Field>
+              </div>
+            </fieldset>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {canManage && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void handleTest()}
+                disabled={testMutation.isPending}
+              >
+                <RefreshCw
+                  className={`size-4 ${testMutation.isPending ? 'animate-spin' : ''}`}
+                  aria-hidden="true"
+                />
+                {testMutation.isPending ? t(ODOO_COPY.testingButton) : t(ODOO_COPY.testButton)}
+              </Button>
+
+              <Button type="submit" disabled={upsertMutation.isPending}>
+                <Plug className="size-4" aria-hidden="true" />
+                {upsertMutation.isPending
+                  ? t(ODOO_COPY.savingButton)
+                  : isConnected
+                    ? t(ODOO_COPY.updateButton)
+                    : t(ODOO_COPY.connectButton)}
+              </Button>
+            </div>
+
+            {isConnected && (
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                    disabled={disconnectMutation.isPending}
+                  >
+                    <Unplug className="size-4" aria-hidden="true" />
+                    {t(ODOO_COPY.disconnectButton)}
+                  </Button>
+                }
+                title={t(ODOO_COPY.disconnectTitle)}
+                description={t(ODOO_COPY.disconnectDescription)}
+                confirmLabel={t(ODOO_COPY.disconnectConfirm)}
+                onConfirm={handleDisconnect}
+              />
+            )}
+          </div>
+        )}
+      </form>
+    </>
+  );
+
+  if (embedded) return formBody;
+
   return (
     <Card>
       <CardHeader>
@@ -183,249 +438,7 @@ export function OdooConnectionForm({
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        {connection?.status === OdooConnectionStatus.ERROR && connection.statusReason && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTitle>{t('Connection failed')}</AlertTitle>
-            <AlertDescription>{connection.statusReason}</AlertDescription>
-          </Alert>
-        )}
-
-        {testResult && (
-          <Alert variant={testResult.ok ? 'default' : 'destructive'} className="mb-4">
-            {testResult.ok && <CheckCircle2 className="size-4" />}
-            <AlertTitle>
-              {testResult.ok ? t('Connection verified') : t('Connection failed')}
-            </AlertTitle>
-            <AlertDescription>
-              {testResult.ok && testResult.discovered
-                ? `Odoo ${testResult.discovered.serverVersion} · ${testResult.discovered.companyName ?? database} · ${testResult.discovered.currency} · ${formatNumber(testResult.discovered.productCount)}`
-                : (testResult.error ?? t('Something went wrong. Please try again.'))}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
-          <fieldset disabled={!canManage} className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="odoo-url">{t(ODOO_COPY.urlLabel)}</FieldLabel>
-              <Input
-                id="odoo-url"
-                type="url"
-                value={url}
-                onChange={(event) => setUrl(event.target.value)}
-                placeholder={ODOO_COPY.urlPlaceholder}
-                required
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="odoo-db">{t(ODOO_COPY.databaseLabel)}</FieldLabel>
-              <Input
-                id="odoo-db"
-                value={database}
-                onChange={(event) => setDatabase(event.target.value)}
-                placeholder={ODOO_COPY.databasePlaceholder}
-                required
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="odoo-username">{t(ODOO_COPY.usernameLabel)}</FieldLabel>
-              <Input
-                id="odoo-username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder={ODOO_COPY.usernamePlaceholder}
-                required
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="odoo-api-key">{t(ODOO_COPY.apiKeyLabel)}</FieldLabel>
-              <Input
-                id="odoo-api-key"
-                type="password"
-                autoComplete="new-password"
-                value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
-                placeholder={
-                  connection?.hasCredentials
-                    ? t(ODOO_COPY.apiKeyStoredPlaceholder)
-                    : t(ODOO_COPY.apiKeyPlaceholder)
-                }
-              />
-            </Field>
-          </fieldset>
-
-          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-            <CollapsibleTrigger asChild>
-              <Button type="button" variant="ghost" size="sm" className="-ml-2 w-fit gap-1.5">
-                <span>{t(ODOO_COPY.advancedToggle)}</span>
-                <ChevronDown
-                  className={`size-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
-                  aria-hidden="true"
-                />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3 rounded-lg border p-4">
-              <fieldset disabled={!canManage} className="grid gap-4 sm:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor="odoo-warehouse">{t(ODOO_COPY.warehouseLabel)}</FieldLabel>
-                  <Select value={warehouseId} onValueChange={setWarehouseId}>
-                    <SelectTrigger id="odoo-warehouse">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={AUTO_VALUE}>{t(ODOO_COPY.warehouseDefault)}</SelectItem>
-                      {(discovered?.warehouses ?? []).map((warehouse) => (
-                        <SelectItem key={warehouse.id} value={String(warehouse.id)}>
-                          {warehouse.name} ({warehouse.code})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="odoo-pricelist">{t(ODOO_COPY.pricelistLabel)}</FieldLabel>
-                  <Select value={pricelistId} onValueChange={setPricelistId}>
-                    <SelectTrigger id="odoo-pricelist">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={AUTO_VALUE}>{t(ODOO_COPY.pricelistDefault)}</SelectItem>
-                      {(discovered?.pricelists ?? []).map((pricelist) => (
-                        <SelectItem key={pricelist.id} value={String(pricelist.id)}>
-                          {pricelist.name}
-                          {pricelist.currency ? ` (${pricelist.currency})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="odoo-stock-field">{t(ODOO_COPY.stockFieldLabel)}</FieldLabel>
-                  <Select
-                    value={stockField}
-                    onValueChange={(value) => setStockField(value as OdooStockField)}
-                  >
-                    <SelectTrigger id="odoo-stock-field">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(OdooStockField).map((field) => (
-                        <SelectItem key={field} value={field}>
-                          {t(ODOO_STOCK_FIELD_LABELS[field])}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="odoo-brand-field">{t(ODOO_COPY.brandFieldLabel)}</FieldLabel>
-                  <Input
-                    id="odoo-brand-field"
-                    value={brandField}
-                    onChange={(event) => setBrandField(event.target.value)}
-                    placeholder="brand_id"
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="odoo-custom-fields">
-                    {t(ODOO_COPY.customFieldsLabel)}
-                  </FieldLabel>
-                  <Input
-                    id="odoo-custom-fields"
-                    value={customFieldsText}
-                    onChange={(event) => setCustomFieldsText(event.target.value)}
-                    placeholder="x_field_1, x_field_2"
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="odoo-sync-interval">
-                    {t(ODOO_COPY.syncIntervalLabel)}
-                  </FieldLabel>
-                  <Input
-                    id="odoo-sync-interval"
-                    type="number"
-                    min={5}
-                    max={1440}
-                    value={syncInterval}
-                    onChange={(event) => setSyncInterval(event.target.value)}
-                    placeholder={t('Manual')}
-                  />
-                </Field>
-
-                <div className="sm:col-span-2">
-                  <Field orientation="horizontal">
-                    <Switch
-                      id="odoo-sale-only"
-                      checked={filterSaleOnly}
-                      onCheckedChange={setFilterSaleOnly}
-                    />
-                    <FieldLabel htmlFor="odoo-sale-only" className="font-normal">
-                      {t(ODOO_COPY.saleOnlyLabel)}
-                    </FieldLabel>
-                  </Field>
-                </div>
-              </fieldset>
-            </CollapsibleContent>
-          </Collapsible>
-
-          {canManage && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => void handleTest()}
-                  disabled={testMutation.isPending}
-                >
-                  <RefreshCw
-                    className={`size-4 ${testMutation.isPending ? 'animate-spin' : ''}`}
-                    aria-hidden="true"
-                  />
-                  {testMutation.isPending ? t(ODOO_COPY.testingButton) : t(ODOO_COPY.testButton)}
-                </Button>
-
-                <Button type="submit" disabled={upsertMutation.isPending}>
-                  <Plug className="size-4" aria-hidden="true" />
-                  {upsertMutation.isPending
-                    ? t(ODOO_COPY.savingButton)
-                    : isConnected
-                      ? t(ODOO_COPY.updateButton)
-                      : t(ODOO_COPY.connectButton)}
-                </Button>
-              </div>
-
-              {isConnected && (
-                <ConfirmDialog
-                  trigger={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="text-destructive hover:text-destructive"
-                      disabled={disconnectMutation.isPending}
-                    >
-                      <Unplug className="size-4" aria-hidden="true" />
-                      {t(ODOO_COPY.disconnectButton)}
-                    </Button>
-                  }
-                  title={t(ODOO_COPY.disconnectTitle)}
-                  description={t(ODOO_COPY.disconnectDescription)}
-                  confirmLabel={t(ODOO_COPY.disconnectConfirm)}
-                  onConfirm={handleDisconnect}
-                />
-              )}
-            </div>
-          )}
-        </form>
-      </CardContent>
+      <CardContent>{formBody}</CardContent>
     </Card>
   );
 }

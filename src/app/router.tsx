@@ -25,13 +25,6 @@ const settingsRoutes: RouteObject[] = [
       })),
   },
   {
-    path: ROUTES.odooSource,
-    lazy: () =>
-      import('@/pages/OdooSourcePage').then(({ OdooSourcePage }) => ({
-        Component: OdooSourcePage,
-      })),
-  },
-  {
     path: ROUTES.aiSettings,
     lazy: () =>
       import('@/pages/AiSettingsPage').then(({ AiSettingsPage }) => ({
@@ -85,6 +78,8 @@ const PAGES: Record<string, LazyPage> = {
     import('@/pages/ImportJobPage').then(({ ImportJobPage }) => ({ Component: ImportJobPage })),
   [ROUTES.stores]: () =>
     import('@/pages/StoresPage').then(({ StoresPage }) => ({ Component: StoresPage })),
+  [ROUTES.odooSource]: () =>
+    import('@/pages/OdooSourcePage').then(({ OdooSourcePage }) => ({ Component: OdooSourcePage })),
   [ROUTES.store]: () =>
     import('@/pages/StorePage').then(({ StorePage }) => ({ Component: StorePage })),
   [ROUTES.storeTab]: () =>

@@ -48,8 +48,8 @@ export const ROUTES = {
   checkoutCanceled: '/settings/billing/checkout/canceled',
   /** API keys, webhooks and connected agents. */
   developers: '/settings/developers',
-  /** Read-only Odoo 18 ERP catalog source connection. */
-  odooSource: '/settings/odoo',
+  /** Read-only Odoo 18 ERP catalog source connection (inside Connectors). */
+  odooSource: '/stores/odoo',
   /** Workspace AI provider configuration (Anthropic or OpenAI-compatible). */
   aiSettings: '/settings/ai',
   webhookEndpoint: `/settings/developers/webhooks/:${ROUTE_PARAMS.endpointId}`,
@@ -87,6 +87,7 @@ export const LEGACY_ROUTES = {
   agentConnections: '/settings/agents',
   account: '/settings/account',
   plan: '/settings/plan',
+  odooSettings: '/settings/odoo',
 } as const;
 
 export function toProductRoute(productId: string): string {

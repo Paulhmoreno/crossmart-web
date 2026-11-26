@@ -8,8 +8,21 @@ import {
   type NodeTypes,
   Position,
 } from '@xyflow/react';
-import { BookOpen, Bot, Brain, Check, OctagonX, Trash2, UserRoundCheck, X } from 'lucide-react';
+import {
+  BookOpen,
+  Bot,
+  Brain,
+  Check,
+  Library,
+  OctagonX,
+  Pencil,
+  Search,
+  Trash2,
+  UserRoundCheck,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
+import { RelativeTime } from '@/components/time/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +54,6 @@ import chatwootLogo from './assets/logos/chatwoot.svg';
 import claudeCompatibleLogo from './assets/logos/claude-compatible.svg';
 import claudeLogo from './assets/logos/claude.svg';
 import geminiLogo from './assets/logos/gemini.svg';
-import odooLogo from './assets/logos/odoo.svg';
 import openaiCompatibleLogo from './assets/logos/openai-compatible.svg';
 import openaiLogo from './assets/logos/openai.svg';
 
@@ -74,6 +86,27 @@ const MODE_LABELS: Record<SalesAgentMode, string> = {
   AUTOMATIC: 'Automatic',
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  business_info: 'Business info',
+  location_hours: 'Location & hours',
+  delivery_coverage: 'Delivery & coverage',
+  payment_methods: 'Payment methods',
+  warranties: 'Warranties',
+  discounts: 'Discounts',
+  channel_policies: 'Channel policies',
+  service_style: 'Service style',
+  faq: 'FAQ',
+};
+
+const SCOPE_LABELS: Record<string, string> = {
+  global: 'All channels',
+  'channel:web_widget': 'Web Widget',
+  'channel:whatsapp': 'WhatsApp',
+  'channel:marketplace': 'Marketplace',
+  'channel:messenger': 'Messenger',
+  'channel:instagram': 'Instagram',
+};
+
 const AI_PROVIDER_LOGOS: Record<string, ChannelLogoInfo> = {
   openai: { src: openaiLogo, tint: 'currentColor' },
   anthropic: { src: claudeLogo, tint: '#D97757' },
@@ -101,7 +134,6 @@ type SalesFlowNode = Node<SalesFlowNodeData, 'salesNode'>;
 
 function nodeLogoFor(node: SalesOperationalNode): ChannelLogoInfo | null {
   if (node.id === 'chatwoot') return { src: chatwootLogo };
-  if (node.id === 'catalog') return { src: odooLogo };
   if (node.id === 'ai_provider') {
     const provider = typeof node.meta.provider === 'string' ? node.meta.provider : '';
     return AI_PROVIDER_LOGOS[provider] ?? { src: openaiCompatibleLogo };
@@ -117,11 +149,13 @@ function NodeVisualTile({ node, isHub }: { node: SalesOperationalNode; isHub: bo
   const Icon =
     node.id === 'sales_agent'
       ? Bot
-      : node.id === 'knowledge'
-        ? BookOpen
-        : node.id === 'learning'
-          ? Brain
-          : UserRoundCheck;
+      : node.id === 'catalog'
+        ? Library
+        : node.id === 'knowledge'
+          ? BookOpen
+          : node.id === 'learning'
+            ? Brain
+            : UserRoundCheck;
   return (
     <span
       className={cn(
@@ -217,10 +251,15 @@ function localizedNodeSubtitle(
   if (node.id === 'chatwoot') {
     if (node.status === 'unconfigured') return t('Not connected');
     const inboxes = Array.isArray(meta.inboxes) ? meta.inboxes.length : 0;
+    const liveReady = Boolean(meta.liveCircuitVerified);
     const webhookReady = Boolean(meta.webhookAuthReady);
-    return webhookReady
-      ? t('{count} inbox(es) · webhook verified', { count: formatNumber(inboxes) })
-      : t('{count} inbox(es) · webhook auth pending', { count: formatNumber(inboxes) });
+    if (liveReady) {
+      return t('{count} inbox(es) · live webhook active', { count: formatNumber(inboxes) });
+    }
+    if (!webhookReady) {
+      return t('{count} inbox(es) · webhook auth pending', { count: formatNumber(inboxes) });
+    }
+    return t('{count} inbox(es) · permanent webhook pending', { count: formatNumber(inboxes) });
   }
   if (node.id === 'sales_agent') {
     const mode = (meta.salesMode as SalesAgentMode | undefined) ?? 'DISABLED';
@@ -287,6 +326,10 @@ export function SalesOperationalMap({
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [knowledgeSearch, setKnowledgeSearch] = useState('');
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [entryTitle, setEntryTitle] = useState('');
+  const [entryContent, setEntryContent] = useState('');
 
   const invalidateAll = () => {
     void qc.invalidateQueries({ queryKey: ['sales-overview', workspaceId] });
@@ -317,6 +360,20 @@ export function SalesOperationalMap({
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const updateEntry = useMutation({
+    mutationFn: (args: { id: string; title: string; content: string }) =>
+      commercialAgentsApi.updateSalesKnowledge(workspaceId, args.id, {
+        title: args.title,
+        content: args.content,
+      }),
+    onSuccess: () => {
+      toast.success(t('Commercial knowledge updated'));
+      setEditingEntryId(null);
+      invalidateAll();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const archive = useMutation({
     mutationFn: (entryId: string) =>
       commercialAgentsApi.archiveSalesKnowledge(workspaceId, entryId),
@@ -332,8 +389,19 @@ export function SalesOperationalMap({
   const events = overview?.events ?? EMPTY_EVENTS;
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? nodes[0] ?? null;
   const pendingProposals = proposals.filter((prop) => prop.status === 'PENDING');
+  const filteredKnowledge = knowledgeSearch.trim()
+    ? knowledge.filter((entry) => {
+        const needle = knowledgeSearch.trim().toLowerCase();
+        return (
+          entry.title.toLowerCase().includes(needle) ||
+          entry.content.toLowerCase().includes(needle) ||
+          t(CATEGORY_LABELS[entry.category] ?? entry.category)
+            .toLowerCase()
+            .includes(needle)
+        );
+      })
+    : knowledge;
 
-  // Detect ONLY genuine recent activity (never fabricate activity)
   const activeNodes = useMemo(() => {
     const map = new Map<string, ActivityOrigin>();
     if (activeSimulation) {
@@ -449,7 +517,6 @@ export function SalesOperationalMap({
       aria-label={t('Operational map')}
       className="@container flex h-full min-h-0 flex-col gap-3 p-3"
     >
-      {/* Top metrics bar matching Crossmart Agent's ConsoleStatusBar */}
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg border bg-card px-3 py-2 @lg:grid-cols-4">
         <div className="flex min-w-0 flex-col">
           <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -522,7 +589,6 @@ export function SalesOperationalMap({
         </div>
       </dl>
 
-      {/* Map / List toggle matching Crossmart Agent's AccountChannelMap */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {activeSimulation && (
@@ -534,7 +600,6 @@ export function SalesOperationalMap({
         <MapViewToggle value={view} onChange={setView} />
       </div>
 
-      {/* Main React Flow Operational Map OR List View */}
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
         {view !== ChannelMapView.List ? (
           <div className="min-h-[300px] flex-1">
@@ -578,7 +643,6 @@ export function SalesOperationalMap({
           </ul>
         )}
 
-        {/* Pending Learning Proposals Banner (always actionable when present) */}
         {pendingProposals.length > 0 && (
           <div className="flex flex-col gap-2 rounded-lg border border-warning/40 bg-card p-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -592,10 +656,10 @@ export function SalesOperationalMap({
                     <span className="font-medium">{prop.title}</span>
                     <div className="flex items-center gap-1.5">
                       <Badge variant="outline" className="text-[10px]">
-                        {prop.category}
+                        {t(CATEGORY_LABELS[prop.category] ?? prop.category)}
                       </Badge>
                       <Badge variant="secondary" className="text-[10px]">
-                        {prop.scope}
+                        {t(SCOPE_LABELS[prop.scope] ?? prop.scope)}
                       </Badge>
                     </div>
                   </div>
@@ -674,10 +738,9 @@ export function SalesOperationalMap({
           </div>
         )}
 
-        {/* Selected Node Details / Knowledge Base Inspector */}
         {selectedNode && (
-          <div className="flex flex-col gap-2 rounded-lg border bg-card p-3">
-            <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-2.5 rounded-lg border bg-card p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span
                   className={cn('size-2 rounded-full', DOT_CLASSES[selectedNode.status])}
@@ -692,48 +755,157 @@ export function SalesOperationalMap({
 
             {selectedNode.id === 'knowledge' && (
               <div className="flex flex-col gap-2 pt-1">
-                {knowledge.length === 0 ? (
+                {knowledge.length > 0 && (
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute top-2 left-2.5 size-3.5 text-muted-foreground" />
+                    <Input
+                      className="h-7 pl-8 text-xs"
+                      placeholder={t('Search commercial knowledge...')}
+                      value={knowledgeSearch}
+                      onChange={(event) => setKnowledgeSearch(event.target.value)}
+                    />
+                  </div>
+                )}
+                {filteredKnowledge.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    {t(
-                      'No approved commercial knowledge yet. Teach policies naturally in Supervisor chat.',
-                    )}
+                    {knowledge.length === 0
+                      ? t(
+                          'No approved commercial knowledge yet. Teach policies naturally in Supervisor chat.',
+                        )
+                      : t('No matching knowledge entries.')}
                   </p>
                 ) : (
-                  knowledge.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-start justify-between gap-2 rounded-md border p-2 text-xs"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="font-medium">{entry.title}</span>
-                          <Badge variant="outline" className="text-[10px]">
-                            {entry.category}
-                          </Badge>
-                          <Badge variant="secondary" className="text-[10px]">
-                            {entry.scope} · v{entry.version}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 text-muted-foreground">{entry.content}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="size-6 shrink-0 p-0 text-muted-foreground"
-                        onClick={() => archive.mutate(entry.id)}
-                        aria-label={t('Archive')}
+                  filteredKnowledge.map((entry) => {
+                    const isEditing = editingEntryId === entry.id;
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex flex-col gap-2 rounded-md border p-2 text-xs"
                       >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </div>
-                  ))
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="font-medium">{entry.title}</span>
+                              <Badge variant="outline" className="text-[10px]">
+                                {t(CATEGORY_LABELS[entry.category] ?? entry.category)}
+                              </Badge>
+                              <Badge variant="secondary" className="text-[10px]">
+                                {t(SCOPE_LABELS[entry.scope] ?? entry.scope)} · v{entry.version}
+                              </Badge>
+                            </div>
+                            {!isEditing && (
+                              <p className="mt-1 text-muted-foreground">{entry.content}</p>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="size-6 p-0 text-muted-foreground"
+                              onClick={() => {
+                                setEditingEntryId(entry.id);
+                                setEntryTitle(entry.title);
+                                setEntryContent(entry.content);
+                              }}
+                              aria-label={t('Edit')}
+                            >
+                              <Pencil className="size-3" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="size-6 p-0 text-muted-foreground"
+                              onClick={() => archive.mutate(entry.id)}
+                              aria-label={t('Archive')}
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                        {isEditing && (
+                          <div className="flex flex-col gap-2">
+                            <Input
+                              className="h-7 text-xs"
+                              value={entryTitle}
+                              onChange={(event) => setEntryTitle(event.target.value)}
+                            />
+                            <Textarea
+                              rows={2}
+                              className="text-xs"
+                              value={entryContent}
+                              onChange={(event) => setEntryContent(event.target.value)}
+                            />
+                            <div className="flex gap-1.5">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="h-6 px-2 text-[11px]"
+                                disabled={updateEntry.isPending}
+                                onClick={() =>
+                                  updateEntry.mutate({
+                                    id: entry.id,
+                                    title: entryTitle,
+                                    content: entryContent,
+                                  })
+                                }
+                              >
+                                {t('Save')}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-[11px]"
+                                onClick={() => setEditingEntryId(null)}
+                              >
+                                {t('Cancel')}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             )}
 
             {selectedNode.id === 'chatwoot' && (
-              <div className="text-xs text-muted-foreground">
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <div className="grid grid-cols-2 gap-1.5 rounded-md bg-muted/30 p-2">
+                  <span>
+                    {t('API connection')}:{' '}
+                    <strong className="text-foreground">
+                      {selectedNode.meta.apiAuthenticated ? t('Authenticated') : t('Pending')}
+                    </strong>
+                  </span>
+                  <span>
+                    {t('Webhook auth')}:{' '}
+                    <strong className="text-foreground">
+                      {selectedNode.meta.webhookAuthReady ? t('Configured') : t('Pending')}
+                    </strong>
+                  </span>
+                  <span>
+                    {t('Public endpoint')}:{' '}
+                    <strong className="text-foreground">
+                      {selectedNode.meta.webhookEndpointPermanent
+                        ? t('Permanent')
+                        : t('Pending permanent URL')}
+                    </strong>
+                  </span>
+                  <span>
+                    {t('Last event')}:{' '}
+                    <strong className="text-foreground">
+                      {typeof selectedNode.meta.lastWebhookReceivedAt === 'string' ? (
+                        <RelativeTime value={selectedNode.meta.lastWebhookReceivedAt} />
+                      ) : (
+                        t('Never')
+                      )}
+                    </strong>
+                  </span>
+                </div>
                 {Array.isArray(selectedNode.meta.inboxes) &&
                 selectedNode.meta.inboxes.length > 0 ? (
                   <ul className="space-y-1">
@@ -749,7 +921,11 @@ export function SalesOperationalMap({
                       return (
                         <li key={inbox.id} className="flex items-center justify-between gap-2">
                           <span>
-                            {inbox.name} ({inbox.channelType})
+                            {inbox.name} (
+                            {inbox.channelType === 'Channel::WebWidget'
+                              ? t('Web Widget')
+                              : inbox.channelType}
+                            )
                           </span>
                           <Badge variant={isAuth ? 'success' : 'outline'} className="text-[10px]">
                             {isAuth ? t('Authorized') : t('Inactive')}

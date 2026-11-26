@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
 import {
   type AgentConfigView,
@@ -39,7 +38,11 @@ interface AgentConfigDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Per-agent configuration modal opened from the discrete gear icon next to the agent selector. */
+/**
+ * Operational per-agent configuration modal opened from the discrete gear icon next to the
+ * agent selector. Contains strictly operational settings (AI provider/model, attention mode,
+ * Chatwoot connection & authorized inboxes); business policies live in Commercial Knowledge.
+ */
 export function AgentConfigDialog({
   workspaceId,
   agentKey,
@@ -68,10 +71,6 @@ export function AgentConfigDialog({
   );
   const [authorizedInboxIds, setAuthorizedInboxIds] = useState<number[]>(config.authorizedInboxIds);
   const [salesMode, setSalesMode] = useState<SalesAgentMode>(config.salesMode);
-  const [businessName, setBusinessName] = useState(config.commercialPolicy.businessName ?? '');
-  const [paymentNotes, setPaymentNotes] = useState(config.commercialPolicy.paymentNotes ?? '');
-  const [deliveryNotes, setDeliveryNotes] = useState(config.commercialPolicy.deliveryNotes ?? '');
-  const [warrantyNotes, setWarrantyNotes] = useState(config.commercialPolicy.warrantyNotes ?? '');
 
   const selectedAi = aiConnections.find((conn) => conn.id === aiConnectionId) ?? null;
   const selectedChatwoot =
@@ -80,6 +79,7 @@ export function AgentConfigDialog({
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ['internal-agent-configs', workspaceId] });
     void qc.invalidateQueries({ queryKey: ['ai-connections', workspaceId] });
+    void qc.invalidateQueries({ queryKey: ['sales-overview', workspaceId] });
   };
 
   const save = useMutation({
@@ -93,12 +93,6 @@ export function AgentConfigDialog({
                 chatwootConnectionId === NONE_CONNECTION ? null : chatwootConnectionId,
               authorizedInboxIds,
               salesMode,
-              commercialPolicy: {
-                businessName: businessName.trim() || null,
-                paymentNotes: paymentNotes.trim() || null,
-                deliveryNotes: deliveryNotes.trim() || null,
-                warrantyNotes: warrantyNotes.trim() || null,
-              },
             }
           : {}),
       }),
@@ -128,15 +122,15 @@ export function AgentConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] overflow-x-hidden overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {agentKey === 'sales' ? t('Sales Agent settings') : t('Crossmart Agent settings')}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
-          <Field>
+        <div className="flex min-w-0 flex-col gap-4">
+          <Field className="min-w-0">
             <FieldLabel htmlFor="agent-ai-conn">{t('AI connection')}</FieldLabel>
             <Select
               value={aiConnectionId}
@@ -146,8 +140,8 @@ export function AgentConfigDialog({
                 if (found && !model.trim()) setModel(found.defaultModel);
               }}
             >
-              <SelectTrigger id="agent-ai-conn">
-                <SelectValue />
+              <SelectTrigger id="agent-ai-conn" className="w-full min-w-0">
+                <SelectValue className="truncate" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={DEFAULT_CONNECTION}>
@@ -155,14 +149,16 @@ export function AgentConfigDialog({
                 </SelectItem>
                 {aiConnections.map((conn) => (
                   <SelectItem key={conn.id} value={conn.id}>
-                    {conn.name} ({conn.defaultModel})
+                    <span className="truncate">
+                      {conn.name} ({conn.defaultModel})
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
 
-          <Field>
+          <Field className="min-w-0">
             <FieldLabel htmlFor="agent-model">{t('Primary LLM model')}</FieldLabel>
             <Input
               id="agent-model"
@@ -182,13 +178,13 @@ export function AgentConfigDialog({
 
           {agentKey === 'sales' && (
             <>
-              <Field>
+              <Field className="min-w-0">
                 <FieldLabel htmlFor="sales-mode">{t('Attention mode')}</FieldLabel>
                 <Select
                   value={salesMode}
                   onValueChange={(val) => setSalesMode(val as SalesAgentMode)}
                 >
-                  <SelectTrigger id="sales-mode">
+                  <SelectTrigger id="sales-mode" className="w-full min-w-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -199,11 +195,11 @@ export function AgentConfigDialog({
                 </Select>
               </Field>
 
-              <Field>
+              <Field className="min-w-0">
                 <FieldLabel htmlFor="sales-chatwoot">{t('Communication connection')}</FieldLabel>
                 <Select value={chatwootConnectionId} onValueChange={setChatwootConnectionId}>
-                  <SelectTrigger id="sales-chatwoot">
-                    <SelectValue />
+                  <SelectTrigger id="sales-chatwoot" className="w-full min-w-0">
+                    <SelectValue className="truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={NONE_CONNECTION}>{t('None (simulator only)')}</SelectItem>
@@ -217,70 +213,44 @@ export function AgentConfigDialog({
               </Field>
 
               {selectedChatwoot && selectedChatwoot.inboxes.length > 0 && (
-                <Field>
+                <Field className="min-w-0">
                   <FieldLabel>{t('Authorized inboxes')}</FieldLabel>
                   <div className="flex flex-col gap-1.5 rounded-md border p-2.5">
                     {selectedChatwoot.inboxes.map((inbox) => (
                       <label
                         key={inbox.id}
-                        className="flex cursor-pointer items-center gap-2 text-sm"
+                        className="flex min-w-0 cursor-pointer items-center gap-2 text-sm"
                       >
                         <input
                           type="checkbox"
+                          className="shrink-0"
                           checked={authorizedInboxIds.includes(inbox.id)}
                           onChange={() => toggleInbox(inbox.id)}
                         />
-                        <span>{inbox.name}</span>
-                        <span className="text-xs text-muted-foreground">({inbox.channelType})</span>
+                        <span className="truncate">{inbox.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          (
+                          {inbox.channelType === 'Channel::WebWidget'
+                            ? t('Web Widget')
+                            : inbox.channelType}
+                          )
+                        </span>
                       </label>
                     ))}
                   </div>
                 </Field>
               )}
 
-              <Field>
-                <FieldLabel htmlFor="sales-store-name">{t('Store commercial name')}</FieldLabel>
-                <Input
-                  id="sales-store-name"
-                  value={businessName}
-                  onChange={(event) => setBusinessName(event.target.value)}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="sales-payment">{t('Payment conditions')}</FieldLabel>
-                <Textarea
-                  id="sales-payment"
-                  rows={2}
-                  value={paymentNotes}
-                  onChange={(event) => setPaymentNotes(event.target.value)}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="sales-delivery">{t('Delivery conditions')}</FieldLabel>
-                <Textarea
-                  id="sales-delivery"
-                  rows={2}
-                  value={deliveryNotes}
-                  onChange={(event) => setDeliveryNotes(event.target.value)}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="sales-warranty">{t('Warranty conditions')}</FieldLabel>
-                <Textarea
-                  id="sales-warranty"
-                  rows={2}
-                  value={warrantyNotes}
-                  onChange={(event) => setWarrantyNotes(event.target.value)}
-                />
-              </Field>
+              <p className="rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                {t(
+                  'Business name, payment methods, delivery terms, warranties, and channel policies are managed in Commercial Knowledge through Supervisor chat.',
+                )}
+              </p>
             </>
           )}
         </div>
 
-        <DialogFooter className="flex flex-wrap items-center justify-between gap-2">
+        <DialogFooter className="flex flex-wrap items-center justify-between gap-2 pt-2">
           <div>
             {agentKey === 'sales' && config.salesMode === 'AUTOMATIC' && (
               <Button

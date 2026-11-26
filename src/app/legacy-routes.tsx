@@ -34,5 +34,6 @@ export const legacyRoutes: RouteObject[] = (
     [LEGACY_ROUTES.agentConnections, withSection(ROUTES.developers, PageSection.ConnectedAgents)],
     [LEGACY_ROUTES.account, ROUTES.account],
     [LEGACY_ROUTES.plan, ROUTES.billing],
+    [LEGACY_ROUTES.odooSettings, ROUTES.odooSource],
   ] satisfies [string, LegacyTarget][]
 ).map(([path, to]) => ({ path, element: <LegacyRedirect to={to} /> }));

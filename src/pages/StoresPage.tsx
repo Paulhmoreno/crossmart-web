@@ -37,7 +37,7 @@ export function StoresPage() {
             <div className="flex flex-col gap-8">
               <ConnectorSection title={t('Sources')}>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <OdooConnectorCard workspaceId={workspace.id} />
+                  <OdooConnectorCard workspaceId={workspace.id} canManage={canManageChannels} />
                 </div>
               </ConnectorSection>
 

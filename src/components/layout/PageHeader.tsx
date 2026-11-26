@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
+import { useI18n } from '@/lib/i18n';
 
 interface PageHeaderProps {
   title: ReactNode;
@@ -11,6 +12,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, description, actions, back }: PageHeaderProps) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-3">
       {back && (
@@ -19,7 +21,7 @@ export function PageHeader({ title, description, actions, back }: PageHeaderProp
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          {back.label}
+          {t(back.label)}
         </Link>
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">

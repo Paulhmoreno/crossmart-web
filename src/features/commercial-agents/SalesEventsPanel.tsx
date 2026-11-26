@@ -18,6 +18,7 @@ const FILTER_MAP: Record<EventFilterKey, string[]> = {
 };
 
 const JSON_INDENT = 2;
+const CATALOG_COUNT_GROUP = 2;
 
 const EVENT_DOT: Record<string, string> = {
   message_received: 'bg-sky-500',
@@ -30,6 +31,57 @@ const EVENT_DOT: Record<string, string> = {
   knowledge_changed: 'bg-emerald-500',
   config_changed: 'bg-muted-foreground',
 };
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  message_received: 'Message received',
+  product_identified: 'Product identified',
+  catalog_queried: 'Catalog queried',
+  reply_sent: 'Reply sent',
+  handoff_triggered: 'Human handoff',
+  communication_error: 'Communication error',
+  learning_proposed: 'Learning proposed',
+  knowledge_changed: 'Knowledge updated',
+  config_changed: 'Configuration updated',
+};
+
+const CHANNEL_LABELS: Record<string, string> = {
+  'Channel::WebWidget': 'Web Widget',
+  'Channel::Whatsapp': 'WhatsApp',
+  'Channel::FacebookPage': 'Messenger',
+  'Channel::Instagram': 'Instagram',
+  marketplace: 'Marketplace',
+  web_widget: 'Web Widget',
+};
+
+function localizeEventSummary(
+  ev: SalesEventView,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  const raw = ev.summary;
+  const replyMatch = /^Reply sent to Chatwoot #(\d+)$/.exec(raw);
+  if (replyMatch) return t('Reply sent to Chatwoot #{id}', { id: replyMatch[1] ?? '' });
+  const draftMatch = /^Private draft sent to Chatwoot #(\d+)$/.exec(raw);
+  if (draftMatch) return t('Private draft sent to Chatwoot #{id}', { id: draftMatch[1] ?? '' });
+  const buyerMatch = /^Buyer message on (.+)$/.exec(raw);
+  if (buyerMatch) return t('Buyer message on {inbox}', { inbox: buyerMatch[1] ?? '' });
+  const catalogMatch = /^Catalog queried \(([^)]+)\): (\d+) match\(es\)$/.exec(raw);
+  if (catalogMatch) {
+    return t('Catalog queried: {count} match(es)', {
+      count: catalogMatch[CATALOG_COUNT_GROUP] ?? '0',
+    });
+  }
+  const prodMatch = /^Product identified from channel context: (.+)$/.exec(raw);
+  if (prodMatch) return t('Product identified: {title}', { title: prodMatch[1] ?? '' });
+  const knowApprove = /^Knowledge approved: (.+?) \([^)]+\)$/.exec(raw);
+  if (knowApprove) return t('Knowledge approved: {title}', { title: knowApprove[1] ?? '' });
+  const learnProp = /^Learning proposed: (.+?) \([^)]+\)$/.exec(raw);
+  if (learnProp) return t('Learning proposed: {title}', { title: learnProp[1] ?? '' });
+  const knowUpd = /^Knowledge updated: (.+)$/.exec(raw);
+  if (knowUpd) return t('Knowledge updated: {title}', { title: knowUpd[1] ?? '' });
+  const knowArch = /^Knowledge archived: (.+)$/.exec(raw);
+  if (knowArch) return t('Knowledge archived: {title}', { title: knowArch[1] ?? '' });
+  return raw;
+}
 
 /**
  * Right column of the Sales Agent console: adapts Crossmart Agent's EventStreamPanel
@@ -96,6 +148,9 @@ export function SalesEventsPanel({
         ) : (
           visible.map((ev) => {
             const expanded = expandedId === ev.id;
+            const channelLabel = ev.channelType
+              ? t(CHANNEL_LABELS[ev.channelType] ?? ev.channelType)
+              : null;
             return (
               <li key={ev.id} className="px-3 py-2 text-xs">
                 <button
@@ -111,10 +166,10 @@ export function SalesEventsPanel({
                     aria-hidden="true"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground">{ev.summary}</p>
+                    <p className="font-medium text-foreground">{localizeEventSummary(ev, t)}</p>
                     <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span>{ev.type.replace(/_/g, ' ')}</span>
-                      {ev.channelType && <span>· {ev.channelType}</span>}
+                      <span>{t(EVENT_TYPE_LABELS[ev.type] ?? ev.type)}</span>
+                      {channelLabel && <span>· {channelLabel}</span>}
                       <span>·</span>
                       <RelativeTime value={ev.createdAt} />
                     </div>
