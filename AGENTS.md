@@ -9,6 +9,7 @@ Read [CLAUDE.md](CLAUDE.md) and [README.md](README.md). Follow upstream frontend
 - Keep the interface quiet and concise. Do not add permanent explanatory banners, repeated field-level lock notes, redundant badges, instructional paragraphs, security implementation details or helper text that merely repeats a label. Prefer the existing control's affordance. Odoo source ownership needs only a discreet source identifier and disabled protected controls; do not replace deleted messages with a proliferation of tooltips or icons. Keep actionable errors, genuinely necessary instructions, destructive-action confirmations, accessibility labels, actual operational status and meaningful feedback. Do not indiscriminately delete native upstream copy.
 - Preserve all validated functionality, security, permissions, source ownership, existing data, provider/model discovery and connection testing. UI cleanup is not a reason to remove functionality or rebuild forms.
 - Settings screens must be limited to configuring services and integrations, without duplicating operational modules, product listings, or dashboards.
+- Channel cards in Stores (including WooCommerce, Mercado Libre, and future integrations) must use brief single-sentence descriptions matching Shopify and eBay, visually balanced official logos inside the native logo container, and the identical shared card structure, buttons, statuses, and spacing.
 
 ## Engineering and scope
 

@@ -308,8 +308,8 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   'Search eBay categories': 'Buscar categorías de eBay',
   'No eBay categories matched. Try different words.':
     'No se encontraron categorías en eBay. Prueba con otras palabras.',
-  'Sync products, categories, prices, inventory, and photos with your WordPress/WooCommerce store.':
-    'Sincroniza productos, categorías, precios, inventario y fotografías con tu tienda WordPress/WooCommerce.',
+  'Sync products, stock and categories with your WooCommerce store.':
+    'Sincroniza productos, stock y categorías con tu tienda WooCommerce.',
 
   // Products & Editor
   Product: 'Producto',

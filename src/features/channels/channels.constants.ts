@@ -651,8 +651,7 @@ export const CHANNELS: readonly ChannelInfo[] = [
   },
   {
     name: 'WooCommerce',
-    description:
-      'Sync products, categories, prices, inventory, and photos with your WordPress/WooCommerce store.',
+    description: 'Sync products, stock and categories with your WooCommerce store.',
     status: ChannelStatus.Live,
     logo: { src: woocommerceLogo, tint: '#96588a' },
     connect: {
