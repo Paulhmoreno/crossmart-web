@@ -1132,5 +1132,11 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   Premium: 'Premium',
   'Choose listing type': 'Elige tipo de publicación',
   'Listing setup': 'Configuración de publicación',
+  'Never price below cost plus a markup':
+    'Nunca fijar un precio por debajo del costo más un incremento',
+  'Minimum markup over cost': 'Incremento mínimo sobre costo',
+  'Minimum markup over cost in percent': 'Incremento mínimo sobre costo en porcentaje',
+  'Calculated over cost (not margin over net sale without VAT). Variants without a cost are not floored.':
+    'Calculado sobre el costo (no es margen sobre venta neta sin IVA). Las variantes sin costo no tienen piso.',
   'Save setup': 'Guardar configuración',
 };

@@ -26,10 +26,11 @@ interface ListingTypeOption {
 
 const CLASSIC_NAMES = new Set(['clásica', 'clasica', 'classic']);
 const PREMIUM_NAMES = new Set(['premium']);
+const FREE_LISTING_IDS = new Set(['free']);
 
 /**
- * Surfaces the real commercial listing types offered by the site (Clásica and Premium),
- * preserving the real site IDs (e.g. `bronze` = Clásica and `gold_pro` = Premium on MEC).
+ * Surfaces the real commercial listing types offered by the connected site (e.g. Clásica and
+ * Premium), preserving the exact site IDs returned by Mercado Libre without hardcoded defaults.
  */
 export function commercialListingTypeOptions(
   settings: Pick<MercadoLibreSettings, 'availableListingTypes' | 'defaultListingTypeId'>,
@@ -37,23 +38,22 @@ export function commercialListingTypeOptions(
   const options: ListingTypeOption[] = [];
   const available = settings.availableListingTypes;
 
-  const classic =
-    available.find((item) => CLASSIC_NAMES.has(item.name.trim().toLowerCase())) ??
-    available.find((item) => item.id === 'bronze' || item.id === 'gold_special');
+  const classic = available.find((item) => CLASSIC_NAMES.has(item.name.trim().toLowerCase()));
   if (classic) {
     options.push({ id: classic.id, label: 'Classic' });
   }
 
-  const premium =
-    available.find(
-      (item) => item.id === 'gold_pro' || PREMIUM_NAMES.has(item.name.trim().toLowerCase()),
-    ) ?? available.find((item) => item.id === 'gold_pro');
+  const premium = available.find((item) => PREMIUM_NAMES.has(item.name.trim().toLowerCase()));
   if (premium && !options.some((item) => item.id === premium.id)) {
     options.push({ id: premium.id, label: 'Premium' });
   }
 
   if (options.length === 0) {
-    options.push({ id: 'bronze', label: 'Classic' }, { id: 'gold_pro', label: 'Premium' });
+    for (const item of available) {
+      if (!FREE_LISTING_IDS.has(item.id.toLowerCase())) {
+        options.push({ id: item.id, label: item.name });
+      }
+    }
   }
 
   if (
@@ -75,7 +75,7 @@ export function initialCommercialValues(
 ): MercadoLibreCommercialValues {
   const options = commercialListingTypeOptions(settings);
   return {
-    defaultListingTypeId: settings.defaultListingTypeId ?? options[0]?.id ?? 'bronze',
+    defaultListingTypeId: settings.defaultListingTypeId ?? options[0]?.id ?? '',
     shippingPolicy: settings.shippingPolicy ?? MercadoLibreShippingPolicy.buyer_pays,
     autoFreeShippingMinPrice:
       settings.autoFreeShippingMinPrice !== null ? String(settings.autoFreeShippingMinPrice) : '',

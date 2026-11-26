@@ -11,6 +11,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { findOptionValue } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import {
   COMPARE_AT_OPTIONS,
   RATE_MODE_OPTIONS,
@@ -105,8 +106,9 @@ export function RoundingField() {
   );
 }
 
-/** Never sell below cost plus a margin. Off by default. */
+/** Never sell below cost plus a markup percentage. Off by default. */
 export function FloorField() {
+  const { t } = useI18n();
   const { control } = useFormContext<PricingRuleFormValues>();
   const enabled = useWatch({ control, name: 'floorEnabled' });
   return (
@@ -118,16 +120,20 @@ export function FloorField() {
           <Field orientation="horizontal">
             <Switch id="floorEnabled" checked={field.value} onCheckedChange={field.onChange} />
             <FieldLabel htmlFor="floorEnabled" className="font-normal">
-              Never price below cost plus a margin
+              {t('Never price below cost plus a markup')}
             </FieldLabel>
           </Field>
         )}
       />
       {enabled && (
         <Field className="sm:max-w-56">
-          <FieldLabel htmlFor="minMarginPercent">Minimum margin over cost</FieldLabel>
-          <PercentInput name="minMarginPercent" label="Minimum margin over cost in percent" />
-          <FieldDescription>Variants without a cost are not floored.</FieldDescription>
+          <FieldLabel htmlFor="minMarginPercent">{t('Minimum markup over cost')}</FieldLabel>
+          <PercentInput name="minMarginPercent" label={t('Minimum markup over cost in percent')} />
+          <FieldDescription>
+            {t(
+              'Calculated over cost (not margin over net sale without VAT). Variants without a cost are not floored.',
+            )}
+          </FieldDescription>
         </Field>
       )}
     </div>
