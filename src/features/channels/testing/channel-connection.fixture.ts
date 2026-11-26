@@ -95,6 +95,13 @@ export function mercadoLibreConnectionFixture(
       currencyCode: 'MXN',
       permalink: null,
       userProductSeller: true,
+      availableListingTypes: [],
+      defaultListingTypeId: null,
+      shippingMode: null,
+      localPickUp: null,
+      warrantyType: null,
+      warrantyTime: null,
+      importOrders: false,
     },
     ...overrides,
   });

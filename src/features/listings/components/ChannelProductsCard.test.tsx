@@ -60,6 +60,7 @@ const ROW: ChannelProduct = {
 
 const COUNTS: ChannelProductCounts = {
   listed: 2,
+  live: 2,
   pending: 2,
   failed: 1,
   removing: 2,

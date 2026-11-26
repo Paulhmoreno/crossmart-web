@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useI18n } from '@/lib/i18n';
 import type { SelectAccountPrompt } from '../channels.constants';
 
 interface AccountSelectProps {
@@ -17,15 +18,16 @@ interface AccountSelectProps {
 
 /** An account picked from a fixed list, such as the eBay marketplace to sell on. */
 export function AccountSelect({ id, prompt, value, onChange, disabled }: AccountSelectProps) {
+  const { t } = useI18n();
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled} required>
       <SelectTrigger id={id} className="w-full">
-        <SelectValue placeholder={prompt.placeholder} />
+        <SelectValue placeholder={t(prompt.placeholder)} />
       </SelectTrigger>
       <SelectContent>
         {prompt.options.map((option) => (
           <SelectItem key={option.value} value={option.value}>
-            {option.label}
+            {t(option.label)}
           </SelectItem>
         ))}
       </SelectContent>

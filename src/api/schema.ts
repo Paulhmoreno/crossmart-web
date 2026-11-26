@@ -1061,6 +1061,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/listing-setup': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Save commercial listing setup for a Mercado Libre connection
+     * @description Configures the default listing type, shipping mode, local pickup, warranty terms, and order import toggle for this Mercado Libre store.
+     */
+    put: operations['MercadoLibreAccountController_saveListingSetup_v1'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/refresh': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Refresh available listing types from Mercado Libre
+     * @description Reads the live listing types offered by Mercado Libre for the store’s site.
+     */
+    post: operations['MercadoLibreAccountController_refreshListingTypes_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/workspaces/{workspaceId}/sources/odoo': {
     parameters: {
       query?: never;
@@ -3867,6 +3907,17 @@ export interface components {
      * @enum {string}
      */
     MercadoLibreSiteId: MercadoLibreSiteId;
+    MercadoLibreListingTypeOptionDto: {
+      /** @example gold_special */
+      id: string;
+      /** @example Clásica */
+      name: string;
+    };
+    /**
+     * @description Shipping mode override; null lets Mercado Libre apply account defaults
+     * @enum {string}
+     */
+    MercadoLibreShippingMode: MercadoLibreShippingMode;
     MercadoLibreSettingsDto: {
       /**
        * @description The seller’s Mercado Libre user id
@@ -3879,13 +3930,36 @@ export interface components {
       siteId: components['schemas']['MercadoLibreSiteId'];
       /**
        * @description ISO 4217 code of the site’s currency
-       * @example MXN
+       * @example USD
        */
       currencyCode: string;
-      /** @example http://perfil.mercadolibre.com.mx/TESTSELLER */
+      /** @example https://perfil.mercadolibre.com.ec/TESTSELLER */
       permalink: string | null;
       /** @description Whether the seller lists under User Products: one item per variant, each with its own price */
       userProductSeller: boolean;
+      /** @description Available listing types read from Mercado Libre for this site */
+      availableListingTypes: components['schemas']['MercadoLibreListingTypeOptionDto'][];
+      /**
+       * @description Default listing type id for new publications
+       * @example gold_special
+       */
+      defaultListingTypeId: string | null;
+      /** @description Shipping mode override; null lets Mercado Libre apply account defaults */
+      shippingMode: components['schemas']['MercadoLibreShippingMode'] | null;
+      /** @description Allow local pickup when supported by the site and category */
+      localPickUp: boolean | null;
+      /**
+       * @description Commercial warranty type sent in sale_terms when set
+       * @example Garantía del vendedor
+       */
+      warrantyType: string | null;
+      /**
+       * @description Commercial warranty duration sent in sale_terms when set
+       * @example 6 meses
+       */
+      warrantyTime: string | null;
+      /** @description Whether orders from this Mercado Libre store are imported into Crossmart */
+      importOrders: boolean;
     };
     /** @enum {string} */
     FalabellaCountry: FalabellaCountry;
@@ -4156,6 +4230,15 @@ export interface components {
        */
       processingProfileId: string | null;
     };
+    UpdateMercadoLibreListingSetupDto: {
+      /** @example gold_special */
+      defaultListingTypeId?: string | null;
+      shippingMode?: components['schemas']['MercadoLibreShippingMode'] | null;
+      localPickUp?: boolean | null;
+      warrantyType?: string | null;
+      warrantyTime?: string | null;
+      importOrders?: boolean;
+    };
     /** @enum {string} */
     OdooConnectionStatus: OdooConnectionStatus;
     /** @enum {string} */
@@ -4379,6 +4462,8 @@ export interface components {
       removed_by_hand: number;
       /** @description Neither selected nor on the channel */
       excluded: number;
+      /** @description Products with an ACTIVE (live) listing on the store (excludes INACTIVE drafts) */
+      live: number;
       /** @description Products whose display state is `needs_details`: selected, and the store setup or the product lacks something publishing needs. Some may also be counted as `failed` */
       needsDetails: number;
       /** @description Products that are failed or need details, each counted once: what `view=needs_attention` lists. Its failed part is `failed`, the same listings the attention summary counts */
@@ -8343,6 +8428,54 @@ export interface operations {
       };
     };
   };
+  MercadoLibreAccountController_saveListingSetup_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+        connectionId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateMercadoLibreListingSetupDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChannelConnectionDto'];
+        };
+      };
+    };
+  };
+  MercadoLibreAccountController_refreshListingTypes_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+        connectionId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChannelConnectionDto'];
+        };
+      };
+    };
+  };
   OdooSourceController_getStatus_v1: {
     parameters: {
       query?: never;
@@ -11420,12 +11553,19 @@ export enum EtsyWhenMade {
   before_1700 = 'before_1700',
 }
 export enum MercadoLibreSiteId {
+  MEC = 'MEC',
   MLM = 'MLM',
   MLC = 'MLC',
   MCO = 'MCO',
   MPE = 'MPE',
   MLA = 'MLA',
   MLB = 'MLB',
+}
+export enum MercadoLibreShippingMode {
+  me2 = 'me2',
+  me1 = 'me1',
+  custom = 'custom',
+  not_specified = 'not_specified',
 }
 export enum FalabellaCountry {
   facl = 'facl',

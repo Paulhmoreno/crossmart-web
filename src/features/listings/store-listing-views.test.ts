@@ -44,6 +44,7 @@ describe('toStoreListingSelection', () => {
 describe('storeListingViewCounts', () => {
   const counts: ChannelProductCounts = {
     listed: 5,
+    live: 5,
     pending: 2,
     failed: 1,
     removing: 1,

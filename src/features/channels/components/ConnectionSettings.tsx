@@ -14,6 +14,8 @@ import { FalabellaAccountDetails } from './FalabellaAccountDetails';
 import { EbayListingDefaultsCard } from './EbayListingDefaultsCard';
 import { GoogleAccountDetails } from './GoogleAccountDetails';
 import { GoogleListingSetupCard } from './GoogleListingSetupCard';
+import { MercadoLibreAccountDetails } from './MercadoLibreAccountDetails';
+import { MercadoLibreListingSetupCard } from './MercadoLibreListingSetupCard';
 import { ShopifyAccountDetails } from './ShopifyAccountDetails';
 import { WooCommerceAccountDetails } from './WooCommerceAccountDetails';
 
@@ -36,6 +38,9 @@ function ChannelAccountDetails({ connection }: { connection: ChannelConnection }
   if (connection.ebay) return <EbayAccountDetails ebay={connection.ebay} />;
   if (connection.googleMerchant) return <GoogleAccountDetails google={connection.googleMerchant} />;
   if (connection.falabella) return <FalabellaAccountDetails falabella={connection.falabella} />;
+  if (connection.mercadoLibre) {
+    return <MercadoLibreAccountDetails mercadoLibre={connection.mercadoLibre} />;
+  }
   if (connection.woocommerce) {
     return <WooCommerceAccountDetails woocommerce={connection.woocommerce} />;
   }
@@ -68,6 +73,16 @@ function ChannelSetupCard({
         workspaceId={workspaceId}
         connectionId={connection.id}
         googleMerchant={connection.googleMerchant}
+        canManage={canManage}
+      />
+    );
+  }
+  if (connection.mercadoLibre) {
+    return (
+      <MercadoLibreListingSetupCard
+        workspaceId={workspaceId}
+        connectionId={connection.id}
+        mercadoLibre={connection.mercadoLibre}
         canManage={canManage}
       />
     );

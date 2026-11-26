@@ -12,7 +12,7 @@ describe('onboardingSteps', () => {
   it('names every connectable channel, not only Shopify', () => {
     const steps = onboardingSteps({ ...DONE, channelSetup: ChannelSetup.NotConnected });
     expect(steps[1]?.description).toBe(
-      'Connect Shopify, eBay or WooCommerce to sync products and stock.',
+      'Connect Shopify, eBay, Mercado Libre or WooCommerce to sync products and stock.',
     );
   });
 

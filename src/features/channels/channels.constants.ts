@@ -7,6 +7,7 @@ import {
   EbayMarketplaceId,
   FalabellaCountry,
   GoogleTargetCountry,
+  MercadoLibreShippingMode,
   MercadoLibreSiteId,
   WooCommercePublishStatus,
 } from '@/api/schema';
@@ -49,6 +50,10 @@ export const EBAY_DEFAULT_POLICIES_ENDPOINT =
 
 export const GOOGLE_LISTING_SETUP_ENDPOINT =
   '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/google-merchant/listing-setup';
+export const MERCADOLIBRE_LISTING_SETUP_ENDPOINT =
+  '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/listing-setup';
+export const MERCADOLIBRE_REFRESH_ENDPOINT =
+  '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/refresh';
 
 /** Where a channel stands on the roadmap, with the same labels as crossmart.io. */
 export enum ChannelStatus {
@@ -389,12 +394,20 @@ const EBAY_MARKETPLACE_OPTIONS: readonly AccountOption[] = Object.values(EbayMar
 
 /** The Mercado Libre sites Crossmart can connect, as the merchant picks them. */
 export const MERCADOLIBRE_SITE_LABELS: Record<MercadoLibreSiteId, string> = {
+  [MercadoLibreSiteId.MEC]: 'Ecuador (USD)',
   [MercadoLibreSiteId.MLM]: 'Mexico (MXN)',
   [MercadoLibreSiteId.MLC]: 'Chile (CLP)',
   [MercadoLibreSiteId.MCO]: 'Colombia (COP)',
   [MercadoLibreSiteId.MPE]: 'Peru (PEN)',
   [MercadoLibreSiteId.MLA]: 'Argentina (ARS)',
   [MercadoLibreSiteId.MLB]: 'Brazil (BRL)',
+};
+
+export const MERCADOLIBRE_SHIPPING_MODE_LABELS: Record<MercadoLibreShippingMode, string> = {
+  [MercadoLibreShippingMode.me2]: 'Mercado Envíos (ME2)',
+  [MercadoLibreShippingMode.me1]: 'Mercado Envíos (ME1)',
+  [MercadoLibreShippingMode.custom]: 'Custom shipping',
+  [MercadoLibreShippingMode.not_specified]: 'Not specified',
 };
 
 const MERCADOLIBRE_SITE_OPTIONS: readonly AccountOption[] = Object.values(MercadoLibreSiteId).map(
@@ -602,8 +615,8 @@ export const CHANNELS: readonly ChannelInfo[] = [
   },
   {
     name: 'Mercado Libre',
-    description: 'Sell across Latin America with Mercado Libre categories and attributes.',
-    status: ChannelStatus.ComingSoon,
+    description: 'Sell on Mercado Libre with official categories, attributes and stock sync.',
+    status: ChannelStatus.Live,
     logo: { src: mercadoLibreLogo },
     connect: {
       method: ConnectMethod.OAuth,

@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import type { ChannelInfo, OAuthConnectableChannel } from '../channels.constants';
 import { useStartChannelAuthorization } from '../hooks/useChannelConnections';
 import { AccountField } from './AccountField';
@@ -40,6 +41,7 @@ export function OAuthConnectDialog({
   open: controlledOpen,
   onOpenChange,
 }: ConnectDialogProps<OAuthConnectableChannel>) {
+  const { t } = useI18n();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
   const [account, setAccount] = useState(initialAccount);
@@ -67,9 +69,11 @@ export function OAuthConnectDialog({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Connect {channel.name}</DialogTitle>
+          <DialogTitle>{t('Connect {channel}', { channel: channel.name })}</DialogTitle>
           <DialogDescription>
-            You will approve Crossmart on {channel.name}, then come back here.
+            {t('You will approve Crossmart on {channel}, then come back here.', {
+              channel: channel.name,
+            })}
           </DialogDescription>
         </DialogHeader>
         <FormError error={start.error} />
@@ -83,11 +87,11 @@ export function OAuthConnectDialog({
         </form>
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isBusy}>
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button type="submit" form={FORM_ID} disabled={isBusy || !account.trim()}>
             {isBusy && <Spinner data-icon="inline-start" />}
-            Continue to {channel.name}
+            {t('Continue to {channel}', { channel: channel.name })}
           </Button>
         </DialogFooter>
       </DialogContent>
