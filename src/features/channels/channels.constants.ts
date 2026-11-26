@@ -8,6 +8,7 @@ import {
   FalabellaCountry,
   GoogleTargetCountry,
   MercadoLibreShippingMode,
+  MercadoLibreShippingPolicy,
   MercadoLibreSiteId,
   WooCommercePublishStatus,
 } from '@/api/schema';
@@ -403,6 +404,12 @@ export const MERCADOLIBRE_SITE_LABELS: Record<MercadoLibreSiteId, string> = {
   [MercadoLibreSiteId.MPE]: 'Peru (PEN)',
   [MercadoLibreSiteId.MLA]: 'Argentina (ARS)',
   [MercadoLibreSiteId.MLB]: 'Brazil (BRL)',
+};
+
+export const MERCADOLIBRE_SHIPPING_POLICY_LABELS: Record<MercadoLibreShippingPolicy, string> = {
+  [MercadoLibreShippingPolicy.buyer_pays]: 'Buyer pays shipping',
+  [MercadoLibreShippingPolicy.free_shipping]: 'Free shipping for buyer',
+  [MercadoLibreShippingPolicy.automatic]: 'Automatic shipping policy',
 };
 
 export const MERCADOLIBRE_SHIPPING_MODE_LABELS: Record<MercadoLibreShippingMode, string> = {

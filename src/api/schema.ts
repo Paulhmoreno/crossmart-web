@@ -1125,6 +1125,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/workspaces/{workspaceId}/channel-connections/{connectionId}/mercado-libre/commercial-preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Preview real Mercado Libre fees, shipping cost, and margin (read-only)
+     * @description Queries live listing_prices and account shipping_options/free without modifying any listing.
+     */
+    post: operations['MercadoLibreAccountController_previewCommercialTerms_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/workspaces/{workspaceId}/sources/odoo': {
     parameters: {
       query?: never;
@@ -3938,7 +3958,12 @@ export interface components {
       name: string;
     };
     /**
-     * @description Shipping mode override; null lets Mercado Libre apply account defaults
+     * @description Commercial shipping policy: buyer pays, free shipping, or automatic
+     * @enum {string}
+     */
+    MercadoLibreShippingPolicy: MercadoLibreShippingPolicy;
+    /**
+     * @description Internal shipping mode override; null lets Mercado Libre manage logistics
      * @enum {string}
      */
     MercadoLibreShippingMode: MercadoLibreShippingMode;
@@ -3965,10 +3990,16 @@ export interface components {
       availableListingTypes: components['schemas']['MercadoLibreListingTypeOptionDto'][];
       /**
        * @description Default listing type id for new publications
-       * @example gold_special
+       * @example bronze
        */
       defaultListingTypeId: string | null;
-      /** @description Shipping mode override; null lets Mercado Libre apply account defaults */
+      /** @description Commercial shipping policy: buyer pays, free shipping, or automatic */
+      shippingPolicy: components['schemas']['MercadoLibreShippingPolicy'] | null;
+      /** @description Minimum listing price for automatic free shipping */
+      autoFreeShippingMinPrice: number | null;
+      /** @description Maximum acceptable shipping cost as percentage of sale price */
+      autoFreeShippingMaxCostPercent: number | null;
+      /** @description Internal shipping mode override; null lets Mercado Libre manage logistics */
       shippingMode: components['schemas']['MercadoLibreShippingMode'] | null;
       /** @description Allow local pickup when supported by the site and category */
       localPickUp: boolean | null;
@@ -4283,8 +4314,11 @@ export interface components {
       clientSecret?: string;
     };
     UpdateMercadoLibreListingSetupDto: {
-      /** @example gold_special */
+      /** @example bronze */
       defaultListingTypeId?: string | null;
+      shippingPolicy?: components['schemas']['MercadoLibreShippingPolicy'] | null;
+      autoFreeShippingMinPrice?: number | null;
+      autoFreeShippingMaxCostPercent?: number | null;
       shippingMode?: components['schemas']['MercadoLibreShippingMode'] | null;
       localPickUp?: boolean | null;
       warrantyType?: string | null;
@@ -8574,6 +8608,26 @@ export interface operations {
       };
     };
   };
+  MercadoLibreAccountController_previewCommercialTerms_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+        connectionId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   OdooSourceController_getStatus_v1: {
     parameters: {
       query?: never;
@@ -11658,6 +11712,11 @@ export enum MercadoLibreSiteId {
   MPE = 'MPE',
   MLA = 'MLA',
   MLB = 'MLB',
+}
+export enum MercadoLibreShippingPolicy {
+  buyer_pays = 'buyer_pays',
+  free_shipping = 'free_shipping',
+  automatic = 'automatic',
 }
 export enum MercadoLibreShippingMode {
   me2 = 'me2',

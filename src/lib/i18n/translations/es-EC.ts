@@ -1122,4 +1122,13 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   'Mercado Libre app credentials saved': 'Credenciales de la app de Mercado Libre guardadas',
   'An instance administrator must configure Mercado Libre OAuth credentials.':
     'Un administrador de la instancia debe configurar las credenciales OAuth de Mercado Libre.',
+  'Shipping policy': 'Política de envío',
+  'Buyer pays shipping': 'Envío a cargo del comprador',
+  'Free shipping for buyer': 'Envío gratuito para el comprador',
+  'Automatic shipping policy': 'Política automática de envío',
+  'Minimum price ({currency})': 'Precio mínimo ({currency})',
+  'Max shipping cost (% of price)': 'Costo máximo de envío (% del precio)',
+  Classic: 'Clásica',
+  Premium: 'Premium',
+  'Choose listing type': 'Elige tipo de publicación',
 };

@@ -1,20 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
-import { MercadoLibreShippingMode } from '@/api/schema';
 import { fetchClient } from '@/api/client';
 import { unwrap } from '@/api/unwrap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { PageSection } from '@/config/routes';
 import { useInvalidateEndpoints } from '@/hooks/useInvalidateEndpoints';
@@ -24,20 +16,22 @@ import {
   CHANNEL_CONNECTIONS_ENDPOINT,
   MERCADOLIBRE_LISTING_SETUP_ENDPOINT,
   MERCADOLIBRE_REFRESH_ENDPOINT,
-  MERCADOLIBRE_SHIPPING_MODE_LABELS,
 } from '../channels.constants';
 import type {
   ChannelConnection,
   MercadoLibreListingSetupBody,
   MercadoLibreSettings,
 } from '../channels.types';
+import {
+  initialCommercialValues,
+  MercadoLibreSetupFields,
+  parseOptionalNumber,
+} from './MercadoLibreSetupFields';
 
 const CONNECTION_ENDPOINTS = [
   CHANNEL_CONNECTIONS_ENDPOINT,
   CHANNEL_CONNECTION_DETAIL_ENDPOINT,
 ] as const;
-
-const ACCOUNT_DEFAULT_VALUE = '__default__';
 
 interface MercadoLibreListingSetupCardProps {
   workspaceId: string;
@@ -46,7 +40,7 @@ interface MercadoLibreListingSetupCardProps {
   canManage: boolean;
 }
 
-/** Commercial listing setup for a Mercado Libre store (listing type, shipping, warranty, orders). */
+/** Commercial listing setup for a Mercado Libre store (Clásica/Premium, shipping, warranty). */
 export function MercadoLibreListingSetupCard({
   workspaceId,
   connectionId,
@@ -55,12 +49,7 @@ export function MercadoLibreListingSetupCard({
 }: MercadoLibreListingSetupCardProps) {
   const { t } = useI18n();
   const refreshQueries = useInvalidateEndpoints(CONNECTION_ENDPOINTS);
-  const [listingTypeId, setListingTypeId] = useState(
-    mercadoLibre.defaultListingTypeId ?? ACCOUNT_DEFAULT_VALUE,
-  );
-  const [shippingMode, setShippingMode] = useState<string>(
-    mercadoLibre.shippingMode ?? ACCOUNT_DEFAULT_VALUE,
-  );
+  const [commercial, setCommercial] = useState(() => initialCommercialValues(mercadoLibre));
   const [localPickUp, setLocalPickUp] = useState(Boolean(mercadoLibre.localPickUp));
   const [warrantyType, setWarrantyType] = useState(mercadoLibre.warrantyType ?? '');
   const [warrantyTime, setWarrantyTime] = useState(mercadoLibre.warrantyTime ?? '');
@@ -91,9 +80,12 @@ export function MercadoLibreListingSetupCard({
 
   function handleSave() {
     save.mutate({
-      defaultListingTypeId: listingTypeId === ACCOUNT_DEFAULT_VALUE ? null : listingTypeId,
-      shippingMode:
-        shippingMode === ACCOUNT_DEFAULT_VALUE ? null : (shippingMode as MercadoLibreShippingMode),
+      defaultListingTypeId: commercial.defaultListingTypeId || null,
+      shippingPolicy: commercial.shippingPolicy,
+      autoFreeShippingMinPrice: parseOptionalNumber(commercial.autoFreeShippingMinPrice),
+      autoFreeShippingMaxCostPercent: parseOptionalNumber(
+        commercial.autoFreeShippingMaxCostPercent,
+      ),
       localPickUp,
       warrantyType: warrantyType.trim() || null,
       warrantyTime: warrantyTime.trim() || null,
@@ -121,43 +113,14 @@ export function MercadoLibreListingSetupCard({
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
+        <MercadoLibreSetupFields
+          settings={mercadoLibre}
+          values={commercial}
+          onChange={setCommercial}
+          disabled={!canManage}
+        />
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="ml-listing-type">{t('Default listing type')}</FieldLabel>
-            <Select value={listingTypeId} onValueChange={setListingTypeId} disabled={!canManage}>
-              <SelectTrigger id="ml-listing-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ACCOUNT_DEFAULT_VALUE}>{t('Classic (default)')}</SelectItem>
-                {mercadoLibre.availableListingTypes.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.name} ({option.id})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="ml-shipping-mode">{t('Shipping mode')}</FieldLabel>
-            <Select value={shippingMode} onValueChange={setShippingMode} disabled={!canManage}>
-              <SelectTrigger id="ml-shipping-mode">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ACCOUNT_DEFAULT_VALUE}>
-                  {t('Account default (recommended)')}
-                </SelectItem>
-                {Object.values(MercadoLibreShippingMode).map((mode) => (
-                  <SelectItem key={mode} value={mode}>
-                    {t(MERCADOLIBRE_SHIPPING_MODE_LABELS[mode])}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
           <Field>
             <FieldLabel htmlFor="ml-warranty-type">{t('Warranty type')}</FieldLabel>
             <Input
@@ -168,7 +131,6 @@ export function MercadoLibreListingSetupCard({
               disabled={!canManage}
             />
           </Field>
-
           <Field>
             <FieldLabel htmlFor="ml-warranty-time">{t('Warranty duration')}</FieldLabel>
             <Input
