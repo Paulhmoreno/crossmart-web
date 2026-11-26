@@ -39,9 +39,6 @@ export const ODOO_COPY = {
   syncIntervalLabel: 'Auto-sync interval (minutes)',
   saleOnlyLabel: 'Sync only sellable products',
   syncTitle: 'Catalog synchronization',
-  searchPlaceholder: 'Search Odoo by name, SKU, or barcode...',
-  searchButton: 'Search Odoo',
-  syncSelectedButton: 'Sync selected',
   syncFullButton: 'Sync full catalog',
   syncFullConfirmTitle: 'Sync full Odoo catalog?',
   syncFullConfirmDescription:

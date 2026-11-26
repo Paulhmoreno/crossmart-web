@@ -1,18 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, fetchClient } from '@/api/client';
 import { type components, OdooSyncRunStatus } from '@/api/schema';
 import { unwrap } from '@/api/unwrap';
 
 export type OdooConnection = components['schemas']['OdooConnectionDto'];
 export type OdooSyncRun = components['schemas']['OdooSyncRunDto'];
-export type OdooPreviewProduct = components['schemas']['OdooPreviewProductDto'];
 export type OdooTestResult = components['schemas']['OdooTestConnectionResponseDto'];
 export type UpsertOdooRequest = components['schemas']['UpsertOdooConnectionDto'];
 export type TestOdooRequest = components['schemas']['TestOdooConnectionDto'];
 export type StartOdooSyncRequest = components['schemas']['StartOdooSyncDto'];
 
 const ACTIVE_POLL_INTERVAL_MS = 2_000;
-const PREVIEW_DEFAULT_LIMIT = 25;
 
 function isRunActive(run: OdooSyncRun | null | undefined): boolean {
   return run?.status === OdooSyncRunStatus.QUEUED || run?.status === OdooSyncRunStatus.RUNNING;
@@ -79,22 +77,6 @@ export function useDisconnectOdooConnection(workspaceId: string) {
   });
 }
 
-export function useOdooPreview(workspaceId: string, search: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ['odoo-preview', workspaceId, search],
-    enabled,
-    queryFn: () =>
-      unwrap(
-        fetchClient.GET('/api/v1/workspaces/{workspaceId}/sources/odoo/preview', {
-          params: {
-            path: { workspaceId },
-            query: { search: search.trim() || undefined, limit: PREVIEW_DEFAULT_LIMIT },
-          },
-        }),
-      ),
-  });
-}
-
 export function useStartOdooSync(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -108,9 +90,6 @@ export function useStartOdooSync(workspaceId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['get', '/api/v1/workspaces/{workspaceId}/sources/odoo'],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ['odoo-preview', workspaceId],
       });
       void queryClient.invalidateQueries({
         queryKey: ['get', '/api/v1/workspaces/{workspaceId}/products'],
