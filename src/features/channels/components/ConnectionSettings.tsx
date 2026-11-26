@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ChannelConnectionStatus } from '@/api/schema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { channelInfoFor } from '../channels.constants';
 import type { ChannelConnection } from '../channels.types';
 import { connectionName } from '../connection-name';
@@ -76,18 +77,21 @@ function ChannelSetupCard({
 
 /** What Crossmart knows about the connected store. */
 function StoreDetailsCard({ connection }: { connection: ChannelConnection }) {
+  const { formatDate: formatLocalizedDate, t } = useI18n();
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Store</h2>
+          <h2>{t('Store')}</h2>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <dl className="grid gap-4 sm:grid-cols-2">
-          <AccountDetail label="Name">{connectionName(connection)}</AccountDetail>
+          <AccountDetail label={t('Name')}>{connectionName(connection)}</AccountDetail>
           <ChannelAccountDetails connection={connection} />
-          <AccountDetail label="Connected">{formatDate(connection.connectedAt)}</AccountDetail>
+          <AccountDetail label={t('Connected')}>
+            {formatLocalizedDate(connection.connectedAt) || formatDate(connection.connectedAt)}
+          </AccountDetail>
         </dl>
       </CardContent>
     </Card>
@@ -101,12 +105,13 @@ function ImportCard({
   workspaceId: string;
   connection: ChannelConnection;
 }) {
+  const { t } = useI18n();
   const channelName = channelInfoFor(connection.channel)?.name ?? connection.displayName;
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Import</h2>
+          <h2>{t('Import')}</h2>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -126,13 +131,14 @@ function ConnectionCard({
   onDisconnected,
   resyncAction,
 }: Omit<ConnectionSettingsProps, 'canManage' | 'canImportProducts' | 'automaticRule' | 'pricing'>) {
+  const { t } = useI18n();
   const channel = channelInfoFor(connection.channel);
   if (!channel?.connect) return null;
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Connection</h2>
+          <h2>{t('Connection')}</h2>
         </CardTitle>
         {connection.statusReason && <CardDescription>{connection.statusReason}</CardDescription>}
       </CardHeader>

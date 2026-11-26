@@ -13,11 +13,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { UserMenuLink } from '@/config/navigation';
+import { useI18n } from '@/lib/i18n';
 import { useSession } from '../hooks/useSession';
 import { useSignOut } from '../hooks/useSignOut';
 import { toInitials } from '../initials';
 
 function UserMenuLinks({ links }: { links: readonly UserMenuLink[] }) {
+  const { t } = useI18n();
   if (links.length === 0) return null;
   return (
     <>
@@ -26,7 +28,7 @@ function UserMenuLinks({ links }: { links: readonly UserMenuLink[] }) {
           <DropdownMenuItem key={link.to} asChild>
             <Link to={link.to}>
               <link.icon />
-              {link.label}
+              {t(link.label)}
             </Link>
           </DropdownMenuItem>
         ))}
@@ -40,6 +42,7 @@ function UserMenuLinks({ links }: { links: readonly UserMenuLink[] }) {
 export function UserMenu({ links = [] }: { links?: readonly UserMenuLink[] }) {
   const { data: session } = useSession();
   const signOut = useSignOut();
+  const { t } = useI18n();
   if (!session) return null;
 
   const { name, email } = session.user;
@@ -47,7 +50,7 @@ export function UserMenu({ links = [] }: { links?: readonly UserMenuLink[] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Account menu">
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label={t('Account menu')}>
           <Avatar className="size-8">
             <AvatarFallback>{toInitials(name || email)}</AvatarFallback>
           </Avatar>
@@ -67,7 +70,7 @@ export function UserMenu({ links = [] }: { links?: readonly UserMenuLink[] }) {
         <DropdownMenuGroup>
           <DropdownMenuItem disabled={signOut.isPending} onSelect={() => signOut.mutate()}>
             <LogOut />
-            Sign out
+            {t('Sign out')}
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

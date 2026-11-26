@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import {
   CREDENTIALS_DIALOG_COPY,
   type CredentialFieldPrompt,
@@ -46,29 +47,32 @@ function GuideLink({ href, label }: { href: string; label: string }) {
 }
 
 function TestedBanner({ result }: { result: TestedCredentials }) {
+  const { t } = useI18n();
   const woo = result.woocommerce;
   if (!woo) {
     return (
       <output className="flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-950 dark:text-emerald-100">
         <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden="true" />
         <div>
-          <p className="font-medium">Conexión verificada: {result.displayName}</p>
+          <p className="font-medium">
+            {t('Connection verified')}: {result.displayName}
+          </p>
         </div>
       </output>
     );
   }
   const mediaLabel = woo.hasWordPressMediaAuth
-    ? `Habilitada (${woo.wpUsername ?? 'WordPress'})`
-    : 'Solo URLs públicas HTTPS (sin contraseña de aplicación WordPress)';
+    ? t('WordPress Media enabled')
+    : t('Public HTTPS URLs only');
   return (
     <output className="flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-950 dark:text-emerald-100">
       <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden="true" />
       <div className="flex flex-col gap-0.5">
         <p className="font-medium">
-          Conexión verificada: {woo.storeName} ({woo.currencyCode})
+          {t('Connection verified')}: {woo.storeName} ({woo.currencyCode})
         </p>
         <p className="text-xs opacity-90">
-          Productos remotos detectados: {woo.remoteProductCount ?? '—'} · Subida de fotos:{' '}
+          {t('Remote products')}: {woo.remoteProductCount ?? '—'} · {t('Photo uploads')}:{' '}
           {mediaLabel}
         </p>
       </div>
@@ -259,13 +263,14 @@ export function CredentialsConnectDialog({
   const testStore = useTestChannelCredentials(workspaceId);
   const isBusy = connectStore.isPending || testStore.isPending;
 
-  const title = connect.copy?.title ?? `Connect ${channel.name}`;
-  const description = connect.copy?.description ?? CREDENTIALS_DIALOG_COPY.description;
-  const guideLabel = connect.copy?.guide ?? CREDENTIALS_DIALOG_COPY.guide;
-  const submitLabel = connect.copy?.submit ?? CREDENTIALS_DIALOG_COPY.submit;
-  const cancelLabel = connect.copy?.cancel ?? CREDENTIALS_DIALOG_COPY.cancel;
-  const testLabel = connect.copy?.test ?? CREDENTIALS_DIALOG_COPY.test;
-  const advancedToggleLabel = connect.copy?.advancedToggle ?? 'Advanced options';
+  const { t } = useI18n();
+  const title = t(connect.copy?.title ?? `Connect ${channel.name}`);
+  const description = t(connect.copy?.description ?? CREDENTIALS_DIALOG_COPY.description);
+  const guideLabel = t(connect.copy?.guide ?? CREDENTIALS_DIALOG_COPY.guide);
+  const submitLabel = t(connect.copy?.submit ?? CREDENTIALS_DIALOG_COPY.submit);
+  const cancelLabel = t(connect.copy?.cancel ?? CREDENTIALS_DIALOG_COPY.cancel);
+  const testLabel = t(connect.copy?.test ?? CREDENTIALS_DIALOG_COPY.test);
+  const advancedToggleLabel = t(connect.copy?.advancedToggle ?? 'Advanced options');
 
   function handleOpenChange(nextOpen: boolean) {
     if (isBusy) return;

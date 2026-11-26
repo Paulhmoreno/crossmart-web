@@ -88,12 +88,12 @@ describe('AiSettingsForm', () => {
   it('supports configuring OpenAI Compatible with base URL, masked API key, manual model, model discovery, and test connection', async () => {
     const { saveMutate, testMutate, listMutateAsync } = setup();
 
-    expect(screen.getByText('Sin configurar')).toBeInTheDocument();
+    expect(screen.getByText('Not configured')).toBeInTheDocument();
     expect(screen.getByLabelText('API Key')).toHaveAttribute('type', 'password');
 
-    await userEvent.type(screen.getByLabelText('URL base de la API'), 'https://api.example.com/v1');
+    await userEvent.type(screen.getByLabelText('Base URL'), 'https://api.example.com/v1');
     await userEvent.type(screen.getByLabelText('API Key'), 'sk-demo-key');
-    await userEvent.click(screen.getByRole('button', { name: 'Consultar modelos' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Fetch models' }));
 
     expect(listMutateAsync).toHaveBeenCalledWith({
       provider: AiProviderName.openai_compatible,
@@ -101,8 +101,8 @@ describe('AiSettingsForm', () => {
       apiKey: 'sk-demo-key',
     });
 
-    await userEvent.type(screen.getByLabelText('Modelo'), 'gpt-4o-mini');
-    await userEvent.click(screen.getByRole('button', { name: 'Probar conexión' }));
+    await userEvent.type(screen.getByLabelText('Model'), 'gpt-4o-mini');
+    await userEvent.click(screen.getByRole('button', { name: 'Test connection' }));
     expect(testMutate).toHaveBeenCalledWith({
       provider: AiProviderName.openai_compatible,
       baseUrl: 'https://api.example.com/v1',
@@ -110,7 +110,7 @@ describe('AiSettingsForm', () => {
       model: 'gpt-4o-mini',
     });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Guardar configuración' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save configuration' }));
     expect(saveMutate).toHaveBeenCalledWith(
       {
         provider: AiProviderName.openai_compatible,
@@ -145,7 +145,7 @@ describe('AiSettingsForm', () => {
 
     expect(screen.getByText('deepseek-chat')).toBeInTheDocument();
     expect(screen.getByText('Rate limit exceeded')).toBeInTheDocument();
-    expect(screen.getByText('✓ Salida estructurada')).toBeInTheDocument();
-    expect(screen.getByText('— JSON Schema estricto')).toBeInTheDocument();
+    expect(screen.getByText('✓ Structured output')).toBeInTheDocument();
+    expect(screen.getByText('— Strict JSON Schema')).toBeInTheDocument();
   });
 });

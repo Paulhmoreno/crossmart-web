@@ -5,6 +5,7 @@ import { endpointQueryKey } from '@/api/query-keys';
 import { ATTENTION_ENDPOINT } from '@/features/attention';
 import { refreshSession } from '@/features/auth';
 import { BILLING_ACCESS_ENDPOINT, SUBSCRIPTION_INACTIVE_CODE } from '@/features/billing';
+import { t } from '@/lib/i18n';
 import { showApiErrorToast } from './api-error-toast';
 import './query-meta';
 
@@ -19,7 +20,7 @@ export function createAppQueryClient(): QueryClient {
     mutationCache: new MutationCache({
       onSuccess: (_data, _variables, _context, mutation) => {
         const message = mutation.meta?.successMessage;
-        if (message) toast.success(message);
+        if (message) toast.success(t(message));
         refreshAttention(queryClient);
       },
       onError: (error, _variables, _context, mutation) => {

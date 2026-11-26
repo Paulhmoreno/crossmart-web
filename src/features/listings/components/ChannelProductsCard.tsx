@@ -5,6 +5,7 @@ import { ProductStoreFilter } from '@/api/schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ROUTE_QUERY, toProductsRoute } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import type { ChannelConnection } from '@/features/channels/channels.types';
 import { needsReconnect } from '@/features/channels/connection-status';
 import { useChannelProductFilters } from '../hooks/useChannelProductFilters';
@@ -35,6 +36,7 @@ function listingStoreOf(workspaceId: string, connection: ChannelConnection): Lis
 
 /** Opens the products table on the products this store does not have yet, to add them. */
 function AddProductsButton({ connectionId }: { connectionId: string }) {
+  const { t } = useI18n();
   return (
     <Button asChild size="sm">
       <Link
@@ -44,7 +46,7 @@ function AddProductsButton({ connectionId }: { connectionId: string }) {
         })}
       >
         <Plus data-icon="inline-start" />
-        Add products
+        {t('Add products')}
       </Link>
     </Button>
   );

@@ -1,6 +1,6 @@
 import { useFormContext, useWatch } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
-import { OdooFieldLockNote } from '@/features/odoo/components/OdooSourceBadge';
+import { useI18n } from '@/lib/i18n';
 import type { ProductFormValues } from '../product-form.schema';
 import { ConditionField } from './ConditionField';
 import { MoneyField, TextField } from './FormFields';
@@ -19,6 +19,7 @@ export function EssentialsCard({
   isOdooManaged = false,
 }: EssentialsCardProps) {
   const { control } = useFormContext<ProductFormValues>();
+  const { t } = useI18n();
   const tracked = useWatch({ control, name: 'variants.0.tracked' });
   return (
     <Card>
@@ -26,20 +27,18 @@ export function EssentialsCard({
         {!hasOptions && (
           <MoneyField
             name="variants.0.price"
-            label="Price"
+            label={t('Price')}
             currency={currency}
             disabled={isOdooManaged}
-            description={isOdooManaged ? <OdooFieldLockNote /> : undefined}
           />
         )}
         <ConditionField />
         {!hasOptions && tracked && (
           <TextField
             name="variants.0.quantity"
-            label="Quantity"
+            label={t('Quantity')}
             inputMode="numeric"
             disabled={isOdooManaged}
-            description={isOdooManaged ? <OdooFieldLockNote /> : undefined}
           />
         )}
       </CardContent>

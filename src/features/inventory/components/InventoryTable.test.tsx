@@ -54,7 +54,6 @@ describe('InventoryTable', () => {
     renderTable(true, { ...ITEM, sourceKind: CatalogSourceKind.ODOO });
 
     expect(screen.queryByRole('button', { name: /Adjust/ })).not.toBeInTheDocument();
-    expect(screen.getByText('Origen: Odoo')).toBeInTheDocument();
-    expect(screen.getByTitle('Este dato se administra desde Odoo')).toBeInTheDocument();
+    expect(screen.getByText('Source: Odoo')).toBeInTheDocument();
   });
 });

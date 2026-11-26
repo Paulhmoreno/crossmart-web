@@ -278,8 +278,8 @@ export const CREDENTIALS_DIALOG_COPY = {
 } as const;
 
 export const WOOCOMMERCE_PUBLISH_STATUS_LABELS: Record<WooCommercePublishStatus, string> = {
-  [WooCommercePublishStatus.draft]: 'Borrador (recomendado)',
-  [WooCommercePublishStatus.publish]: 'Publicado',
+  [WooCommercePublishStatus.draft]: 'Draft (recommended)',
+  [WooCommercePublishStatus.publish]: 'Published',
 };
 
 const WOOCOMMERCE_GUIDE_URL =
@@ -288,9 +288,9 @@ const WOOCOMMERCE_GUIDE_URL =
 const WOOCOMMERCE_FIELDS: readonly CredentialFieldPrompt[] = [
   {
     key: 'storeUrl',
-    label: 'URL de la tienda (HTTPS)',
+    label: 'Store URL (HTTPS)',
     kind: CredentialFieldKind.Text,
-    placeholder: 'https://tienda.ejemplo.com',
+    placeholder: 'https://store.example.com',
   },
   {
     key: 'consumerKey',
@@ -306,7 +306,7 @@ const WOOCOMMERCE_FIELDS: readonly CredentialFieldPrompt[] = [
   },
   {
     key: 'wpUsername',
-    label: 'Usuario de WordPress (para subir fotos)',
+    label: 'WordPress username',
     kind: CredentialFieldKind.Text,
     placeholder: 'crossmart-media',
     optional: true,
@@ -314,14 +314,14 @@ const WOOCOMMERCE_FIELDS: readonly CredentialFieldPrompt[] = [
   },
   {
     key: 'wpAppPassword',
-    label: 'Contraseña de aplicación de WordPress',
+    label: 'WordPress Application Password',
     kind: CredentialFieldKind.Secret,
     optional: true,
     advanced: true,
   },
   {
     key: 'defaultStatus',
-    label: 'Estado inicial al publicar',
+    label: 'Initial publish status',
     kind: CredentialFieldKind.Select,
     optional: true,
     advanced: true,
@@ -333,15 +333,13 @@ const WOOCOMMERCE_FIELDS: readonly CredentialFieldPrompt[] = [
 ];
 
 const WOOCOMMERCE_DIALOG_COPY: CredentialsDialogCopyOverrides = {
-  title: 'Conectar WooCommerce',
-  description: 'Ingresa la URL HTTPS y las claves de API REST v3 de tu tienda WooCommerce.',
-  guide: 'Cómo obtener las claves',
-  submit: 'Conectar',
-  cancel: 'Cancelar',
-  test: 'Probar conexión',
-  advancedToggle: 'Opciones avanzadas (fotos de WordPress y estado inicial)',
-  advancedHint:
-    'Para subir fotografías almacenadas localmente en Crossmart hacia tu tienda remota sin exponer tu servidor, agrega un usuario de WordPress con contraseña de aplicación y permiso upload_files.',
+  title: 'Connect WooCommerce',
+  description: 'Enter your WooCommerce store HTTPS URL and REST API v3 keys.',
+  guide: 'How to get API keys',
+  submit: 'Connect',
+  cancel: 'Cancel',
+  test: 'Test connection',
+  advancedToggle: 'Advanced options',
 };
 
 export const FALABELLA_COUNTRY_LABELS: Record<FalabellaCountry, string> = {
@@ -654,7 +652,7 @@ export const CHANNELS: readonly ChannelInfo[] = [
   {
     name: 'WooCommerce',
     description:
-      'Sincroniza productos, categorías, precios, inventario y fotografías con tu tienda WordPress/WooCommerce.',
+      'Sync products, categories, prices, inventory, and photos with your WordPress/WooCommerce store.',
     status: ChannelStatus.Live,
     logo: { src: woocommerceLogo, tint: '#96588a' },
     connect: {

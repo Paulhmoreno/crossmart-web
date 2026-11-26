@@ -7,18 +7,20 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { AgentChat, type AgentWorkerSession } from '@/features/agent-worker';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_CONSOLE_COPY } from '../agent-console.constants';
 
 /** For a role without Crossmart Agent: the map and events still work, the chat says why it is not here. */
 function ChatUnavailable() {
+  const { t } = useI18n();
   return (
     <Empty className="h-full">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Sparkles aria-hidden="true" />
         </EmptyMedia>
-        <EmptyTitle>{AGENT_CONSOLE_COPY.chatUnavailableTitle}</EmptyTitle>
-        <EmptyDescription>{AGENT_CONSOLE_COPY.chatUnavailable}</EmptyDescription>
+        <EmptyTitle>{t(AGENT_CONSOLE_COPY.chatUnavailableTitle)}</EmptyTitle>
+        <EmptyDescription>{t(AGENT_CONSOLE_COPY.chatUnavailable)}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

@@ -4,15 +4,17 @@ import { AgentConsole } from '@/features/agent-console';
 import { AGENT_WORKER_COPY } from '@/features/agent-worker';
 import { AgentTabs } from '@/features/review';
 import { useCurrentWorkspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * Crossmart Agent: chat with the agent, watch it work on the live map of the catalog and its
  * stores, and follow everything that happens in the workspace as it happens.
  */
 export function CrossmartAgentPage() {
+  const { t } = useI18n();
   const { workspace } = useCurrentWorkspace();
   return (
-    <Page name={AGENT_WORKER_COPY.name} headerHidden>
+    <Page name={t(AGENT_WORKER_COPY.name)} headerHidden>
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         <AgentTabs workspace={workspace} />
         <div className="min-h-0 flex-1">

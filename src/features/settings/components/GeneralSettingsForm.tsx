@@ -5,17 +5,19 @@ import { FieldGroup, FieldSeparator } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { OutsideAgentChangesField } from '@/features/agent-proposals';
 import { TimeZoneField, type Workspace, WorkspaceNameField } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 import { useGeneralSettingsForm } from '../hooks/useGeneralSettingsForm';
 import { SETTINGS_COPY as COPY } from '../settings.constants';
 
 /** The workspace's name, time zone and outside agents' setting, with one Save. */
 export function GeneralSettingsForm({ workspace }: { workspace: Workspace }) {
   const form = useGeneralSettingsForm(workspace);
+  const { t } = useI18n();
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>{COPY.workspaceTitle}</h2>
+          <h2>{t(COPY.workspaceTitle)}</h2>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -23,16 +25,18 @@ export function GeneralSettingsForm({ workspace }: { workspace: Workspace }) {
           <FormError error={form.error} />
           <FieldGroup>
             <WorkspaceNameField
-              label={COPY.nameLabel}
+              label={t(COPY.nameLabel)}
               value={form.values.name}
               onChange={(name) => form.set('name', name)}
-              description={COPY.currencyNote(workspace.currency)}
+              description={t('Catalog currency: {currency}. It cannot change.', {
+                currency: workspace.currency,
+              })}
             />
             <TimeZoneField
-              label={COPY.timeZoneLabel}
+              label={t(COPY.timeZoneLabel)}
               value={form.values.timeZone}
               onChange={(zone) => form.set('timeZone', zone)}
-              description={COPY.timeZoneNote}
+              description={t(COPY.timeZoneNote)}
             />
             <FieldSeparator />
             <OutsideAgentChangesField
@@ -42,7 +46,7 @@ export function GeneralSettingsForm({ workspace }: { workspace: Workspace }) {
           </FieldGroup>
           <Button type="submit" className="self-start" disabled={!form.canSave}>
             {form.isSaving && <Spinner data-icon="inline-start" />}
-            {COPY.save}
+            {t(COPY.save)}
           </Button>
         </form>
       </CardContent>

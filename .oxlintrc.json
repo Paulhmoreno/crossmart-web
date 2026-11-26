@@ -27,7 +27,7 @@
       "error",
       {
         "min": 2,
-        "exceptions": ["_"]
+        "exceptions": ["_", "t"]
       }
     ],
     "eslint/max-lines-per-function": [

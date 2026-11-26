@@ -1,9 +1,8 @@
-import { History, Lock } from 'lucide-react';
+import { History } from 'lucide-react';
 import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import { CatalogSourceKind, StockLevel } from '@/api/schema';
 import { OdooSourceBadge } from '@/features/odoo/components/OdooSourceBadge';
-import { ODOO_COPY } from '@/features/odoo/odoo.constants';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { toProductRoute } from '@/config/routes';
 import { ProductThumbnail } from '@/features/catalog';
+import { useI18n } from '@/lib/i18n';
 import type { InventoryItem } from '../inventory.types';
 import { variantLabel } from '../stock-adjustment';
 import { AdjustStockPopover } from './AdjustStockPopover';
@@ -42,6 +42,7 @@ export function InventoryTable({
   onOpenHistory,
   canAdjust,
 }: InventoryTableProps) {
+  const { t } = useI18n();
   return (
     <div
       className={cn('rounded-lg border transition-opacity', isRefreshing && 'opacity-60')}
@@ -50,14 +51,18 @@ export function InventoryTable({
       <Table stickyHeader>
         <TableHeader>
           <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead className="hidden lg:table-cell">SKU</TableHead>
-            <TableHead className="hidden md:table-cell">Status</TableHead>
-            <TableHead className={cn(NUMBER_CELL, 'hidden sm:table-cell')}>On hand</TableHead>
-            <TableHead className={cn(NUMBER_CELL, 'hidden sm:table-cell')}>Reserved</TableHead>
-            <TableHead className={cn(NUMBER_CELL, FIT_CELL)}>Available</TableHead>
+            <TableHead>{t('Product')}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t('SKU')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('Status')}</TableHead>
+            <TableHead className={cn(NUMBER_CELL, 'hidden sm:table-cell')}>
+              {t('On hand')}
+            </TableHead>
+            <TableHead className={cn(NUMBER_CELL, 'hidden sm:table-cell')}>
+              {t('Reserved')}
+            </TableHead>
+            <TableHead className={cn(NUMBER_CELL, FIT_CELL)}>{t('Available')}</TableHead>
             <TableHead className={FIT_CELL}>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t('Actions')}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -111,17 +116,8 @@ function InventoryRow({ workspaceId, item, onOpenHistory, canAdjust }: Inventory
       </TableCell>
       <TableCell className={FIT_CELL}>
         <div className="flex items-center justify-end gap-1">
-          {isOdooManaged ? (
-            <span
-              className="inline-flex items-center px-1.5 text-muted-foreground"
-              title={ODOO_COPY.managedFieldNote}
-              aria-label={ODOO_COPY.managedFieldNote}
-            >
-              <Lock className="size-3.5" aria-hidden="true" />
-            </span>
-          ) : (
-            item.tracked &&
-            canAdjust && <AdjustStockPopover workspaceId={workspaceId} item={item} compact />
+          {!isOdooManaged && item.tracked && canAdjust && (
+            <AdjustStockPopover workspaceId={workspaceId} item={item} compact />
           )}
           <Button
             variant="ghost"

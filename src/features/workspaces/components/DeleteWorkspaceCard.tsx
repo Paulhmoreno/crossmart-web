@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import { useDeleteWorkspace } from '../hooks/useDeletion';
 
 interface DeleteWorkspaceCardProps {
@@ -15,6 +16,7 @@ interface DeleteWorkspaceCardProps {
 
 /** Deletes the workspace once the owner types its name: it cannot be undone. */
 export function DeleteWorkspaceCard({ workspaceId, workspaceName }: DeleteWorkspaceCardProps) {
+  const { t } = useI18n();
   const inputId = useId();
   const [typed, setTyped] = useState('');
   const remove = useDeleteWorkspace(workspaceId);
@@ -22,16 +24,18 @@ export function DeleteWorkspaceCard({ workspaceId, workspaceName }: DeleteWorksp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Delete this workspace</CardTitle>
+        <CardTitle>{t('Delete this workspace')}</CardTitle>
         <CardDescription>
-          Disconnects every store and removes Crossmart from it, then deletes all products, stock,
-          listings, orders, activity and API keys. Your products stay in your stores. This cannot be
-          undone.
+          {t(
+            'Disconnects every store and removes Crossmart from it, then deletes all products, stock, listings, orders, activity and API keys. Your products stay in your stores. This cannot be undone.',
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <Field>
-          <FieldLabel htmlFor={inputId}>Type “{workspaceName}” to confirm</FieldLabel>
+          <FieldLabel htmlFor={inputId}>
+            {t('Type “{name}” to confirm', { name: workspaceName })}
+          </FieldLabel>
           <Input
             id={inputId}
             value={typed}
@@ -39,7 +43,9 @@ export function DeleteWorkspaceCard({ workspaceId, workspaceName }: DeleteWorksp
             autoComplete="off"
           />
           <FieldDescription>
-            You continue in your other workspace, or in a new, empty one if this is your only one.
+            {t(
+              'You continue in your other workspace, or in a new, empty one if this is your only one.',
+            )}
           </FieldDescription>
         </Field>
         {remove.error && (
@@ -59,7 +65,7 @@ export function DeleteWorkspaceCard({ workspaceId, workspaceName }: DeleteWorksp
           ) : (
             <Trash2 data-icon="inline-start" />
           )}
-          Delete workspace
+          {t('Delete workspace')}
         </Button>
       </CardContent>
     </Card>

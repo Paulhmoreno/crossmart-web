@@ -17,12 +17,14 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { ROUTES } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { type Workspace, useCurrentWorkspace } from '../hooks/useCurrentWorkspace';
 import { roleLabel } from '../role-options';
 import { selectWorkspace } from '../selected-workspace';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
 
 function WorkspaceLabel({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   return (
     <>
       <span className="grid size-8 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
@@ -31,7 +33,7 @@ function WorkspaceLabel({ workspace }: { workspace: Workspace }) {
       <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
         <span className="truncate font-medium">{workspace.displayName}</span>
         <span className="truncate text-xs text-muted-foreground">
-          {roleLabel(workspace)} · {workspace.currency}
+          {t(roleLabel(workspace))} · {workspace.currency}
         </span>
       </span>
     </>
@@ -70,6 +72,7 @@ interface SwitcherMenuProps {
 }
 
 function SwitcherMenu({ current, workspaces, onCreate }: SwitcherMenuProps) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { isMobile } = useSidebar();
 
@@ -82,18 +85,20 @@ function SwitcherMenu({ current, workspaces, onCreate }: SwitcherMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <SidebarMenuButton size="lg" aria-label="Switch workspace">
+        <SidebarMenuButton size="lg" aria-label={t('Switch workspace')}>
           <WorkspaceLabel workspace={current} />
           <ChevronsUpDown className="ml-auto" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56" side={isMobile ? 'bottom' : 'right'} align="end">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Workspaces</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
+          {t('Workspaces')}
+        </DropdownMenuLabel>
         {workspaces.map((workspace) => (
           <DropdownMenuItem key={workspace.id} onSelect={() => open(workspace.id)}>
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate">{workspace.displayName}</span>
-              <span className="text-xs text-muted-foreground">{roleLabel(workspace)}</span>
+              <span className="text-xs text-muted-foreground">{t(roleLabel(workspace))}</span>
             </span>
             {workspace.id === current.id && <Check className="size-4" />}
           </DropdownMenuItem>
@@ -103,7 +108,7 @@ function SwitcherMenu({ current, workspaces, onCreate }: SwitcherMenuProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={onCreate}>
               <Plus className="size-4" />
-              Create workspace
+              {t('Create workspace')}
             </DropdownMenuItem>
           </>
         )}

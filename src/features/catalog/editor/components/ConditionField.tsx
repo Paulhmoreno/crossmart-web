@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { parseEnum } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import {
   CONDITION_NOT_SET,
   CONDITION_NOT_SET_LABEL,
@@ -22,6 +23,7 @@ const CONDITION_FIELD_ID = 'condition';
 
 /** The item's condition, or none: each store then lists it in its own default condition. */
 export function ConditionField() {
+  const { t } = useI18n();
   const { control } = useFormContext<ProductFormValues>();
   return (
     <Controller
@@ -29,7 +31,7 @@ export function ConditionField() {
       name="condition"
       render={({ field }) => (
         <Field>
-          <FieldLabel htmlFor={CONDITION_FIELD_ID}>Condition</FieldLabel>
+          <FieldLabel htmlFor={CONDITION_FIELD_ID}>{t('Condition')}</FieldLabel>
           <Select
             value={field.value ?? CONDITION_NOT_SET}
             onValueChange={(value) => field.onChange(parseEnum(ProductCondition, value) ?? null)}
@@ -40,13 +42,13 @@ export function ConditionField() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value={CONDITION_NOT_SET}>{CONDITION_NOT_SET_LABEL}</SelectItem>
+                <SelectItem value={CONDITION_NOT_SET}>{t(CONDITION_NOT_SET_LABEL)}</SelectItem>
               </SelectGroup>
               <SelectSeparator />
               <SelectGroup>
                 {Object.values(ProductCondition).map((condition) => (
                   <SelectItem key={condition} value={condition}>
-                    {PRODUCT_CONDITION_LABELS[condition]}
+                    {t(PRODUCT_CONDITION_LABELS[condition])}
                   </SelectItem>
                 ))}
               </SelectGroup>

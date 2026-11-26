@@ -169,14 +169,14 @@ describe('ConnectionSettings', () => {
       'href',
       'https://tienda.ejemplo.com',
     );
-    expect(screen.getByText('USD (impuestos incluidos)')).toBeInTheDocument();
+    expect(screen.getByText('USD')).toBeInTheDocument();
     expect(screen.getByText('42')).toBeInTheDocument();
-    expect(screen.getByText('Borrador (recomendado)')).toBeInTheDocument();
-    expect(screen.getByText('WordPress Media habilitado (crossmart-media)')).toBeInTheDocument();
+    expect(screen.getByText('Draft (recommended)')).toBeInTheDocument();
+    expect(screen.getByText('WordPress Media enabled')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Import products from WooCommerce' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Actualizar credenciales' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Update credentials' })).toBeInTheDocument();
   });
 
   it('counts an eBay account’s business policies', () => {

@@ -1,6 +1,7 @@
 import { KeyRound, Unplug } from 'lucide-react';
 import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import type { ChannelInfo, ConnectableChannel } from '../channels.constants';
 import type { ChannelConnection } from '../channels.types';
 import { reconnectAccountHandle } from '../connection-account';
@@ -29,6 +30,7 @@ export function ConnectionActions({
   onDisconnected,
 }: ConnectionActionsProps) {
   const disconnect = useDisconnectChannel(workspaceId);
+  const { t } = useI18n();
   return (
     <>
       {needsReconnect(connection.status) && (
@@ -48,7 +50,7 @@ export function ConnectionActions({
           trigger={
             <Button variant="outline" size="sm">
               <KeyRound data-icon="inline-start" />
-              Actualizar credenciales
+              {t('Update credentials')}
             </Button>
           }
         />
@@ -57,12 +59,15 @@ export function ConnectionActions({
         trigger={
           <Button variant="outline" size="sm">
             <Unplug data-icon="inline-start" />
-            Disconnect
+            {t('Disconnect')}
           </Button>
         }
-        title={`Disconnect ${name}?`}
-        description={`Crossmart stops syncing with this store and removes its access. Your products stay in Crossmart and on ${channel.name}.`}
-        confirmLabel="Disconnect"
+        title={t('Disconnect {name}?', { name })}
+        description={t(
+          'Crossmart stops syncing with this store and removes its access. Your products stay in Crossmart and on {channel}.',
+          { channel: channel.name },
+        )}
+        confirmLabel={t('Disconnect')}
         onConfirm={async () => {
           await disconnect.mutateAsync(connection.id);
           onDisconnected?.();

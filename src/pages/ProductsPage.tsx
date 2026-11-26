@@ -35,13 +35,15 @@ import { hasPermission, type Workspace } from '@/features/workspaces';
 import { ProductStoreFilterSelect, StoreMembershipMenu } from '@/features/listings';
 import { BulkGenerateMenu } from '@/features/suggestions';
 import { SortSelect } from '@/components/lists/SortSelect';
+import { useI18n } from '@/lib/i18n';
 
 function AddProductButton() {
+  const { t } = useI18n();
   return (
     <Button asChild>
       <Link to={ROUTES.newProduct}>
         <Plus data-icon="inline-start" />
-        Add product
+        {t('Add product')}
       </Link>
     </Button>
   );
@@ -64,12 +66,13 @@ export function ProductsPage() {
 }
 
 function Products({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   const filters = useProductListFilters();
   const { data: stats } = useCatalogStats(workspace.id);
   const counts = stats && toStatusCounts(stats);
 
   return (
-    <Page name="Products" actions={<AddProductActions workspace={workspace} />}>
+    <Page name={t('Products')} actions={<AddProductActions workspace={workspace} />}>
       <ProductViewTabs />
       <ProductViewsBar workspaceId={workspace.id} filters={filters} />
       <ProductFilters
@@ -88,7 +91,7 @@ function Products({ workspace }: { workspace: Workspace }) {
           />
           {filters.gap && (
             <ActiveFilterChip
-              label={CATALOG_GAP_COPY[filters.gap].label}
+              label={t(CATALOG_GAP_COPY[filters.gap].label)}
               onClear={filters.clearGap}
             />
           )}

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ROUTE_QUERY, ROUTES } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { useProductChannels } from '../hooks/useProductChannels';
 import { useEditorSearchParam } from '../hooks/useEditorSearchParam';
 import { OverrideSheetMode } from '../listings.constants';
@@ -22,15 +23,16 @@ interface ProductChannelsCardProps {
 }
 
 function NoChannels() {
+  const { t } = useI18n();
   return (
     <div className="flex items-start gap-3 text-sm">
       <Share2 className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       <p className="text-muted-foreground">
-        No store is connected yet.{' '}
+        {t('No store is connected yet.')}{' '}
         <Link to={ROUTES.stores} className="font-medium text-foreground underline">
-          Connect a store
+          {t('Connect a store')}
         </Link>{' '}
-        to publish this product there.
+        {t('to publish this product there.')}
       </p>
     </div>
   );
@@ -53,6 +55,7 @@ export function ProductChannelsCard({
   canEdit,
   action,
 }: ProductChannelsCardProps) {
+  const { t } = useI18n();
   const { data: channels, isPending } = useProductChannels(workspaceId, productId);
   const editor = useEditorSearchParam(ROUTE_QUERY.overrideStore);
   const openChannel = channels?.find(({ connection }) => connection.id === editor.openId);
@@ -60,7 +63,7 @@ export function ProductChannelsCard({
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2 className="text-sm font-semibold">Stores</h2>
+          <h2 className="text-sm font-semibold">{t('Stores')}</h2>
         </CardTitle>
         {action && <CardAction>{action}</CardAction>}
       </CardHeader>

@@ -1,9 +1,10 @@
-import { Download, FileText, Lock } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { env } from '@/config/env';
 import type { Product } from '@/features/catalog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useI18n } from '@/lib/i18n';
 import { ODOO_COPY, PRODUCT_DOCUMENT_KIND_LABELS } from '../odoo.constants';
 
 const BYTES_PER_KB = 1024;
@@ -34,6 +35,7 @@ interface OdooDocumentsCardProps {
 }
 
 export function OdooDocumentsCard({ workspaceId, product }: OdooDocumentsCardProps) {
+  const { t, formatDateTime } = useI18n();
   const metadata = product.sourceMetadata as Record<string, unknown> | null;
   const originalName = readMetadataText(metadata, 'originalName');
   const originalCategory = readMetadataText(metadata, 'originalCategory');
@@ -47,49 +49,49 @@ export function OdooDocumentsCard({ workspaceId, product }: OdooDocumentsCardPro
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           <FileText className="size-4" aria-hidden="true" />
-          {ODOO_COPY.documentsTitle}
+          {t(ODOO_COPY.documentsTitle)}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 text-sm">
         <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
           <div>
-            <dt className="text-muted-foreground">ID en Odoo</dt>
+            <dt className="text-muted-foreground">{t('Odoo ID')}</dt>
             <dd className="font-mono font-medium">{product.sourceExternalId ?? '—'}</dd>
           </div>
           {currency && (
             <div>
-              <dt className="text-muted-foreground">Moneda ERP</dt>
+              <dt className="text-muted-foreground">{t('ERP currency')}</dt>
               <dd className="font-medium">{currency}</dd>
             </div>
           )}
           {originalName && (
             <div className="col-span-2">
-              <dt className="text-muted-foreground">Nombre original</dt>
+              <dt className="text-muted-foreground">{t('Original name')}</dt>
               <dd className="font-medium">{originalName}</dd>
             </div>
           )}
           {originalBrand && (
             <div>
-              <dt className="text-muted-foreground">Marca de origen</dt>
+              <dt className="text-muted-foreground">{t('Source brand')}</dt>
               <dd className="font-medium">{originalBrand}</dd>
             </div>
           )}
           {originalCategory && (
             <div>
-              <dt className="text-muted-foreground">Categoría ERP</dt>
+              <dt className="text-muted-foreground">{t('ERP category')}</dt>
               <dd className="font-medium">{originalCategory}</dd>
             </div>
           )}
           {taxes.length > 0 && (
             <div className="col-span-2">
-              <dt className="text-muted-foreground">Impuestos ERP</dt>
+              <dt className="text-muted-foreground">{t('ERP taxes')}</dt>
               <dd className="font-medium">{taxes.join(', ')}</dd>
             </div>
           )}
           {lastSyncedAt && (
             <div className="col-span-2">
-              <dt className="text-muted-foreground">Última sincronización</dt>
-              <dd className="font-medium">{new Date(lastSyncedAt).toLocaleString('es-EC')}</dd>
+              <dt className="text-muted-foreground">{t('Last synced')}</dt>
+              <dd className="font-medium">{formatDateTime(lastSyncedAt)}</dd>
             </div>
           )}
         </dl>
@@ -97,15 +99,11 @@ export function OdooDocumentsCard({ workspaceId, product }: OdooDocumentsCardPro
         <div className="border-t pt-3">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-medium">
-              Documentos adjuntos ({product.documents.length})
+              {t('Attached documents ({count})', { count: product.documents.length })}
             </span>
-            <Badge variant="outline" className="gap-1 text-[10px]">
-              <Lock className="size-2.5" aria-hidden="true" />
-              {ODOO_COPY.documentsPrivateBadge}
-            </Badge>
           </div>
           {product.documents.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{ODOO_COPY.documentsEmpty}</p>
+            <p className="text-xs text-muted-foreground">{t(ODOO_COPY.documentsEmpty)}</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {product.documents.map((doc) => {
@@ -121,7 +119,7 @@ export function OdooDocumentsCard({ workspaceId, product }: OdooDocumentsCardPro
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                         <Badge variant="secondary" className="text-[10px]">
-                          {PRODUCT_DOCUMENT_KIND_LABELS[doc.kind]}
+                          {t(PRODUCT_DOCUMENT_KIND_LABELS[doc.kind])}
                         </Badge>
                         {doc.byteSize ? <span>{formatBytes(doc.byteSize)}</span> : null}
                       </div>
@@ -129,7 +127,7 @@ export function OdooDocumentsCard({ workspaceId, product }: OdooDocumentsCardPro
                     <Button asChild variant="outline" size="sm">
                       <a href={downloadUrl} target="_blank" rel="noreferrer">
                         <Download className="size-3.5" aria-hidden="true" />
-                        {ODOO_COPY.downloadButton}
+                        {t(ODOO_COPY.downloadButton)}
                       </a>
                     </Button>
                   </li>

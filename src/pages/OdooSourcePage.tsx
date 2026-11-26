@@ -4,29 +4,27 @@ import { WorkspaceGate } from '@/components/feedback/WorkspaceGate';
 import { ListSkeleton } from '@/components/lists/ListSkeleton';
 import { OdooConnectionForm, OdooSyncPanel, useOdooConnection } from '@/features/odoo';
 import { hasPermission, type Workspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 function OdooSourceContent({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   const canManage = hasPermission(workspace, WorkspacePermission.channels_manage);
   const query = useOdooConnection(workspace.id);
 
   if (query.isError) {
     return (
-      <ErrorState
-        title="No se pudo cargar la configuración de Odoo"
-        error={query.error}
-        onRetry={query.refetch}
-      />
+      <ErrorState title={t('Could not be loaded')} error={query.error} onRetry={query.refetch} />
     );
   }
 
   if (query.isPending) {
-    return <ListSkeleton label="Cargando conexión con Odoo" />;
+    return <ListSkeleton label={t('Loading...')} />;
   }
 
   const connection = query.data.connection;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex max-w-3xl flex-col gap-6">
       <OdooConnectionForm
         key={`${connection?.id ?? 'new'}-${connection?.connectedAt ?? ''}-${connection?.status ?? ''}`}
         workspaceId={workspace.id}

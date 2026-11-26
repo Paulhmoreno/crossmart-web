@@ -105,19 +105,16 @@ describe('CredentialsConnectDialog', () => {
       },
     });
 
-    expect(screen.getByRole('heading', { name: 'Conectar WooCommerce' })).toBeInTheDocument();
-    expect(screen.getByText(/Conexión verificada: Mi Tienda EC \(USD\)/)).toBeInTheDocument();
-    expect(screen.getByText(/Productos remotos detectados: 24/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Connect WooCommerce' })).toBeInTheDocument();
+    expect(screen.getByText(/Connection verified: Mi Tienda EC \(USD\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Remote products: 24/)).toBeInTheDocument();
 
-    const testButton = screen.getByRole('button', { name: 'Probar conexión' });
-    const connectButton = screen.getByRole('button', { name: 'Conectar' });
+    const testButton = screen.getByRole('button', { name: 'Test connection' });
+    const connectButton = screen.getByRole('button', { name: 'Connect' });
     expect(testButton).toBeDisabled();
     expect(connectButton).toBeDisabled();
 
-    await userEvent.type(
-      screen.getByLabelText('URL de la tienda (HTTPS)'),
-      'https://tienda.ejemplo.com',
-    );
+    await userEvent.type(screen.getByLabelText('Store URL (HTTPS)'), 'https://tienda.ejemplo.com');
     await userEvent.type(screen.getByLabelText('Consumer Key'), 'ck_demo');
     await userEvent.type(screen.getByLabelText('Consumer Secret'), 'cs_demo');
 
@@ -133,9 +130,9 @@ describe('CredentialsConnectDialog', () => {
       },
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /Opciones avanzadas/ }));
-    expect(screen.getByLabelText('Usuario de WordPress (para subir fotos)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Contraseña de aplicación de WordPress')).toHaveAttribute(
+    await userEvent.click(screen.getByRole('button', { name: /Advanced options/ }));
+    expect(screen.getByLabelText('WordPress username')).toBeInTheDocument();
+    expect(screen.getByLabelText('WordPress Application Password')).toHaveAttribute(
       'type',
       'password',
     );

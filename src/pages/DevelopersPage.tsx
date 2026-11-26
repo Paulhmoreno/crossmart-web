@@ -7,13 +7,15 @@ import { SETTINGS_COPY, SettingsSection } from '@/features/settings';
 import { CreateWebhookEndpointButton, WebhookEndpoints } from '@/features/webhooks';
 import { hasPermission, type Workspace } from '@/features/workspaces';
 import { useScrollToSection } from '@/hooks/useScrollToSection';
+import { useI18n } from '@/lib/i18n';
 
 function WebhooksSection({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   if (!hasPermission(workspace, WorkspacePermission.webhooks_manage)) return null;
   return (
     <SettingsSection
       id={PageSection.Webhooks}
-      title={SETTINGS_COPY.webhooks}
+      title={t(SETTINGS_COPY.webhooks)}
       actions={<CreateWebhookEndpointButton workspaceId={workspace.id} />}
     >
       <WebhookEndpoints workspaceId={workspace.id} />
@@ -22,18 +24,19 @@ function WebhooksSection({ workspace }: { workspace: Workspace }) {
 }
 
 function DeveloperSections({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   useScrollToSection();
   return (
     <div className="flex flex-col gap-10">
       <SettingsSection
         id={PageSection.ApiKeys}
-        title={SETTINGS_COPY.apiKeys}
+        title={t(SETTINGS_COPY.apiKeys)}
         actions={<CreateApiKeyDialog workspace={workspace} />}
       >
         <ApiKeysTable workspaceId={workspace.id} />
       </SettingsSection>
       <WebhooksSection workspace={workspace} />
-      <SettingsSection id={PageSection.ConnectedAgents} title={SETTINGS_COPY.connectedAgents}>
+      <SettingsSection id={PageSection.ConnectedAgents} title={t(SETTINGS_COPY.connectedAgents)}>
         <ConnectAgentCard />
         <AgentConnectionsTable workspaceId={workspace.id} />
       </SettingsSection>

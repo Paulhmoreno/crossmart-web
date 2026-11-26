@@ -5,6 +5,7 @@ import { WorkspaceGate } from '@/components/feedback/WorkspaceGate';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/config/routes';
 import { SETTINGS_COPY, SettingsSection } from '@/features/settings';
+import { useI18n } from '@/lib/i18n';
 import {
   hasPermission,
   InviteMemberDialog,
@@ -15,12 +16,13 @@ import {
 } from '@/features/workspaces';
 
 function TeamActions({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   return (
     <>
       <Button variant="outline" asChild>
         <Link to={ROUTES.roles}>
           <ShieldCheck data-icon="inline-start" />
-          {SETTINGS_COPY.manageRoles}
+          {t(SETTINGS_COPY.manageRoles)}
         </Link>
       </Button>
       {hasPermission(workspace, WorkspacePermission.members_manage) && (
@@ -32,12 +34,13 @@ function TeamActions({ workspace }: { workspace: Workspace }) {
 
 /** Settings › Team: the people in the workspace with their roles, and invitations. */
 export function TeamPage() {
+  const { t } = useI18n();
   const { data: me } = useMe();
   return (
     <WorkspaceGate>
       {(workspace) => (
         <SettingsSection
-          title={SETTINGS_COPY.members}
+          title={t(SETTINGS_COPY.members)}
           actions={<TeamActions workspace={workspace} />}
         >
           <MembersTable workspace={workspace} currentUserId={me?.id ?? ''} />

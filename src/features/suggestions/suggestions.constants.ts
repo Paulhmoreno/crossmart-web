@@ -57,7 +57,7 @@ export const SUGGESTIONS_FEEDBACK = {
 export const AI_COPY = {
   notConfiguredTitle: 'AI is not configured',
   notConfiguredDescription:
-    'Configura un proveedor en Settings → Inteligencia artificial para activar la generación de contenido y sugerencias.',
+    'Configure a provider in Settings → Artificial intelligence to enable AI content and suggestions.',
   generate: 'Generate with AI',
 } as const;
 

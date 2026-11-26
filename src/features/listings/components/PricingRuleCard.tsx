@@ -1,6 +1,7 @@
 import { useWatch } from 'react-hook-form';
 import { SettingsFormCard } from '@/components/forms/SettingsFormCard';
 import { useSaveableForm } from '@/hooks/useSaveableForm';
+import { useI18n } from '@/lib/i18n';
 import { useUpdatePricing } from '../hooks/useConnectionRules';
 import type { PricingRule } from '../listings.types';
 import {
@@ -43,6 +44,7 @@ export function PricingRuleCard({
   rule,
   canManage,
 }: PricingRuleCardProps) {
+  const { t } = useI18n();
   const save = useUpdatePricing({ workspaceId, connectionId });
   const { form, submit } = useSaveableForm({
     schema: pricingRuleFormSchema,
@@ -57,12 +59,12 @@ export function PricingRuleCard({
   return (
     <SettingsFormCard
       id={id}
-      title={PRICING_RULE_COPY.title}
-      description={PRICING_RULE_COPY.description}
+      title={t(PRICING_RULE_COPY.title)}
+      description={t(PRICING_RULE_COPY.description)}
       form={form}
       onSubmit={submit}
       canManage={canManage}
-      saveLabel={PRICING_RULE_COPY.save}
+      saveLabel={t(PRICING_RULE_COPY.save)}
       saveError={save.error}
       contentClassName="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]"
       after={

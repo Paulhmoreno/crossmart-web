@@ -10,6 +10,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import type { Pagination } from '@/hooks/usePagination';
 import { pluralize } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { PAGE_GAP, PAGE_SIZE_OPTIONS, pageLinksOf, rowRangeOf, toPageSize } from './pagination';
 
 interface TablePaginationProps {
@@ -62,14 +63,15 @@ function PageLinks({
 }
 
 function PageSizeSelect({ pagination }: Pick<TablePaginationProps, 'pagination'>) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <span className="hidden sm:inline">Rows per page</span>
+      <span className="hidden sm:inline">{t('Rows per page')}</span>
       <Select
         value={String(pagination.pageSize)}
         onValueChange={(value) => pagination.setPageSize(toPageSize(value))}
       >
-        <SelectTrigger size="sm" className="w-18" aria-label="Rows per page">
+        <SelectTrigger size="sm" className="w-18" aria-label={t('Rows per page')}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -93,11 +95,14 @@ export function TablePagination({
   pluralNoun,
   isFetching = false,
 }: TablePaginationProps) {
+  const { t } = useI18n();
   const { page, pageSize, setPage } = pagination;
   const { first, last } = rowRangeOf(page, pageSize, total);
+  const localizedNoun = t(noun);
+  const localizedPlural = pluralNoun ? t(pluralNoun) : undefined;
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={t('Pagination')}
       className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
     >
       <p
@@ -105,9 +110,9 @@ export function TablePagination({
         aria-live="polite"
       >
         {total > 0
-          ? `${first}–${last} of ${pluralize(total, noun, pluralNoun)}`
-          : pluralize(0, noun, pluralNoun)}
-        {isFetching && <Spinner aria-label="Loading" />}
+          ? `${first}–${last} ${t('of')} ${pluralize(total, localizedNoun, localizedPlural)}`
+          : pluralize(0, localizedNoun, localizedPlural)}
+        {isFetching && <Spinner aria-label={t('Loading')} />}
       </p>
       <div className="flex items-center gap-4">
         <PageSizeSelect pagination={pagination} />
@@ -116,7 +121,7 @@ export function TablePagination({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Previous page"
+            aria-label={t('Previous page')}
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
           >
@@ -127,7 +132,7 @@ export function TablePagination({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Next page"
+            aria-label={t('Next page')}
             disabled={page >= pageCount}
             onClick={() => setPage(page + 1)}
           >

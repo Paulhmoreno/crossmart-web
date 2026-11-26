@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import { shortcutAria, shortcutLabel } from '@/lib/platform';
 
 const SAVE_KEY = 'S';
@@ -18,17 +19,18 @@ interface SaveBarProps {
  * content instead of pushing it, so the field being typed in never moves.
  */
 export function SaveBar({ label, isSaving, isBusy, onDiscard }: SaveBarProps) {
+  const { t } = useI18n();
   return (
     <section
-      aria-label="Save changes"
+      aria-label={t('Save changes')}
       className="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-xl animate-in items-center justify-between gap-3 rounded-xl border bg-popover px-4 py-2.5 text-popover-foreground shadow-lg fade-in slide-in-from-bottom-4 sm:inset-x-6"
     >
       <span className="text-sm font-medium" aria-live="polite">
-        {isBusy ? 'Uploading images…' : label}
+        {isBusy ? t('Uploading images…') : t(label)}
       </span>
       <div className="flex items-center gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={onDiscard} disabled={isSaving}>
-          Discard
+          {t('Discard')}
         </Button>
         <Button
           type="submit"
@@ -37,7 +39,7 @@ export function SaveBar({ label, isSaving, isBusy, onDiscard }: SaveBarProps) {
           aria-keyshortcuts={shortcutAria(SAVE_KEY)}
         >
           {isSaving && <Spinner data-icon="inline-start" />}
-          {isSaving ? 'Saving…' : 'Save'}
+          {isSaving ? t('Saving…') : t('Save')}
           {!isSaving && (
             <Kbd className="hidden bg-primary-foreground/15 text-primary-foreground sm:inline-flex">
               {shortcutLabel(SAVE_KEY)}

@@ -1,6 +1,6 @@
 import { PageSection } from '@/config/routes';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { OdooFieldLockNote } from '@/features/odoo/components/OdooSourceBadge';
+import { useI18n } from '@/lib/i18n';
 import type { ProductFormValues } from '../product-form.schema';
 import { EditorSection } from './EditorSection';
 import { OptionsEditor } from './OptionsEditor';
@@ -15,13 +15,13 @@ export function VariantsSection({
   isOdooManaged?: boolean;
 }) {
   const { control } = useFormContext<ProductFormValues>();
+  const { t, formatNumber } = useI18n();
   const options = useWatch({ control, name: 'options' });
   const variantCount = useWatch({ control, name: 'variants' }).length;
   const hasOptions = options.some((option) => option.values.length > 0);
-  const title = hasOptions ? `Variants (${variantCount.toLocaleString()})` : 'Variants';
+  const title = hasOptions ? `${t('Variants')} (${formatNumber(variantCount)})` : t('Variants');
   return (
     <EditorSection title={title} id={PageSection.ProductVariants}>
-      {isOdooManaged && <OdooFieldLockNote />}
       <fieldset disabled={isOdooManaged} className="flex flex-col gap-4">
         <OptionsEditor />
         {hasOptions && <VariantsGrid currency={currency} />}

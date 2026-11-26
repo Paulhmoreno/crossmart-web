@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Outlet } from 'react-router';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -10,6 +10,7 @@ import { AskLauncher } from '@/features/ask';
 import { UserMenu } from '@/features/auth';
 import { AccountNoticeBanners, NotificationBell } from '@/features/notifications';
 import { useCurrentWorkspace, useDefaultTimeZone, useMe } from '@/features/workspaces';
+import { bindLocaleUser, useI18n } from '@/lib/i18n';
 import { AppSidebar } from './AppSidebar';
 import { BreadcrumbsProvider } from './BreadcrumbsProvider';
 import { HeaderBreadcrumbs } from './HeaderBreadcrumbs';
@@ -34,9 +35,15 @@ export function AppShell() {
   const mainRef = useRef<HTMLElement>(null);
   const layout = usePageLayout();
   const sidebar = useShellSidebar(layout);
+  const { data: me } = useMe();
+  const { t } = useI18n();
   const userMenuLinks = useUserMenuLinks();
   useFocusOnNavigation(mainRef);
   useDefaultTimeZone(useCurrentWorkspace().workspace);
+
+  useEffect(() => {
+    bindLocaleUser(me?.id ?? null);
+  }, [me?.id]);
 
   return (
     <TooltipProvider>
@@ -47,7 +54,7 @@ export function AppShell() {
               href={`#${MAIN_CONTENT_ID}`}
               className="sr-only z-50 rounded-md bg-background px-3 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:ring-2 focus:ring-ring"
             >
-              Skip to content
+              {t('Skip to content')}
             </a>
             <AppSidebar />
             <SidebarInset>

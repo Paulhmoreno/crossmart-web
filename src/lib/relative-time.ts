@@ -1,3 +1,4 @@
+import { getLocale } from './i18n/i18n-store';
 import { MS_PER_SECOND } from './time';
 const SECONDS_PER_MINUTE = 60;
 const MINUTES_PER_HOUR = 60;
@@ -24,21 +25,50 @@ const RELATIVE_UNITS: readonly { unit: Intl.RelativeTimeFormatUnit; ms: number }
   { unit: 'second', ms: SECOND_MS },
 ];
 
-const RELATIVE_FORMAT = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
-const DATE_TIME_FORMAT = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
-const DAY_FORMAT = new Intl.DateTimeFormat(undefined, {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-});
-const DAY_WITH_YEAR_FORMAT = new Intl.DateTimeFormat(undefined, {
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-});
+const relativeFormats = new Map<string, Intl.RelativeTimeFormat>();
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+const dayFormats = new Map<string, Intl.DateTimeFormat>();
+const dayWithYearFormats = new Map<string, Intl.DateTimeFormat>();
+
+function getRelativeFormat(): Intl.RelativeTimeFormat {
+  const locale = getLocale();
+  let format = relativeFormats.get(locale);
+  if (!format) {
+    format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    relativeFormats.set(locale, format);
+  }
+  return format;
+}
+
+function getDateTimeFormat(): Intl.DateTimeFormat {
+  const locale = getLocale();
+  let format = dateTimeFormats.get(locale);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+    dateTimeFormats.set(locale, format);
+  }
+  return format;
+}
+
+function getDayFormat(): Intl.DateTimeFormat {
+  const locale = getLocale();
+  let format = dayFormats.get(locale);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { weekday: 'long', month: 'long', day: 'numeric' });
+    dayFormats.set(locale, format);
+  }
+  return format;
+}
+
+function getDayWithYearFormat(): Intl.DateTimeFormat {
+  const locale = getLocale();
+  let format = dayWithYearFormats.get(locale);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', year: 'numeric' });
+    dayWithYearFormats.set(locale, format);
+  }
+  return format;
+}
 
 /** "5 minutes ago", "yesterday", in the user's language. */
 export function formatRelativeTime(value: string | Date, now = new Date()): string {
@@ -46,12 +76,12 @@ export function formatRelativeTime(value: string | Date, now = new Date()): stri
   const match = RELATIVE_UNITS.find(({ ms }) => Math.abs(elapsedMs) >= ms) ?? RELATIVE_UNITS.at(-1);
   const unit = match?.unit ?? 'second';
   const ms = match?.ms ?? SECOND_MS;
-  return RELATIVE_FORMAT.format(Math.round(elapsedMs / ms), unit);
+  return getRelativeFormat().format(Math.round(elapsedMs / ms), unit);
 }
 
 /** The exact moment, for a tooltip next to a relative time. */
 export function formatDateTime(value: string | Date): string {
-  return DATE_TIME_FORMAT.format(new Date(value));
+  return getDateTimeFormat().format(new Date(value));
 }
 
 /** A local calendar day, as a stable key for grouping ("2026-11-02"). */
@@ -67,11 +97,11 @@ export function formatDayHeading(value: string | Date, now = new Date()): string
   const date = new Date(value);
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
   if (toLocalDayKey(date) === toLocalDayKey(now))
-    return capitalize(RELATIVE_FORMAT.format(0, 'day'));
+    return capitalize(getRelativeFormat().format(0, 'day'));
   if (toLocalDayKey(date) === toLocalDayKey(yesterday)) {
-    return capitalize(RELATIVE_FORMAT.format(-1, 'day'));
+    return capitalize(getRelativeFormat().format(-1, 'day'));
   }
-  const format = date.getFullYear() === now.getFullYear() ? DAY_FORMAT : DAY_WITH_YEAR_FORMAT;
+  const format = date.getFullYear() === now.getFullYear() ? getDayFormat() : getDayWithYearFormat();
   return format.format(date);
 }
 

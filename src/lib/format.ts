@@ -1,16 +1,37 @@
-const moneyFormats = new Map<string, Intl.NumberFormat>();
-const DATE_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
-const DATE_TIME_FORMAT = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
+import { getLocale } from './i18n/i18n-store';
 
-/** One formatter per currency: building an Intl formatter is far slower than using one. */
+const moneyFormats = new Map<string, Intl.NumberFormat>();
+const dateFormats = new Map<string, Intl.DateTimeFormat>();
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+
+/** One formatter per locale + currency: building an Intl formatter is far slower than using one. */
 function moneyFormat(currency: string): Intl.NumberFormat {
-  let format = moneyFormats.get(currency);
+  const locale = getLocale();
+  const key = `${locale}:${currency}`;
+  let format = moneyFormats.get(key);
   if (!format) {
-    format = new Intl.NumberFormat(undefined, { style: 'currency', currency });
-    moneyFormats.set(currency, format);
+    format = new Intl.NumberFormat(locale, { style: 'currency', currency });
+    moneyFormats.set(key, format);
+  }
+  return format;
+}
+
+function dateFormat(): Intl.DateTimeFormat {
+  const locale = getLocale();
+  let format = dateFormats.get(locale);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+    dateFormats.set(locale, format);
+  }
+  return format;
+}
+
+function dateTimeFormat(): Intl.DateTimeFormat {
+  const locale = getLocale();
+  let format = dateTimeFormats.get(locale);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+    dateTimeFormats.set(locale, format);
   }
   return format;
 }
@@ -55,17 +76,17 @@ export function formatPriceRange(range: { min: string; max: string }, currency: 
 }
 
 export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
+  return `${count.toLocaleString(getLocale())} ${count === 1 ? singular : plural}`;
 }
 
 /** A calendar date in the user's locale, or `fallback` when there is none. */
 export function formatDate(value: string | null | undefined, fallback = '—'): string {
-  return value ? DATE_FORMAT.format(new Date(value)) : fallback;
+  return value ? dateFormat().format(new Date(value)) : fallback;
 }
 
 /** A date and time of day in the user's locale, or `fallback` when there is none. */
 export function formatDateTime(value: string | null | undefined, fallback = '—'): string {
-  return value ? DATE_TIME_FORMAT.format(new Date(value)) : fallback;
+  return value ? dateTimeFormat().format(new Date(value)) : fallback;
 }
 
 /** The app's copy is English without a serial comma, which is how British English lists read. */

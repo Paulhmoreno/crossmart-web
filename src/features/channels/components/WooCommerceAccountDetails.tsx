@@ -1,16 +1,18 @@
+import { useI18n } from '@/lib/i18n';
 import { WOOCOMMERCE_PUBLISH_STATUS_LABELS } from '../channels.constants';
 import type { WooCommerceSettings } from '../channels.types';
 import { AccountDetail } from './AccountDetail';
 
-/** Store details read from WooCommerce and WordPress media upload readiness. */
+/** Store details read from WooCommerce, aligned with Shopify/eBay account details. */
 export function WooCommerceAccountDetails({ woocommerce }: { woocommerce: WooCommerceSettings }) {
-  const taxNote = woocommerce.pricesIncludeTax ? 'impuestos incluidos' : 'sin impuestos incluidos';
+  const { t } = useI18n();
   const mediaStatus = woocommerce.hasWordPressMediaAuth
-    ? `WordPress Media habilitado (${woocommerce.wpUsername ?? 'usuario configurado'})`
-    : 'Solo URLs públicas HTTPS (sin contraseña de aplicación)';
+    ? t('WordPress Media enabled')
+    : t('Public HTTPS URLs only');
+
   return (
     <>
-      <AccountDetail label="URL de la tienda">
+      <AccountDetail label={t('Storefront')}>
         <a
           href={woocommerce.storeUrl}
           target="_blank"
@@ -20,19 +22,14 @@ export function WooCommerceAccountDetails({ woocommerce }: { woocommerce: WooCom
           {woocommerce.storeUrl}
         </a>
       </AccountDetail>
-      <AccountDetail label="Moneda">
-        {woocommerce.currencyCode} ({taxNote})
-      </AccountDetail>
-      <AccountDetail label="Productos remotos detectados">
+      <AccountDetail label={t('Currency')}>{woocommerce.currencyCode}</AccountDetail>
+      <AccountDetail label={t('Remote products')}>
         {woocommerce.remoteProductCount ?? '—'}
       </AccountDetail>
-      <AccountDetail label="Estado inicial al publicar">
-        {WOOCOMMERCE_PUBLISH_STATUS_LABELS[woocommerce.defaultStatus]}
+      <AccountDetail label={t('Publish status')}>
+        {t(WOOCOMMERCE_PUBLISH_STATUS_LABELS[woocommerce.defaultStatus])}
       </AccountDetail>
-      <AccountDetail label="Subida de fotografías">{mediaStatus}</AccountDetail>
-      <AccountDetail label="Unidades">
-        {woocommerce.weightUnit} · {woocommerce.dimensionUnit}
-      </AccountDetail>
+      <AccountDetail label={t('Photo uploads')}>{mediaStatus}</AccountDetail>
     </>
   );
 }

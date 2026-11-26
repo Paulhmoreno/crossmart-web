@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ProductStoreFilter } from '@/api/schema';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ROUTES, toProductsRoute } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { attentionRows, hiddenFailedListings, hiddenStores } from '../attention-rows';
 import { ATTENTION_COPY } from '../attention.constants';
 import type { AttentionSummary } from '../attention.types';
@@ -12,10 +13,11 @@ import { AttentionRowItem } from './AttentionRowItem';
 const HEADING_ID = 'needs-attention-heading';
 
 function AllGood() {
+  const { t } = useI18n();
   return (
     <p className="flex items-center gap-2 text-sm text-muted-foreground">
       <CircleCheck className="size-4 text-success" aria-hidden="true" />
-      {ATTENTION_COPY.allGood}
+      {t(ATTENTION_COPY.allGood)}
     </p>
   );
 }
@@ -50,6 +52,7 @@ function MoreLinks({ summary }: { summary: AttentionSummary }) {
  * with a link to where it is done. One quiet line when there is nothing.
  */
 export function NeedsAttention({ workspaceId }: { workspaceId: string }) {
+  const { formatNumber, t } = useI18n();
   const { data: summary } = useAttention(workspaceId);
   if (!summary) return null;
   if (summary.total === 0) return <AllGood />;
@@ -58,11 +61,11 @@ export function NeedsAttention({ workspaceId }: { workspaceId: string }) {
       <Card className="gap-2">
         <CardHeader>
           <CardTitle>
-            <h2 id={HEADING_ID}>{ATTENTION_COPY.title}</h2>
+            <h2 id={HEADING_ID}>{t(ATTENTION_COPY.title)}</h2>
           </CardTitle>
           <CardAction>
             <span className="rounded-full bg-warning/15 px-2 text-xs leading-5 font-semibold text-warning tabular-nums">
-              {summary.total.toLocaleString()}
+              {formatNumber(summary.total)}
             </span>
           </CardAction>
         </CardHeader>

@@ -13,6 +13,7 @@ import {
 } from '@/features/orders';
 import type { Workspace } from '@/features/workspaces';
 import { useUrlPagination } from '@/hooks/usePagination';
+import { useI18n } from '@/lib/i18n';
 
 type OrderFilters = ReturnType<typeof useOrderFilters>;
 
@@ -71,8 +72,9 @@ function Orders({ workspace }: { workspace: Workspace }) {
 }
 
 export function OrdersPage() {
+  const { t } = useI18n();
   return (
-    <Page name="Orders">
+    <Page name={t('Orders')}>
       <WorkspaceGate>{(workspace) => <Orders workspace={workspace} />}</WorkspaceGate>
     </Page>
   );

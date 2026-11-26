@@ -6,9 +6,9 @@ import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { useI18n } from '@/lib/i18n';
 import {
   type OdooConnection,
   type OdooTestResult,
@@ -44,6 +45,7 @@ export function OdooConnectionForm({
   connection,
   canManage,
 }: OdooConnectionFormProps) {
+  const { t, formatNumber } = useI18n();
   const [url, setUrl] = useState(connection?.url ?? '');
   const [database, setDatabase] = useState(connection?.database ?? '');
   const [username, setUsername] = useState(connection?.username ?? '');
@@ -111,28 +113,28 @@ export function OdooConnectionForm({
           setBrandField(result.discovered.brandField);
         }
         toast.success(
-          `Conexión verificada: Odoo ${result.discovered.serverVersion} (${result.discovered.productCount} productos activos)`,
+          `${t('Connection verified')}: Odoo ${result.discovered.serverVersion} (${formatNumber(result.discovered.productCount)})`,
         );
       } else {
-        toast.error(result.error ?? 'No se pudo conectar con Odoo.');
+        toast.error(result.error ?? t('Connection failed'));
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Error al probar la conexión.');
+      toast.error(error instanceof Error ? error.message : t('Connection failed'));
     }
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!url.trim() || !database.trim() || !username.trim()) {
-      toast.error('Completa URL, base de datos y usuario de Odoo.');
+      toast.error(t('Enter Odoo URL, database, and username.'));
       return;
     }
     if (!connection?.hasCredentials && !apiKey.trim()) {
-      toast.error('Ingresa la clave API de Odoo para conectar.');
+      toast.error(t('Enter your Odoo API key'));
       return;
     }
     try {
-      const saved = await upsertMutation.mutateAsync({
+      await upsertMutation.mutateAsync({
         url: url.trim(),
         database: database.trim(),
         username: username.trim(),
@@ -141,13 +143,11 @@ export function OdooConnectionForm({
       });
       setApiKey('');
       setTestResult(null);
-      toast.success(
-        isConnected
-          ? `Credenciales y configuración de ${saved.displayName} actualizadas.`
-          : `Conectado correctamente a ${saved.displayName}.`,
-      );
+      toast.success(isConnected ? t('Odoo credentials updated') : t('Odoo connected'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo guardar la conexión.');
+      toast.error(
+        error instanceof Error ? error.message : t('Something went wrong. Please try again.'),
+      );
     }
   }
 
@@ -156,9 +156,11 @@ export function OdooConnectionForm({
       await disconnectMutation.mutateAsync();
       setApiKey('');
       setTestResult(null);
-      toast.success('Odoo desconectado. Los productos importados se conservaron en Crossmart.');
+      toast.success(t('Odoo disconnected'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo desconectar Odoo.');
+      toast.error(
+        error instanceof Error ? error.message : t('Something went wrong. Please try again.'),
+      );
     }
   }
 
@@ -173,13 +175,10 @@ export function OdooConnectionForm({
     <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <CardTitle>{ODOO_COPY.connectionTitle}</CardTitle>
-            <CardDescription className="mt-1">{ODOO_COPY.connectionDescription}</CardDescription>
-          </div>
+          <CardTitle>{t(ODOO_COPY.connectionTitle)}</CardTitle>
           {connection && (
             <Badge variant={statusBadgeVariant}>
-              {ODOO_CONNECTION_STATUS_LABELS[connection.status]}
+              {t(ODOO_CONNECTION_STATUS_LABELS[connection.status])}
             </Badge>
           )}
         </div>
@@ -187,7 +186,7 @@ export function OdooConnectionForm({
       <CardContent>
         {connection?.status === OdooConnectionStatus.ERROR && connection.statusReason && (
           <Alert variant="destructive" className="mb-4">
-            <AlertTitle>Error en la conexión</AlertTitle>
+            <AlertTitle>{t('Connection failed')}</AlertTitle>
             <AlertDescription>{connection.statusReason}</AlertDescription>
           </Alert>
         )}
@@ -196,12 +195,12 @@ export function OdooConnectionForm({
           <Alert variant={testResult.ok ? 'default' : 'destructive'} className="mb-4">
             {testResult.ok && <CheckCircle2 className="size-4" />}
             <AlertTitle>
-              {testResult.ok ? 'Conexión exitosa (solo lectura)' : 'Error de conexión'}
+              {testResult.ok ? t('Connection verified') : t('Connection failed')}
             </AlertTitle>
             <AlertDescription>
               {testResult.ok && testResult.discovered
-                ? `Odoo ${testResult.discovered.serverVersion} · Empresa: ${testResult.discovered.companyName ?? database} · Moneda: ${testResult.discovered.currency} · ${testResult.discovered.productCount} productos activos · Almacenes: ${testResult.discovered.warehouses.length} · Tarifas: ${testResult.discovered.pricelists.length}.`
-                : (testResult.error ?? 'Verifica las credenciales ingresadas.')}
+                ? `Odoo ${testResult.discovered.serverVersion} · ${testResult.discovered.companyName ?? database} · ${testResult.discovered.currency} · ${formatNumber(testResult.discovered.productCount)}`
+                : (testResult.error ?? t('Something went wrong. Please try again.'))}
             </AlertDescription>
           </Alert>
         )}
@@ -209,7 +208,7 @@ export function OdooConnectionForm({
         <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
           <fieldset disabled={!canManage} className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="odoo-url">{ODOO_COPY.urlLabel}</FieldLabel>
+              <FieldLabel htmlFor="odoo-url">{t(ODOO_COPY.urlLabel)}</FieldLabel>
               <Input
                 id="odoo-url"
                 type="url"
@@ -221,7 +220,7 @@ export function OdooConnectionForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="odoo-db">{ODOO_COPY.databaseLabel}</FieldLabel>
+              <FieldLabel htmlFor="odoo-db">{t(ODOO_COPY.databaseLabel)}</FieldLabel>
               <Input
                 id="odoo-db"
                 value={database}
@@ -232,7 +231,7 @@ export function OdooConnectionForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="odoo-username">{ODOO_COPY.usernameLabel}</FieldLabel>
+              <FieldLabel htmlFor="odoo-username">{t(ODOO_COPY.usernameLabel)}</FieldLabel>
               <Input
                 id="odoo-username"
                 value={username}
@@ -243,7 +242,7 @@ export function OdooConnectionForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="odoo-api-key">{ODOO_COPY.apiKeyLabel}</FieldLabel>
+              <FieldLabel htmlFor="odoo-api-key">{t(ODOO_COPY.apiKeyLabel)}</FieldLabel>
               <Input
                 id="odoo-api-key"
                 type="password"
@@ -252,8 +251,8 @@ export function OdooConnectionForm({
                 onChange={(event) => setApiKey(event.target.value)}
                 placeholder={
                   connection?.hasCredentials
-                    ? ODOO_COPY.apiKeyStoredPlaceholder
-                    : ODOO_COPY.apiKeyPlaceholder
+                    ? t(ODOO_COPY.apiKeyStoredPlaceholder)
+                    : t(ODOO_COPY.apiKeyPlaceholder)
                 }
               />
             </Field>
@@ -262,7 +261,7 @@ export function OdooConnectionForm({
           <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
             <CollapsibleTrigger asChild>
               <Button type="button" variant="ghost" size="sm" className="-ml-2 w-fit gap-1.5">
-                <span>{ODOO_COPY.advancedToggle}</span>
+                <span>{t(ODOO_COPY.advancedToggle)}</span>
                 <ChevronDown
                   className={`size-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
                   aria-hidden="true"
@@ -272,13 +271,13 @@ export function OdooConnectionForm({
             <CollapsibleContent className="mt-3 rounded-lg border p-4">
               <fieldset disabled={!canManage} className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="odoo-warehouse">{ODOO_COPY.warehouseLabel}</FieldLabel>
+                  <FieldLabel htmlFor="odoo-warehouse">{t(ODOO_COPY.warehouseLabel)}</FieldLabel>
                   <Select value={warehouseId} onValueChange={setWarehouseId}>
                     <SelectTrigger id="odoo-warehouse">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={AUTO_VALUE}>{ODOO_COPY.warehouseDefault}</SelectItem>
+                      <SelectItem value={AUTO_VALUE}>{t(ODOO_COPY.warehouseDefault)}</SelectItem>
                       {(discovered?.warehouses ?? []).map((warehouse) => (
                         <SelectItem key={warehouse.id} value={String(warehouse.id)}>
                           {warehouse.name} ({warehouse.code})
@@ -289,13 +288,13 @@ export function OdooConnectionForm({
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="odoo-pricelist">{ODOO_COPY.pricelistLabel}</FieldLabel>
+                  <FieldLabel htmlFor="odoo-pricelist">{t(ODOO_COPY.pricelistLabel)}</FieldLabel>
                   <Select value={pricelistId} onValueChange={setPricelistId}>
                     <SelectTrigger id="odoo-pricelist">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={AUTO_VALUE}>{ODOO_COPY.pricelistDefault}</SelectItem>
+                      <SelectItem value={AUTO_VALUE}>{t(ODOO_COPY.pricelistDefault)}</SelectItem>
                       {(discovered?.pricelists ?? []).map((pricelist) => (
                         <SelectItem key={pricelist.id} value={String(pricelist.id)}>
                           {pricelist.name}
@@ -307,7 +306,7 @@ export function OdooConnectionForm({
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="odoo-stock-field">{ODOO_COPY.stockFieldLabel}</FieldLabel>
+                  <FieldLabel htmlFor="odoo-stock-field">{t(ODOO_COPY.stockFieldLabel)}</FieldLabel>
                   <Select
                     value={stockField}
                     onValueChange={(value) => setStockField(value as OdooStockField)}
@@ -318,7 +317,7 @@ export function OdooConnectionForm({
                     <SelectContent>
                       {Object.values(OdooStockField).map((field) => (
                         <SelectItem key={field} value={field}>
-                          {ODOO_STOCK_FIELD_LABELS[field]}
+                          {t(ODOO_STOCK_FIELD_LABELS[field])}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -326,30 +325,30 @@ export function OdooConnectionForm({
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="odoo-brand-field">{ODOO_COPY.brandFieldLabel}</FieldLabel>
+                  <FieldLabel htmlFor="odoo-brand-field">{t(ODOO_COPY.brandFieldLabel)}</FieldLabel>
                   <Input
                     id="odoo-brand-field"
                     value={brandField}
                     onChange={(event) => setBrandField(event.target.value)}
-                    placeholder="Auto (ej. brand_id)"
+                    placeholder="brand_id"
                   />
                 </Field>
 
                 <Field>
                   <FieldLabel htmlFor="odoo-custom-fields">
-                    {ODOO_COPY.customFieldsLabel}
+                    {t(ODOO_COPY.customFieldsLabel)}
                   </FieldLabel>
                   <Input
                     id="odoo-custom-fields"
                     value={customFieldsText}
                     onChange={(event) => setCustomFieldsText(event.target.value)}
-                    placeholder="x_dimensiones, x_garantia"
+                    placeholder="x_field_1, x_field_2"
                   />
                 </Field>
 
                 <Field>
                   <FieldLabel htmlFor="odoo-sync-interval">
-                    {ODOO_COPY.syncIntervalLabel}
+                    {t(ODOO_COPY.syncIntervalLabel)}
                   </FieldLabel>
                   <Input
                     id="odoo-sync-interval"
@@ -358,7 +357,7 @@ export function OdooConnectionForm({
                     max={1440}
                     value={syncInterval}
                     onChange={(event) => setSyncInterval(event.target.value)}
-                    placeholder="Manual"
+                    placeholder={t('Manual')}
                   />
                 </Field>
 
@@ -370,13 +369,9 @@ export function OdooConnectionForm({
                       onCheckedChange={setFilterSaleOnly}
                     />
                     <FieldLabel htmlFor="odoo-sale-only" className="font-normal">
-                      {ODOO_COPY.saleOnlyLabel}
+                      {t(ODOO_COPY.saleOnlyLabel)}
                     </FieldLabel>
                   </Field>
-                  <FieldDescription className="mt-1 text-xs">
-                    El mapeo estándar (SKU, EAN, marca, categoría, precio, stock, variantes e
-                    imágenes/documentos) se detecta automáticamente.
-                  </FieldDescription>
                 </div>
               </fieldset>
             </CollapsibleContent>
@@ -395,16 +390,16 @@ export function OdooConnectionForm({
                     className={`size-4 ${testMutation.isPending ? 'animate-spin' : ''}`}
                     aria-hidden="true"
                   />
-                  {testMutation.isPending ? ODOO_COPY.testingButton : ODOO_COPY.testButton}
+                  {testMutation.isPending ? t(ODOO_COPY.testingButton) : t(ODOO_COPY.testButton)}
                 </Button>
 
                 <Button type="submit" disabled={upsertMutation.isPending}>
                   <Plug className="size-4" aria-hidden="true" />
                   {upsertMutation.isPending
-                    ? ODOO_COPY.savingButton
+                    ? t(ODOO_COPY.savingButton)
                     : isConnected
-                      ? ODOO_COPY.updateButton
-                      : ODOO_COPY.connectButton}
+                      ? t(ODOO_COPY.updateButton)
+                      : t(ODOO_COPY.connectButton)}
                 </Button>
               </div>
 
@@ -418,12 +413,12 @@ export function OdooConnectionForm({
                       disabled={disconnectMutation.isPending}
                     >
                       <Unplug className="size-4" aria-hidden="true" />
-                      {ODOO_COPY.disconnectButton}
+                      {t(ODOO_COPY.disconnectButton)}
                     </Button>
                   }
-                  title={ODOO_COPY.disconnectTitle}
-                  description={ODOO_COPY.disconnectDescription}
-                  confirmLabel={ODOO_COPY.disconnectConfirm}
+                  title={t(ODOO_COPY.disconnectTitle)}
+                  description={t(ODOO_COPY.disconnectDescription)}
+                  confirmLabel={t(ODOO_COPY.disconnectConfirm)}
                   onConfirm={handleDisconnect}
                 />
               )}

@@ -1,12 +1,14 @@
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { useI18n } from '@/lib/i18n';
 import { AuthField, MIN_PASSWORD_LENGTH } from '../auth.constants';
 import { useAuthNavigationState } from '../hooks/useReturnPath';
 
 export function NameField() {
+  const { t } = useI18n();
   return (
     <Field>
-      <FieldLabel htmlFor={AuthField.Name}>Name</FieldLabel>
+      <FieldLabel htmlFor={AuthField.Name}>{t('Name')}</FieldLabel>
       <Input id={AuthField.Name} name={AuthField.Name} autoComplete="name" required />
     </Field>
   );
@@ -14,10 +16,11 @@ export function NameField() {
 
 /** Filled in when the page that sent the user here knows the address. */
 export function EmailField() {
+  const { t } = useI18n();
   const navigationState = useAuthNavigationState();
   return (
     <Field>
-      <FieldLabel htmlFor={AuthField.Email}>Email</FieldLabel>
+      <FieldLabel htmlFor={AuthField.Email}>{t('Email')}</FieldLabel>
       <Input
         id={AuthField.Email}
         name={AuthField.Email}
@@ -37,9 +40,10 @@ interface PasswordFieldProps {
 }
 
 export function PasswordField({ autoComplete, showHint = false }: PasswordFieldProps) {
+  const { t } = useI18n();
   return (
     <Field>
-      <FieldLabel htmlFor={AuthField.Password}>Password</FieldLabel>
+      <FieldLabel htmlFor={AuthField.Password}>{t('Password')}</FieldLabel>
       <Input
         id={AuthField.Password}
         name={AuthField.Password}
@@ -48,7 +52,11 @@ export function PasswordField({ autoComplete, showHint = false }: PasswordFieldP
         minLength={MIN_PASSWORD_LENGTH}
         required
       />
-      {showHint && <FieldDescription>At least {MIN_PASSWORD_LENGTH} characters.</FieldDescription>}
+      {showHint && (
+        <FieldDescription>
+          {t('At least {count} characters.', { count: MIN_PASSWORD_LENGTH })}
+        </FieldDescription>
+      )}
     </Field>
   );
 }

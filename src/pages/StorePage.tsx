@@ -35,6 +35,7 @@ import {
 } from '@/features/listings';
 import { hasPermission, type Workspace } from '@/features/workspaces';
 import { useScrollToSection } from '@/hooks/useScrollToSection';
+import { useI18n } from '@/lib/i18n';
 
 const CONNECTION_PAGE_COPY: ResourcePageCopy = {
   name: 'Store',
@@ -91,6 +92,7 @@ function SettingsTab({ workspace, connection }: Omit<ChannelConnectionTabsProps,
 
 /** One tab per part of the connection; each tab has its own URL so it can be linked to. */
 function ChannelConnectionTabs({ workspace, connection, tab }: ChannelConnectionTabsProps) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const canEditListings = hasPermission(workspace, WorkspacePermission.listings_edit);
   return (
@@ -103,7 +105,7 @@ function ChannelConnectionTabs({ workspace, connection, tab }: ChannelConnection
         {CHANNEL_TABS.map(({ value, label, icon: Icon }) => (
           <TabsTrigger key={value} value={value} className="flex-none">
             <Icon data-icon="inline-start" />
-            {label}
+            {t(label)}
           </TabsTrigger>
         ))}
       </TabsList>

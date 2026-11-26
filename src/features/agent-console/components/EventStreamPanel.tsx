@@ -1,6 +1,7 @@
 import { Radio } from 'lucide-react';
 import { type ReactNode, useId, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/lib/i18n';
 import {
   AGENT_CONSOLE_COPY,
   AGENT_CONSOLE_TEST_IDS,
@@ -30,18 +31,20 @@ const FEED_BADGE_VARIANT: Record<EventFeedStatus, 'success' | 'secondary' | 'war
 };
 
 function FeedStatus({ status }: { status: EventFeedStatus }) {
+  const { t } = useI18n();
   return (
     <Badge variant={FEED_BADGE_VARIANT[status]}>
       <Radio aria-hidden="true" />
-      {AGENT_CONSOLE_COPY.feed[status]}
+      {t(AGENT_CONSOLE_COPY.feed[status])}
     </Badge>
   );
 }
 
 function EmptyEvents({ filtered }: { filtered: boolean }) {
+  const { t } = useI18n();
   return (
     <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-      {filtered ? AGENT_CONSOLE_COPY.noMatches : AGENT_CONSOLE_COPY.noEvents}
+      {filtered ? t(AGENT_CONSOLE_COPY.noMatches) : t(AGENT_CONSOLE_COPY.noEvents)}
     </p>
   );
 }
@@ -56,6 +59,7 @@ export function EventStreamPanel({
   headerAction,
   ...itemProps
 }: EventStreamPanelProps) {
+  const { t } = useI18n();
   const [filter, setFilter] = useState(EventFilter.All);
   const titleId = useId();
   const shown = useMemo(
@@ -72,7 +76,7 @@ export function EventStreamPanel({
       <header className="flex flex-col gap-2 border-b px-3 py-2">
         <div className="flex items-center justify-between gap-2">
           <h2 id={titleId} className="text-sm font-semibold">
-            {AGENT_CONSOLE_COPY.eventsTitle}
+            {t(AGENT_CONSOLE_COPY.eventsTitle)}
           </h2>
           <div className="flex items-center gap-1">
             <FeedStatus status={status} />
@@ -81,7 +85,7 @@ export function EventStreamPanel({
         </div>
         <EventFilterBar value={filter} onChange={setFilter} />
       </header>
-      <ol aria-label={AGENT_CONSOLE_COPY.eventsLabel} className="min-h-0 flex-1 overflow-y-auto">
+      <ol aria-label={t(AGENT_CONSOLE_COPY.eventsLabel)} className="min-h-0 flex-1 overflow-y-auto">
         {shown.map((event) => (
           <EventItem key={event.id} event={event} {...itemProps} />
         ))}

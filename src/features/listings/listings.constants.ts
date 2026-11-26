@@ -121,14 +121,14 @@ export const CATEGORY_COPY = {
 } as const;
 
 export const WOOCOMMERCE_CATEGORY_COPY = {
-  label: 'Categoría de WooCommerce',
-  automatic: 'Se seleccionará automáticamente según las categorías de tu tienda al publicar.',
-  searchLabel: 'Buscar categorías de WooCommerce',
-  searchPlaceholder: 'Palabras clave o deja vacío para usar el título',
-  search: 'Buscar',
-  noResults: 'No se encontraron categorías en WooCommerce. Prueba otras palabras.',
-  useSuggested: 'Usar sugerencia automática',
-  savedNote: 'Al cambiarla se actualizará la categoría del producto en WooCommerce.',
+  label: 'WooCommerce category',
+  automatic: 'Picked from WooCommerce categories when first published.',
+  searchLabel: 'Search WooCommerce categories',
+  searchPlaceholder: 'Keywords, or leave empty to use the title',
+  search: 'Search',
+  noResults: 'No WooCommerce categories matched. Try different words.',
+  useSuggested: 'Use automatic suggestion',
+  savedNote: 'Changing it updates the product category in WooCommerce.',
 } as const;
 
 /** What the eBay item specifics section of the override sheet says. */

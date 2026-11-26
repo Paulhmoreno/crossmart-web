@@ -7,7 +7,7 @@ import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toProductRoute } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { type OdooConnection, useOdooPreview, useStartOdooSync } from '../hooks/useOdooSource';
 import { ODOO_COPY, ODOO_SYNC_RUN_STATUS_LABELS } from '../odoo.constants';
 
@@ -32,6 +33,7 @@ interface OdooSyncPanelProps {
 }
 
 export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPanelProps) {
+  const { t, formatDateTime, formatNumber } = useI18n();
   const [searchInput, setSearchInput] = useState('');
   const [submittedSearch, setSubmittedSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -56,30 +58,29 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
   }
 
   async function handleSyncSelected() {
-    if (selectedIds.length === 0) {
-      toast.error('Selecciona al menos un producto de Odoo para sincronizar.');
-      return;
-    }
+    if (selectedIds.length === 0) return;
     try {
       await startSync.mutateAsync({
         mode: OdooSyncMode.SELECTED,
         filter: { templateIds: selectedIds },
       });
-      toast.success(
-        `Sincronización iniciada para ${selectedIds.length} producto(s) seleccionado(s).`,
-      );
+      toast.success(t('Sync started'));
       setSelectedIds([]);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo iniciar la sincronización.');
+      toast.error(
+        error instanceof Error ? error.message : t('Something went wrong. Please try again.'),
+      );
     }
   }
 
   async function handleSyncFull() {
     try {
       await startSync.mutateAsync({ mode: OdooSyncMode.FULL });
-      toast.success('Sincronización completa del catálogo de Odoo iniciada.');
+      toast.success(t('Sync started'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo iniciar la sincronización.');
+      toast.error(
+        error instanceof Error ? error.message : t('Something went wrong. Please try again.'),
+      );
     }
   }
 
@@ -87,23 +88,16 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
-          label="Productos sincronizados"
-          value={connection.syncedProductCount.toLocaleString('es-EC')}
+          label={t('Synced products')}
+          value={formatNumber(connection.syncedProductCount)}
         />
         <StatCard
-          label="Última sincronización"
-          value={
-            connection.lastSyncedAt
-              ? new Date(connection.lastSyncedAt).toLocaleString('es-EC')
-              : 'Nunca'
-          }
+          label={t('Last synced')}
+          value={connection.lastSyncedAt ? formatDateTime(connection.lastSyncedAt) : t('Never')}
         />
-        <StatCard label="Nuevos (últ. ejecución)" value={String(latestRun?.createdCount ?? 0)} />
-        <StatCard
-          label="Actualizados (últ. ejecución)"
-          value={String(latestRun?.updatedCount ?? 0)}
-        />
-        <StatCard label="Errores (últ. ejecución)" value={String(latestRun?.failedCount ?? 0)} />
+        <StatCard label={t('Created')} value={formatNumber(latestRun?.createdCount ?? 0)} />
+        <StatCard label={t('Updated')} value={formatNumber(latestRun?.updatedCount ?? 0)} />
+        <StatCard label={t('Errors')} value={formatNumber(latestRun?.failedCount ?? 0)} />
       </div>
 
       {latestRun && isRunning && (
@@ -111,14 +105,14 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <RefreshCw className="size-4 animate-spin" aria-hidden="true" />
-              Progreso de sincronización ({ODOO_SYNC_RUN_STATUS_LABELS[latestRun.status]})
+              {t('Syncing')} ({t(ODOO_SYNC_RUN_STATUS_LABELS[latestRun.status])})
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <Progress value={progressPercent} />
             <p className="text-xs text-muted-foreground">
-              Procesados: {latestRun.processedCount} de {latestRun.totalCount} · Nuevos:{' '}
-              {latestRun.createdCount} · Actualizados: {latestRun.updatedCount} · Errores:{' '}
+              {t('Processed')}: {latestRun.processedCount}/{latestRun.totalCount} · {t('Created')}:{' '}
+              {latestRun.createdCount} · {t('Updated')}: {latestRun.updatedCount} · {t('Errors')}:{' '}
               {latestRun.failedCount}
             </p>
           </CardContent>
@@ -127,16 +121,14 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
 
       {latestRun?.status === OdooSyncRunStatus.FAILED && latestRun.errorMessage && (
         <Alert variant="destructive">
-          <AlertTitle>La última sincronización falló</AlertTitle>
+          <AlertTitle>{t('Failed')}</AlertTitle>
           <AlertDescription>{latestRun.errorMessage}</AlertDescription>
         </Alert>
       )}
 
       {latestRun && latestRun.issues.length > 0 && (
         <Alert variant="destructive">
-          <AlertTitle>
-            Incidencias en la última sincronización ({latestRun.issues.length})
-          </AlertTitle>
+          <AlertTitle>{t('Issues ({count})', { count: latestRun.issues.length })}</AlertTitle>
           <AlertDescription>
             <ul className="mt-1 list-disc pl-4 text-xs">
               {latestRun.issues.map((issue) => (
@@ -156,10 +148,7 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <CardTitle>{ODOO_COPY.syncTitle}</CardTitle>
-                <CardDescription className="mt-1">{ODOO_COPY.syncDescription}</CardDescription>
-              </div>
+              <CardTitle>{t(ODOO_COPY.syncTitle)}</CardTitle>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
@@ -167,7 +156,7 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                   disabled={selectedIds.length === 0 || startSync.isPending || isRunning}
                 >
                   <RefreshCw className="size-4" aria-hidden="true" />
-                  {ODOO_COPY.syncSelectedButton} ({selectedIds.length})
+                  {t(ODOO_COPY.syncSelectedButton)} ({selectedIds.length})
                 </Button>
                 <ConfirmDialog
                   trigger={
@@ -176,12 +165,12 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                       variant="outline"
                       disabled={startSync.isPending || isRunning}
                     >
-                      {ODOO_COPY.syncFullButton}
+                      {t(ODOO_COPY.syncFullButton)}
                     </Button>
                   }
-                  title={ODOO_COPY.syncFullConfirmTitle}
-                  description={ODOO_COPY.syncFullConfirmDescription}
-                  confirmLabel={ODOO_COPY.syncFullConfirmAction}
+                  title={t(ODOO_COPY.syncFullConfirmTitle)}
+                  description={t(ODOO_COPY.syncFullConfirmDescription)}
+                  confirmLabel={t(ODOO_COPY.syncFullConfirmAction)}
                   onConfirm={handleSyncFull}
                 />
               </div>
@@ -198,22 +187,22 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
               <Input
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder={ODOO_COPY.searchPlaceholder}
+                placeholder={t(ODOO_COPY.searchPlaceholder)}
                 className="max-w-md flex-1"
               />
               <Button type="submit" variant="outline" disabled={previewQuery.isFetching}>
                 <Search className="size-4" aria-hidden="true" />
-                {ODOO_COPY.searchButton}
+                {t(ODOO_COPY.searchButton)}
               </Button>
             </form>
 
             {previewQuery.isError && (
               <Alert variant="destructive">
-                <AlertTitle>No se pudo consultar el catálogo de Odoo</AlertTitle>
+                <AlertTitle>{t('Could not be loaded')}</AlertTitle>
                 <AlertDescription>
                   {previewQuery.error instanceof Error
                     ? previewQuery.error.message
-                    : 'Error al leer productos desde Odoo.'}
+                    : t('Something went wrong. Please try again.')}
                 </AlertDescription>
               </Alert>
             )}
@@ -224,25 +213,25 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                   <TableRow>
                     <TableHead className="w-10" />
                     <TableHead>ID</TableHead>
-                    <TableHead>Producto en Odoo</TableHead>
+                    <TableHead>{t('Product')}</TableHead>
                     <TableHead>SKU / EAN</TableHead>
-                    <TableHead className="text-right">Precio</TableHead>
-                    <TableHead className="text-right">Stock</TableHead>
-                    <TableHead>Recursos</TableHead>
-                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">{t('Price')}</TableHead>
+                    <TableHead className="text-right">{t('Stock')}</TableHead>
+                    <TableHead>{t('Media')}</TableHead>
+                    <TableHead>{t('Status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {previewQuery.isPending ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center text-muted-foreground">
-                        Consultando productos en Odoo...
+                        {t('Loading...')}
                       </TableCell>
                     </TableRow>
                   ) : (previewQuery.data?.items.length ?? 0) === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center text-muted-foreground">
-                        No se encontraron productos con ese criterio.
+                        {t('No matching products found in Odoo.')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -254,15 +243,14 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                             <Checkbox
                               checked={checked}
                               onCheckedChange={() => toggleTemplate(item.templateId)}
-                              aria-label={`Seleccionar ${item.name}`}
+                              aria-label={item.name}
                             />
                           </TableCell>
                           <TableCell className="font-mono text-xs">{item.templateId}</TableCell>
                           <TableCell className="max-w-xs whitespace-normal">
                             <p className="font-medium">{item.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {[item.brand, item.category].filter(Boolean).join(' · ') ||
-                                'Sin categoría'}
+                              {[item.brand, item.category].filter(Boolean).join(' · ') || '—'}
                             </p>
                           </TableCell>
                           <TableCell className="font-mono text-xs">
@@ -276,20 +264,20 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                             {item.qtyAvailable}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
-                            {item.hasMainImage ? 'Foto principal' : 'Sin foto'}
-                            {item.documentCount > 0 ? ` · ${item.documentCount} adj.` : ''}
+                            {item.hasMainImage ? t('Main image') : t('No photo')}
+                            {item.documentCount > 0 ? ` · ${item.documentCount}` : ''}
                             {item.variantCount > 1 ? ` · ${item.variantCount} var.` : ''}
                           </TableCell>
                           <TableCell>
                             {item.alreadySynced && item.crossmartProductId ? (
                               <Button asChild variant="ghost" size="sm" className="h-7 gap-1 px-2">
                                 <Link to={toProductRoute(item.crossmartProductId)}>
-                                  Sincronizado
+                                  {t('Synced')}
                                   <ExternalLink className="size-3" aria-hidden="true" />
                                 </Link>
                               </Button>
                             ) : (
-                              <Badge variant="outline">Pendiente</Badge>
+                              <Badge variant="outline">{t('Pending')}</Badge>
                             )}
                           </TableCell>
                         </TableRow>
@@ -306,30 +294,28 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
       {connection.recentRuns.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Historial de sincronizaciones</CardTitle>
+            <CardTitle className="text-base">{t('Sync history')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Modo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Procesados</TableHead>
-                    <TableHead className="text-right">Nuevos</TableHead>
-                    <TableHead className="text-right">Actualizados</TableHead>
-                    <TableHead className="text-right">Errores</TableHead>
+                    <TableHead>{t('Date')}</TableHead>
+                    <TableHead>{t('Mode')}</TableHead>
+                    <TableHead>{t('Status')}</TableHead>
+                    <TableHead className="text-right">{t('Processed')}</TableHead>
+                    <TableHead className="text-right">{t('Created')}</TableHead>
+                    <TableHead className="text-right">{t('Updated')}</TableHead>
+                    <TableHead className="text-right">{t('Errors')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {connection.recentRuns.map((run) => (
                     <TableRow key={run.id}>
+                      <TableCell className="text-xs">{formatDateTime(run.createdAt)}</TableCell>
                       <TableCell className="text-xs">
-                        {new Date(run.createdAt).toLocaleString('es-EC')}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {run.mode === OdooSyncMode.FULL ? 'Catálogo completo' : 'Selección'}
+                        {run.mode === OdooSyncMode.FULL ? t('Full catalog') : t('Selected')}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -342,8 +328,8 @@ export function OdooSyncPanel({ workspaceId, connection, canManage }: OdooSyncPa
                           }
                         >
                           {run.status === OdooSyncRunStatus.COMPLETED && run.failedCount > 0
-                            ? 'Con incidencias'
-                            : ODOO_SYNC_RUN_STATUS_LABELS[run.status]}
+                            ? t('Partial')
+                            : t(ODOO_SYNC_RUN_STATUS_LABELS[run.status])}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">

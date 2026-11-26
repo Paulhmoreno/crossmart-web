@@ -2,7 +2,7 @@ import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { OutOfStockPolicy } from '@/api/schema';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
-import { OdooFieldLockNote } from '@/features/odoo/components/OdooSourceBadge';
+import { useI18n } from '@/lib/i18n';
 import { BARCODE_HELP } from '../../catalog.constants';
 import type { ProductFormValues } from '../product-form.schema';
 import { EditorSection } from './EditorSection';
@@ -13,6 +13,7 @@ const CONTINUE_SELLING_FIELD_ID = 'variants.0.continueSelling';
 
 function TrackStockSwitch({ disabled }: { disabled: boolean }) {
   const { control } = useFormContext<ProductFormValues>();
+  const { t } = useI18n();
   return (
     <Controller
       control={control}
@@ -26,7 +27,7 @@ function TrackStockSwitch({ disabled }: { disabled: boolean }) {
             disabled={disabled}
           />
           <FieldLabel htmlFor={TRACKED_FIELD_ID} className="font-normal">
-            Track stock
+            {t('Track stock')}
           </FieldLabel>
         </Field>
       )}
@@ -36,6 +37,7 @@ function TrackStockSwitch({ disabled }: { disabled: boolean }) {
 
 function ContinueSellingSwitch() {
   const { control } = useFormContext<ProductFormValues>();
+  const { t } = useI18n();
   return (
     <Controller
       control={control}
@@ -52,7 +54,7 @@ function ContinueSellingSwitch() {
             }
           />
           <FieldLabel htmlFor={CONTINUE_SELLING_FIELD_ID} className="font-normal">
-            Keep selling when out of stock
+            {t('Keep selling when out of stock')}
           </FieldLabel>
         </Field>
       )}
@@ -63,29 +65,23 @@ function ContinueSellingSwitch() {
 /** SKU, barcode, stock tracking and tax of a product without options. */
 export function InventorySection({ isOdooManaged = false }: { isOdooManaged?: boolean }) {
   const { control } = useFormContext<ProductFormValues>();
+  const { t } = useI18n();
   const tracked = useWatch({ control, name: 'variants.0.tracked' });
   return (
-    <EditorSection title="Inventory">
+    <EditorSection title={t('Inventory')}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField
-          name="variants.0.sku"
-          label="SKU"
-          isCode
-          disabled={isOdooManaged}
-          description={isOdooManaged ? <OdooFieldLockNote /> : undefined}
-        />
+        <TextField name="variants.0.sku" label={t('SKU')} isCode disabled={isOdooManaged} />
         <TextField
           name="variants.0.barcode"
-          label="Barcode"
-          hint={BARCODE_HELP}
+          label={t('Barcode')}
+          hint={t(BARCODE_HELP)}
           isCode
           disabled={isOdooManaged}
-          description={isOdooManaged ? <OdooFieldLockNote /> : undefined}
         />
       </div>
       <TrackStockSwitch disabled={isOdooManaged} />
       {tracked && <ContinueSellingSwitch />}
-      <CheckboxField name="variants.0.taxable" label="Charge tax on this product" />
+      <CheckboxField name="variants.0.taxable" label={t('Charge tax on this product')} />
     </EditorSection>
   );
 }

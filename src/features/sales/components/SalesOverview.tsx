@@ -2,6 +2,7 @@ import { Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { pluralize } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { useSalesRange } from '../hooks/useSalesRange';
 import { useSalesReport } from '../hooks/useSalesReport';
 import { SalesChart } from './SalesChart';
@@ -27,19 +28,20 @@ function SalesSkeleton() {
 
 /** The overview's sales section: the period picker, totals, the chart and the breakdowns. */
 export function SalesOverview({ workspaceId }: { workspaceId: string }) {
+  const { t } = useI18n();
   const [range, setRange] = useSalesRange();
   const { data: report, isError } = useSalesReport(workspaceId, range.value);
-  const comparedTo = `previous ${range.description.replace('last ', '')}`;
+  const comparedTo = t(`previous ${range.description.replace('last ', '')}`);
 
   return (
     <section aria-labelledby="sales-heading" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="sales-heading" className="font-heading text-lg font-semibold">
-          Sales
+          {t('Sales')}
         </h2>
         <SalesRangePicker value={range.value} onChange={setRange} />
       </div>
-      {isError && <p className="text-sm text-destructive">Sales could not be loaded.</p>}
+      {isError && <p className="text-sm text-destructive">{t('Sales could not be loaded.')}</p>}
       {!report && !isError && <SalesSkeleton />}
       {report && (
         <>

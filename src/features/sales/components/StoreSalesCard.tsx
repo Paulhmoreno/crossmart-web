@@ -1,13 +1,15 @@
 import { Link } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ROUTES, toStoreRoute } from '@/config/routes';
-import { formatMoney, pluralize } from '@/lib/format';
+import { formatMoney } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { toSharePercent } from '../sales-format';
 import { RankedBar } from './RankedBar';
 import type { SalesReport } from '../sales.types';
 
 /** Each store's share of the period's sales, largest first. */
 export function StoreSalesCard({ report }: { report: SalesReport }) {
+  const { t, tp } = useI18n();
   const total = Number(report.current.sales);
   const stores = [...report.stores].sort(
     (first, second) => Number(second.sales) - Number(first.sales),
@@ -15,16 +17,16 @@ export function StoreSalesCard({ report }: { report: SalesReport }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sales by store</CardTitle>
-        <CardDescription>Where this period’s orders came from.</CardDescription>
+        <CardTitle>{t('Sales by store')}</CardTitle>
+        <CardDescription>{t('Where this period’s orders came from.')}</CardDescription>
       </CardHeader>
       <CardContent>
         {stores.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             <Link to={ROUTES.stores} className="font-medium text-foreground underline">
-              Connect a store
+              {t('Connect a store')}
             </Link>{' '}
-            to see its sales here.
+            {t('to see its sales here.')}
           </p>
         ) : (
           <ul className="flex flex-col gap-4">
@@ -46,7 +48,7 @@ export function StoreSalesCard({ report }: { report: SalesReport }) {
                   </div>
                   <RankedBar share={share} />
                   <p className="text-xs text-muted-foreground">
-                    {pluralize(store.orders, 'order')}
+                    {tp(store.orders, '{count} order', '{count} orders')}
                   </p>
                 </li>
               );

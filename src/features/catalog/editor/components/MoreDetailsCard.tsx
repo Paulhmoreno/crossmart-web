@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
+import { useI18n } from '@/lib/i18n';
 import { MORE_DETAILS_COPY } from '../../catalog.constants';
 import { hasMoreDetailsError, linksIntoMoreDetails } from '../more-details';
 import type { ProductFormValues } from '../product-form.schema';
@@ -35,6 +36,7 @@ export function MoreDetailsCard({
   hasOptions,
   isOdooManaged = false,
 }: MoreDetailsCardProps) {
+  const { t } = useI18n();
   const [opened, setOpened] = useState(isOdooManaged);
   const forcedOpen = useForcedOpen(hasOptions);
   const open = opened || forcedOpen;
@@ -44,9 +46,9 @@ export function MoreDetailsCard({
         <CardHeader>
           <CollapsibleTrigger asChild>
             <Button type="button" variant="ghost" className="group -mx-2 w-fit gap-2 px-2">
-              <span className="text-sm font-semibold">{MORE_DETAILS_COPY.title}</span>
+              <span className="text-sm font-semibold">{t(MORE_DETAILS_COPY.title)}</span>
               <span className="hidden font-normal text-muted-foreground sm:inline">
-                {MORE_DETAILS_COPY.summary}
+                {t(MORE_DETAILS_COPY.summary)}
               </span>
               <ChevronDown
                 data-icon="inline-end"

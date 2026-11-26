@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import {
   CONNECT_STORE_LABEL,
   type ChannelInfo,
@@ -22,6 +23,7 @@ export function ConnectStoreButton({
   connect,
   variant = 'outline',
 }: ConnectStoreButtonProps) {
+  const { t } = useI18n();
   return (
     <ConnectChannelDialog
       workspaceId={workspaceId}
@@ -30,7 +32,7 @@ export function ConnectStoreButton({
       trigger={
         <Button variant={variant} size="sm">
           <Plus data-icon="inline-start" />
-          {CONNECT_STORE_LABEL}
+          {t(CONNECT_STORE_LABEL)}
         </Button>
       }
     />

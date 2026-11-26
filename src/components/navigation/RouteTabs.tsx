@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import { tabsListVariants } from '@/components/ui/tabs';
 import { isPathWithin } from '@/lib/path-match';
+import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export interface RouteTab {
@@ -29,6 +30,7 @@ const TAB_CLASSES = cn(
 
 /** The views of a page as tabs that are links, so each view has its own address. */
 export function RouteTabs({ tabs, label, className }: RouteTabsProps) {
+  const { t } = useI18n();
   const { pathname } = useLocation();
   // The most specific tab wins: `/settings/team/roles` is Team, not a parent tab too.
   const active = tabs
@@ -36,7 +38,7 @@ export function RouteTabs({ tabs, label, className }: RouteTabsProps) {
     .sort((left, right) => right.to.length - left.to.length)[0];
 
   return (
-    <nav aria-label={label} className={cn('max-w-full overflow-x-auto', className)}>
+    <nav aria-label={t(label)} className={cn('max-w-full overflow-x-auto', className)}>
       <div className={cn(tabsListVariants(), 'h-9')}>
         {tabs.map((tab) => (
           <Link
@@ -45,7 +47,7 @@ export function RouteTabs({ tabs, label, className }: RouteTabsProps) {
             aria-current={tab === active ? 'page' : undefined}
             className={TAB_CLASSES}
           >
-            {tab.label}
+            {t(tab.label)}
             {tab.badge}
           </Link>
         ))}

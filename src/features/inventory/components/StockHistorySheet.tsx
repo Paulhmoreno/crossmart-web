@@ -4,8 +4,8 @@ import { ListSkeleton } from '@/components/lists/ListSkeleton';
 import { TablePagination } from '@/components/lists/TablePagination';
 import { useState } from 'react';
 import { CatalogSourceKind, type InventoryMovementReason } from '@/api/schema';
-import { OdooFieldLockNote } from '@/features/odoo/components/OdooSourceBadge';
 import { FilterSelect } from '@/components/lists/FilterSelect';
+import { useI18n } from '@/lib/i18n';
 import { toEnumOptions } from '@/lib/enum';
 import { SortSelect } from '@/components/lists/SortSelect';
 import { TIME_SORTS, toSortOption } from '@/components/lists/sort-options';
@@ -51,29 +51,23 @@ export function StockHistorySheet({
   onClose,
   canAdjust,
 }: StockHistorySheetProps) {
+  const { t } = useI18n();
   const details = item && [variantLabel(item), item.sku].filter(Boolean).join(' · ');
 
   return (
     <Sheet open={item !== null} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full gap-0 sm:max-w-md">
         <SheetHeader className="pr-12">
-          <SheetTitle>{item?.productTitle ?? 'Stock history'}</SheetTitle>
-          <SheetDescription>{details || 'Stock history'}</SheetDescription>
+          <SheetTitle>{item?.productTitle ?? t('Stock history')}</SheetTitle>
+          <SheetDescription>{details || t('Stock history')}</SheetDescription>
         </SheetHeader>
         {item && (
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
             <StockSummary item={item} />
-            {item.sourceKind === CatalogSourceKind.ODOO ? (
-              <div className="rounded-md border bg-muted/40 px-3 py-2">
-                <OdooFieldLockNote />
+            {item.sourceKind !== CatalogSourceKind.ODOO && item.tracked && canAdjust && (
+              <div className="flex justify-end">
+                <AdjustStockPopover workspaceId={workspaceId} item={item} />
               </div>
-            ) : (
-              item.tracked &&
-              canAdjust && (
-                <div className="flex justify-end">
-                  <AdjustStockPopover workspaceId={workspaceId} item={item} />
-                </div>
-              )
             )}
             <HistoryBody
               key={item.inventoryItemId}

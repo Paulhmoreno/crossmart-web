@@ -6,6 +6,7 @@ import { ContentLoader } from '@/components/feedback/ContentLoader';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { Button } from '@/components/ui/button';
 import type { Crumb } from '@/config/navigation';
+import { useI18n } from '@/lib/i18n';
 import { Page } from './Page';
 
 /** What a page about one record says when that record cannot be shown. */
@@ -30,14 +31,15 @@ interface ResourcePageProps<Resource> {
 }
 
 function NotFound({ copy, parents }: Pick<ResourcePageProps<unknown>, 'copy' | 'parents'>) {
+  const { t } = useI18n();
   const back = parents.findLast((crumb) => crumb.to);
   return (
-    <Page name={copy.notFoundName} parents={parents}>
-      <p className="text-muted-foreground">{copy.notFound}</p>
+    <Page name={t(copy.notFoundName)} parents={parents}>
+      <p className="text-muted-foreground">{t(copy.notFound)}</p>
       {back?.to && (
         <div>
           <Button asChild variant="outline">
-            <Link to={back.to}>Back to {back.label}</Link>
+            <Link to={back.to}>{t('Back to {label}', { label: t(back.label) })}</Link>
           </Button>
         </div>
       )}
@@ -52,11 +54,12 @@ export function ResourcePage<Resource>({
   parents,
   children,
 }: ResourcePageProps<Resource>) {
+  const { t } = useI18n();
   if (isNotFoundError(query.error)) return <NotFound copy={copy} parents={parents} />;
   if (query.isError) {
     return (
-      <Page name={copy.name} parents={parents}>
-        <ErrorState title={copy.loadFailed} error={query.error} onRetry={query.refetch} />
+      <Page name={t(copy.name)} parents={parents}>
+        <ErrorState title={t(copy.loadFailed)} error={query.error} onRetry={query.refetch} />
       </Page>
     );
   }

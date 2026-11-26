@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useI18n } from '@/lib/i18n';
 import { STATUS_FILTERS, type StatusFilter } from '../product-status';
 
 interface ProductFiltersProps {
@@ -23,6 +24,7 @@ export function ProductFilters({
   onStatusChange,
   counts,
 }: ProductFiltersProps) {
+  const { formatNumber, t } = useI18n();
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <ToggleGroup
@@ -31,15 +33,15 @@ export function ProductFilters({
         value={status}
         // A single toggle group reports '' when the active item is pressed again; keep it.
         onValueChange={(value) => isStatusFilter(value) && onStatusChange(value)}
-        aria-label="Filter by status"
+        aria-label={t('Filter by status')}
         className="flex-wrap"
       >
         {STATUS_FILTERS.map((filter) => (
           <ToggleGroupItem key={filter.value} value={filter.value} className="gap-1.5 px-3">
-            {filter.label}
+            {t(filter.label)}
             {counts?.[filter.value] !== undefined && (
               <span className="text-xs text-muted-foreground tabular-nums">
-                {counts[filter.value]?.toLocaleString()}
+                {formatNumber(counts[filter.value] ?? 0)}
               </span>
             )}
           </ToggleGroupItem>
@@ -53,8 +55,8 @@ export function ProductFilters({
           type="search"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search title, handle or SKU"
-          aria-label="Search products"
+          placeholder={t('Search title, handle or SKU')}
+          aria-label={t('Search products')}
           spellCheck={false}
         />
       </InputGroup>

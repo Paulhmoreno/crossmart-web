@@ -5,8 +5,8 @@ import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
 import { FormError } from '@/components/feedback/FormError';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import { AI_PROVIDER_LABELS } from '../ai-settings.constants';
 import type { AiConfig, AiModelOption, TestAiConfigResult } from '../ai-settings.types';
 import {
@@ -32,12 +33,13 @@ interface AiSettingsFormProps {
 }
 
 function TestResultBanner({ result }: { result: TestAiConfigResult }) {
+  const { t } = useI18n();
   if (!result.ok) {
     return (
       <Alert variant="destructive">
-        <AlertTitle>Error al probar la conexión</AlertTitle>
+        <AlertTitle>{t('Connection failed')}</AlertTitle>
         <AlertDescription>
-          {result.error ?? 'No se pudo conectar con el proveedor.'}
+          {result.error ?? t('Something went wrong. Please try again.')}
         </AlertDescription>
       </Alert>
     );
@@ -46,7 +48,7 @@ function TestResultBanner({ result }: { result: TestAiConfigResult }) {
     <output className="flex flex-col gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-950 dark:text-emerald-100">
       <div className="flex items-center gap-2 font-medium">
         <CheckCircle2 className="size-4 shrink-0 text-emerald-600" aria-hidden="true" />
-        Conexión verificada: {result.resolvedModel ?? 'modelo activo'} ({result.latencyMs} ms)
+        {t('Connection verified')}: {result.resolvedModel ?? '—'} ({result.latencyMs} ms)
       </div>
       <CapabilityBadges capabilities={result.capabilities} />
     </output>
@@ -61,12 +63,13 @@ interface ModelPickerProps {
 }
 
 function DiscoveredModelPicker({ models, selectedModel, onSelect, disabled }: ModelPickerProps) {
+  const { t } = useI18n();
   if (models.length === 0) return null;
   const knownValue = models.some((item) => item.id === selectedModel) ? selectedModel : '';
   return (
     <Select value={knownValue} onValueChange={onSelect} disabled={disabled}>
-      <SelectTrigger aria-label="Modelos disponibles en el proveedor" className="w-full">
-        <SelectValue placeholder={`Seleccionar entre ${models.length} modelos disponibles`} />
+      <SelectTrigger aria-label={t('Select a discovered model')} className="w-full">
+        <SelectValue placeholder={t('Select a discovered model')} />
       </SelectTrigger>
       <SelectContent>
         {models.map((item) => (
@@ -79,8 +82,9 @@ function DiscoveredModelPicker({ models, selectedModel, onSelect, disabled }: Mo
   );
 }
 
-/** Single-screen Spanish AI provider setup using Crossmart's native settings cards and controls. */
+/** Single-screen AI provider setup using Crossmart's native settings cards and controls. */
 export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
+  const { t, tp } = useI18n();
   const defaultProvider =
     config.source === AiConfigSource.none ? AiProviderName.openai_compatible : config.provider;
   const [provider, setProvider] = useState<AiProviderName>(defaultProvider);
@@ -139,15 +143,15 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
     if (!res.supported) {
       setDiscoveredModels([]);
       setModelsNote(
-        'Este servidor no expone /models. Puedes escribir el identificador del modelo manualmente.',
+        t('This endpoint does not expose /models. Enter the model identifier manually.'),
       );
       return;
     }
     setDiscoveredModels(res.models);
     setModelsNote(
       res.models.length > 0
-        ? `Se encontraron ${res.models.length} modelos disponibles.`
-        : 'El servidor respondió sin modelos listados; ingresa el identificador manualmente.',
+        ? tp(res.models.length, '1 model available.', '{count} models available.')
+        : t('No models returned; enter the model identifier manually.'),
     );
   }
 
@@ -166,17 +170,12 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex max-w-2xl flex-col gap-6">
       <AiStatusSummaryCard config={config} />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Proveedor y modelo de inteligencia artificial</CardTitle>
-          <CardDescription>
-            Configura Anthropic o cualquier servidor compatible con OpenAI Chat Completions (OpenAI,
-            OpenRouter, DeepSeek, Groq, servidores privados u Ollama). Las claves se cifran en el
-            servidor y nunca se exponen en el navegador.
-          </CardDescription>
+          <CardTitle className="text-base">{t('Provider & model')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -185,10 +184,10 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
 
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="ai-provider">Proveedor</FieldLabel>
+                <FieldLabel htmlFor="ai-provider">{t('Provider')}</FieldLabel>
                 <Select value={provider} onValueChange={handleProviderChange} disabled={isBusy}>
                   <SelectTrigger id="ai-provider" className="w-full">
-                    <SelectValue placeholder="Selecciona un proveedor" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={AiProviderName.openai_compatible}>
@@ -203,7 +202,7 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
 
               {isOpenAi && (
                 <Field>
-                  <FieldLabel htmlFor="ai-base-url">URL base de la API</FieldLabel>
+                  <FieldLabel htmlFor="ai-base-url">{t('Base URL')}</FieldLabel>
                   <Input
                     id="ai-base-url"
                     type="url"
@@ -218,15 +217,11 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
                     disabled={isBusy}
                     required
                   />
-                  <FieldDescription>
-                    Usa HTTPS para servicios externos. HTTP está permitido únicamente para
-                    servidores locales o privados configurados por un administrador.
-                  </FieldDescription>
                 </Field>
               )}
 
               <Field>
-                <FieldLabel htmlFor="ai-api-key">API Key</FieldLabel>
+                <FieldLabel htmlFor="ai-api-key">{t('API Key')}</FieldLabel>
                 <Input
                   id="ai-api-key"
                   type="password"
@@ -237,20 +232,17 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
                   }}
                   placeholder={
                     config.hasApiKey && config.provider === provider
-                      ? 'Mantener API Key guardada (escribe una nueva para reemplazarla)'
+                      ? t('Key stored — leave blank to keep')
                       : 'sk-...'
                   }
                   autoComplete="new-password"
                   spellCheck={false}
                   disabled={isBusy}
                 />
-                <FieldDescription>
-                  Se almacena cifrada con EnvelopeEncryption y nunca vuelve al navegador.
-                </FieldDescription>
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="ai-model">Modelo</FieldLabel>
+                <FieldLabel htmlFor="ai-model">{t('Model')}</FieldLabel>
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2">
                     <Input
@@ -278,7 +270,7 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
                         ) : (
                           <RefreshCw data-icon="inline-start" />
                         )}
-                        Consultar modelos
+                        {t('Fetch models')}
                       </Button>
                     )}
                   </div>
@@ -293,9 +285,6 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
                   />
                   {modelsNote && <p className="text-xs text-muted-foreground">{modelsNote}</p>}
                 </div>
-                <FieldDescription>
-                  Siempre puedes escribir manualmente el identificador exacto del modelo.
-                </FieldDescription>
               </Field>
             </FieldGroup>
 
@@ -306,12 +295,14 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
                     trigger={
                       <Button type="button" variant="outline" size="sm" disabled={isBusy}>
                         <Trash2 data-icon="inline-start" />
-                        Limpiar configuración
+                        {t('Clear configuration')}
                       </Button>
                     }
-                    title="¿Eliminar la configuración de IA?"
-                    description="Se borrará la API Key cifrada de este workspace. Las funciones de generación y la consola del agente quedarán inactivas hasta volver a configurar un proveedor."
-                    confirmLabel="Eliminar configuración"
+                    title={t('Clear AI configuration?')}
+                    description={t(
+                      'The stored API key for this workspace will be removed and AI features will pause until reconfigured.',
+                    )}
+                    confirmLabel={t('Clear configuration')}
                     onConfirm={async () => {
                       await clearConfig.mutateAsync();
                     }}
@@ -326,11 +317,11 @@ export function AiSettingsForm({ workspaceId, config }: AiSettingsFormProps) {
                   disabled={isBusy || !canSubmit}
                 >
                   {testConfig.isPending && <Spinner data-icon="inline-start" />}
-                  Probar conexión
+                  {t('Test connection')}
                 </Button>
                 <Button type="submit" disabled={isBusy || !canSubmit}>
                   {saveConfig.isPending && <Spinner data-icon="inline-start" />}
-                  Guardar configuración
+                  {t('Save configuration')}
                 </Button>
               </div>
             </div>

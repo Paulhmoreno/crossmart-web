@@ -70,7 +70,7 @@ describe('ChannelCategoryField', () => {
     expect(screen.getByText(/eBay suggested no category/)).toBeInTheDocument();
   });
 
-  it('uses WooCommerce Spanish labels when channel is woocommerce', () => {
+  it('uses WooCommerce labels when channel is woocommerce', () => {
     setup();
     render(
       <ChannelCategoryField
@@ -80,8 +80,8 @@ describe('ChannelCategoryField', () => {
       />,
     );
 
-    expect(screen.getByText('Categoría de WooCommerce')).toBeInTheDocument();
-    expect(screen.getByLabelText('Buscar categorías de WooCommerce')).toBeInTheDocument();
+    expect(screen.getByText('WooCommerce category')).toBeInTheDocument();
+    expect(screen.getByLabelText('Search WooCommerce categories')).toBeInTheDocument();
     expect(screen.queryByText('eBay category')).not.toBeInTheDocument();
   });
 });

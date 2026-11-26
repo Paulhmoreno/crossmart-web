@@ -49,7 +49,7 @@ export interface UserMenuLink {
 }
 
 export const USER_MENU_LINKS: readonly UserMenuLink[] = [
-  { label: 'Account', to: ROUTES.account, icon: CircleUser },
+  { label: 'Profile', to: ROUTES.account, icon: CircleUser },
   {
     label: 'Ask insights',
     to: ROUTES.askInsights,

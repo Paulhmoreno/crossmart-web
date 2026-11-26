@@ -9,6 +9,7 @@ import {
   type ContentDraftTarget,
 } from '@/features/ai-writer';
 import { MAX_TITLE_LENGTH, type ProductFormValues } from '../product-form.schema';
+import { useI18n } from '@/lib/i18n';
 import { useProductAiWriter } from '../useProductAiWriter';
 import { TextField } from './FormFields';
 
@@ -21,30 +22,32 @@ interface TitleDescriptionCardProps {
 
 /** One AI action for both fields; its form takes an instruction such as "shorter". */
 function WriteWithAi({ target }: { target: ContentDraftTarget }) {
+  const { t } = useI18n();
   const writer = useProductAiWriter();
   return (
     <AiRewriteButton
       target={target}
       fields={ALL_CONTENT_FIELDS}
-      label={AI_WRITER_COPY.writeAll}
+      label={t(AI_WRITER_COPY.writeAll)}
       {...writer}
     />
   );
 }
 
 export function TitleDescriptionCard({ aiTarget }: TitleDescriptionCardProps) {
+  const { t } = useI18n();
   const { control } = useFormContext<ProductFormValues>();
   return (
     <Card>
       <CardContent className="flex flex-col gap-4">
         <TextField
           name="title"
-          label="Title"
+          label={t('Title')}
           maxLength={MAX_TITLE_LENGTH}
           labelAction={aiTarget && <WriteWithAi target={aiTarget} />}
         />
         <Field>
-          <FieldLabel id={DESCRIPTION_LABEL_ID}>Description</FieldLabel>
+          <FieldLabel id={DESCRIPTION_LABEL_ID}>{t('Description')}</FieldLabel>
           <Controller
             control={control}
             name="descriptionHtml"

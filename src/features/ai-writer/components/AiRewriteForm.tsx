@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useI18n } from '@/lib/i18n';
 import { AI_WRITER_COPY, INSTRUCTION_MAX_LENGTH, QUICK_INSTRUCTIONS } from '../ai-writer.constants';
 
 interface AiRewriteFormProps {
@@ -14,6 +15,7 @@ interface AiRewriteFormProps {
 
 /** An optional instruction, typed or picked, then Rewrite. */
 export function AiRewriteForm({ isWriting, error, onSubmit }: AiRewriteFormProps) {
+  const { t } = useI18n();
   const [instruction, setInstruction] = useState('');
   const inputId = useId();
   return (
@@ -26,12 +28,12 @@ export function AiRewriteForm({ isWriting, error, onSubmit }: AiRewriteFormProps
       }}
     >
       <Field>
-        <FieldLabel htmlFor={inputId}>{AI_WRITER_COPY.instructionLabel}</FieldLabel>
+        <FieldLabel htmlFor={inputId}>{t(AI_WRITER_COPY.instructionLabel)}</FieldLabel>
         <Textarea
           id={inputId}
           rows={2}
           maxLength={INSTRUCTION_MAX_LENGTH}
-          placeholder={AI_WRITER_COPY.instructionPlaceholder}
+          placeholder={t(AI_WRITER_COPY.instructionPlaceholder)}
           value={instruction}
           disabled={isWriting}
           onChange={(event) => setInstruction(event.target.value)}
@@ -47,14 +49,14 @@ export function AiRewriteForm({ isWriting, error, onSubmit }: AiRewriteFormProps
             disabled={isWriting}
             onClick={() => onSubmit(quick)}
           >
-            {quick}
+            {t(quick)}
           </Button>
         ))}
       </div>
       <FormError error={error} />
       <Button type="submit" size="sm" className="self-end" disabled={isWriting}>
         {isWriting && <Spinner data-icon="inline-start" />}
-        {isWriting ? AI_WRITER_COPY.writing : AI_WRITER_COPY.submit}
+        {isWriting ? t(AI_WRITER_COPY.writing) : t(AI_WRITER_COPY.submit)}
       </Button>
     </form>
   );

@@ -10,6 +10,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { ROUTES } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 
 interface OrdersEmptyStateProps {
   isFiltered: boolean;
@@ -18,27 +19,30 @@ interface OrdersEmptyStateProps {
 
 /** No orders yet, or none that match the filters. */
 export function OrdersEmptyState({ isFiltered, onClearFilters }: OrdersEmptyStateProps) {
+  const { t } = useI18n();
   return (
     <Empty className="border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <ShoppingBag />
         </EmptyMedia>
-        <EmptyTitle>{isFiltered ? 'No orders match' : 'No orders yet'}</EmptyTitle>
+        <EmptyTitle>{isFiltered ? t('No orders match') : t('No orders yet')}</EmptyTitle>
         <EmptyDescription>
           {isFiltered
-            ? 'Try another status, store or order number.'
-            : 'Orders from your connected stores appear here as they are placed, and reserve their stock in every store.'}
+            ? t('Try another status, store or order number.')
+            : t(
+                'Orders from your connected stores appear here as they are placed, and reserve their stock in every store.',
+              )}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         {isFiltered ? (
           <Button variant="outline" onClick={onClearFilters}>
-            Clear filters
+            {t('Clear filters')}
           </Button>
         ) : (
           <Button asChild variant="outline">
-            <Link to={ROUTES.stores}>Manage stores</Link>
+            <Link to={ROUTES.stores}>{t('Manage stores')}</Link>
           </Button>
         )}
       </EmptyContent>

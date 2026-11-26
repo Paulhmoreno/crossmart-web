@@ -5,6 +5,7 @@ import { toEnumOptions } from '@/lib/enum';
 import { SortSelect } from '@/components/lists/SortSelect';
 import { TIME_SORTS } from '@/components/lists/sort-options';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { useI18n } from '@/lib/i18n';
 import type { OrderFilters } from '../hooks/useOrderFilters';
 import { ORDER_STATUS_LABELS } from '../orders.constants';
 
@@ -18,6 +19,7 @@ interface OrderFilterBarProps {
 
 /** Narrows the orders by number, status and store, and orders them by time. */
 export function OrderFilterBar({ filters, stores }: OrderFilterBarProps) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -48,8 +50,8 @@ export function OrderFilterBar({ filters, stores }: OrderFilterBarProps) {
             type="search"
             value={filters.search}
             onChange={(event) => filters.setSearch(event.target.value)}
-            placeholder="Search order number"
-            aria-label="Search orders"
+            placeholder={t('Search order number')}
+            aria-label={t('Search orders')}
             spellCheck={false}
           />
         </InputGroup>

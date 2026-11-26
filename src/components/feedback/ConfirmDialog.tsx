@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import { ConfirmTone } from './confirm-tone';
 
 interface ConfirmDialogProps {
@@ -49,6 +50,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const [open, setOpen] = useOpenState(openState);
   const [isPending, setIsPending] = useState(false);
+  const { t } = useI18n();
 
   async function confirm(event: MouseEvent<HTMLButtonElement>) {
     // The action button would close the dialog before the request finishes.
@@ -69,18 +71,18 @@ export function ConfirmDialog({
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle>{t(title)}</AlertDialogTitle>
+          <AlertDialogDescription>{t(description)}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>{t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction
             variant={tone}
             onClick={(event) => void confirm(event)}
             disabled={isPending}
           >
             {isPending && <Spinner data-icon="inline-start" />}
-            {confirmLabel}
+            {t(confirmLabel)}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

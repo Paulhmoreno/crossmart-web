@@ -4,6 +4,7 @@ import { PAGE_PARENTS } from '@/config/navigation';
 import { ProductEditor } from '@/features/catalog/editor';
 import { PublishStoresCard, usePublishOnCreate } from '@/features/listings';
 import type { Workspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 /** A new product with its stores ticked, published in one click. */
 function NewProduct({ workspace }: { workspace: Workspace }) {
@@ -19,8 +20,9 @@ function NewProduct({ workspace }: { workspace: Workspace }) {
 }
 
 export function NewProductPage() {
+  const { t } = useI18n();
   return (
-    <Page name="Add product" parents={PAGE_PARENTS.products}>
+    <Page name={t('Add product')} parents={PAGE_PARENTS.products}>
       <WorkspaceGate>{(workspace) => <NewProduct workspace={workspace} />}</WorkspaceGate>
     </Page>
   );

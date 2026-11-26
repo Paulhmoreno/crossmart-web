@@ -14,12 +14,14 @@ import {
 } from '@/features/activity';
 import type { Workspace } from '@/features/workspaces';
 import { useUrlPagination } from '@/hooks/usePagination';
+import { useI18n } from '@/lib/i18n';
 
 export function ActivityPage() {
+  const { t } = useI18n();
   const filters = useActivityFilters();
 
   return (
-    <Page name="Activity">
+    <Page name={t('Activity')}>
       <ActivityFilterBar filters={filters} />
       <WorkspaceGate>
         {(workspace) => <ActivityResults workspace={workspace} filters={filters} />}

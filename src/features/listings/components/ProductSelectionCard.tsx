@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { parseEnum } from '@/lib/enum';
 import { pluralize } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { useSelectionEditor } from '../hooks/useSelectionEditor';
 import { SELECTION_COPY, SELECTION_MODE_LABELS, SelectionMode } from '../listings.constants';
 import type { ProductSelectionRule, SelectionPreview } from '../listings.types';
@@ -27,6 +28,7 @@ interface DraftProps {
 }
 
 function ModePicker({ draft, onChange, disabled }: DraftProps) {
+  const { t } = useI18n();
   return (
     <ToggleGroup
       type="single"
@@ -37,12 +39,12 @@ function ModePicker({ draft, onChange, disabled }: DraftProps) {
         const mode = parseEnum(SelectionMode, next);
         if (mode) onChange({ ...draft, mode });
       }}
-      aria-label="What the store adds automatically"
+      aria-label={t('What the store adds automatically')}
       className="flex-wrap"
     >
       {Object.values(SelectionMode).map((mode) => (
         <ToggleGroupItem key={mode} value={mode} className="px-3">
-          {SELECTION_MODE_LABELS[mode]}
+          {t(SELECTION_MODE_LABELS[mode])}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
@@ -85,6 +87,7 @@ export function ProductSelectionCard({
   rule,
   canManage,
 }: ProductSelectionCardProps) {
+  const { t } = useI18n();
   const editor = useSelectionEditor({ workspaceId, connectionId }, rule);
   const { draft, setDraft } = editor;
   const inGroup = useSaveGroupMember({
@@ -99,7 +102,7 @@ export function ProductSelectionCard({
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>{SELECTION_COPY.title}</h2>
+          <h2>{t(SELECTION_COPY.title)}</h2>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">

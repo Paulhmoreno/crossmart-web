@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 const FALLBACK_API_ERROR_MESSAGE = 'Something went wrong. Please try again.';
 
 /** Shown when the API cannot be reached at all, instead of the browser's "Failed to fetch". */
@@ -58,11 +60,11 @@ function forbiddenMessage(message: string): string {
 
 /** The message to show for a failed API call, in words a seller understands. */
 export function toApiErrorMessage(error: unknown): string {
-  if (isNetworkError(error)) return OFFLINE_ERROR_MESSAGE;
+  if (isNetworkError(error)) return t(OFFLINE_ERROR_MESSAGE);
   const status = statusCodeOf(error);
-  if (status === HttpStatus.TooManyRequests) return RATE_LIMITED_ERROR_MESSAGE;
+  if (status === HttpStatus.TooManyRequests) return t(RATE_LIMITED_ERROR_MESSAGE);
   const message = messageOf(error);
-  return status === HttpStatus.Forbidden ? forbiddenMessage(message) : message;
+  return t(status === HttpStatus.Forbidden ? forbiddenMessage(message) : message);
 }
 
 /** The HTTP status of an API error body or an `ApiRequestError`, when it reports one. */

@@ -18,6 +18,7 @@ import { PendingReviewBadge } from '@/features/review';
 import type { ComponentType } from 'react';
 import { ROUTES } from '@/config/routes';
 import { WorkspaceSwitcher } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 import { isNavItemActive } from './nav-active';
 
 const MAIN_NAV_LABEL = 'Main';
@@ -35,29 +36,30 @@ function NavItemBadge({ badge }: { badge?: NavBadge }) {
 
 function NavItems({ onNavigate }: { onNavigate: () => void }) {
   const { pathname } = useLocation();
+  const { t } = useI18n();
   return (
     <SidebarMenu>
-      {NAV_ITEMS.map((item) => (
-        <SidebarMenuItem key={item.to}>
-          <SidebarMenuButton
-            asChild
-            isActive={isNavItemActive(pathname, item)}
-            tooltip={item.label}
-          >
-            <NavLink to={item.to} end={item.end} onClick={onNavigate}>
-              <item.icon />
-              <span>{item.label}</span>
-            </NavLink>
-          </SidebarMenuButton>
-          <NavItemBadge badge={item.badge} />
-        </SidebarMenuItem>
-      ))}
+      {NAV_ITEMS.map((item) => {
+        const label = t(item.label);
+        return (
+          <SidebarMenuItem key={item.to}>
+            <SidebarMenuButton asChild isActive={isNavItemActive(pathname, item)} tooltip={label}>
+              <NavLink to={item.to} end={item.end} onClick={onNavigate}>
+                <item.icon />
+                <span>{label}</span>
+              </NavLink>
+            </SidebarMenuButton>
+            <NavItemBadge badge={item.badge} />
+          </SidebarMenuItem>
+        );
+      })}
     </SidebarMenu>
   );
 }
 
 export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
+  const { t } = useI18n();
   // On phones the sidebar is a sheet over the page; picking a page should reveal that page.
   const closeOnMobile = () => isMobile && setOpenMobile(false);
 
@@ -78,7 +80,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <nav aria-label={MAIN_NAV_LABEL}>
+        <nav aria-label={t(MAIN_NAV_LABEL)}>
           <SidebarGroup>
             <SidebarGroupContent>
               <NavItems onNavigate={closeOnMobile} />

@@ -12,12 +12,14 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { parseEnum } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import { ALL_ACTIONS } from '../activity.constants';
 import { ACTIVITY_ACTION_LABELS } from '../activity-action';
 import type { ActivityFilters } from '../hooks/useActivityFilters';
 
 /** Filter by action, or show only what failed. Both live in the URL. */
 export function ActivityFilterBar({ filters }: { filters: ActivityFilters }) {
+  const { t } = useI18n();
   const failuresId = useId();
 
   return (
@@ -26,14 +28,14 @@ export function ActivityFilterBar({ filters }: { filters: ActivityFilters }) {
         value={filters.action ?? ALL_ACTIONS}
         onValueChange={(value) => filters.setAction(parseEnum(ActivityAction, value))}
       >
-        <SelectTrigger className="w-full sm:w-56" aria-label="Filter by action">
+        <SelectTrigger className="w-full sm:w-56" aria-label={t('Filter by action')}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_ACTIONS}>All actions</SelectItem>
+          <SelectItem value={ALL_ACTIONS}>{t('All actions')}</SelectItem>
           {Object.values(ActivityAction).map((action) => (
             <SelectItem key={action} value={action}>
-              {ACTIVITY_ACTION_LABELS[action]}
+              {t(ACTIVITY_ACTION_LABELS[action])}
             </SelectItem>
           ))}
         </SelectContent>
@@ -45,7 +47,7 @@ export function ActivityFilterBar({ filters }: { filters: ActivityFilters }) {
             checked={filters.failuresOnly}
             onCheckedChange={filters.setFailuresOnly}
           />
-          <Label htmlFor={failuresId}>Failures only</Label>
+          <Label htmlFor={failuresId}>{t('Failures only')}</Label>
         </div>
         <SortSelect options={TIME_SORTS} value={filters.sort.value} onChange={filters.setSort} />
       </div>

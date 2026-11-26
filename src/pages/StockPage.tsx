@@ -20,13 +20,15 @@ import {
 } from '@/features/inventory';
 import { WorkspacePermission } from '@/api/schema';
 import { hasPermission, type Workspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 /** Products › Stock: what the stock is worth, the stock of every variant, and every change. */
 export function StockPage() {
+  const { t } = useI18n();
   const filters = useInventoryListFilters();
 
   return (
-    <Page name="Stock" title="Products">
+    <Page name={t('Stock')} title={t('Products')}>
       <ProductViewTabs />
       <WorkspaceGate>{(workspace) => <StockValueTiles workspaceId={workspace.id} />}</WorkspaceGate>
       <InventoryFilters filters={filters} />

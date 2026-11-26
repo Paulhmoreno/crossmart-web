@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/table';
 import { toOrderRoute } from '@/config/routes';
 import { cn } from '@/lib/utils';
-import { formatDateTime, formatMoney, pluralize } from '@/lib/format';
+import { formatDateTime, formatMoney } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import type { OrderSummary } from '../orders.types';
 import { OrderStatusBadge } from './OrderStatusBadge';
 
@@ -22,6 +23,7 @@ export function OrdersTable({
   orders: OrderSummary[];
   isRefreshing: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn('rounded-lg border transition-opacity', isRefreshing && 'opacity-60')}
@@ -30,11 +32,11 @@ export function OrdersTable({
       <Table stickyHeader>
         <TableHeader>
           <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead className="hidden w-36 sm:table-cell">Status</TableHead>
-            <TableHead className="hidden w-48 md:table-cell">Store</TableHead>
-            <TableHead className="hidden w-24 lg:table-cell">Items</TableHead>
-            <TableHead className="w-28 text-right">Total</TableHead>
+            <TableHead>{t('Order')}</TableHead>
+            <TableHead className="hidden w-36 sm:table-cell">{t('Status')}</TableHead>
+            <TableHead className="hidden w-48 md:table-cell">{t('Store')}</TableHead>
+            <TableHead className="hidden w-24 lg:table-cell">{t('Items')}</TableHead>
+            <TableHead className="w-28 text-right">{t('Total')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -48,6 +50,7 @@ export function OrdersTable({
 }
 
 function OrderRow({ order }: { order: OrderSummary }) {
+  const { formatDateTime: formatLocalizedDateTime, tp } = useI18n();
   return (
     // The order link stretches over the row, so the whole row opens the order.
     <TableRow className="relative">
@@ -60,12 +63,16 @@ function OrderRow({ order }: { order: OrderSummary }) {
             {order.name}
           </Link>
           <span className="text-xs text-muted-foreground tabular-nums">
-            {formatDateTime(order.placedAt)}
+            {formatLocalizedDateTime(order.placedAt) || formatDateTime(order.placedAt)}
           </span>
           {order.unmatchedLines > 0 && (
             <span className="flex items-center gap-1 text-xs text-warning">
               <TriangleAlert className="size-3" aria-hidden="true" />
-              {pluralize(order.unmatchedLines, 'line')} not in your catalog
+              {tp(
+                order.unmatchedLines,
+                '{count} line not in your catalog',
+                '{count} lines not in your catalog',
+              )}
             </span>
           )}
           <span className="text-xs text-muted-foreground sm:hidden">{order.storeName}</span>

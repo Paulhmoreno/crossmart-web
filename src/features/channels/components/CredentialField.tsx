@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useI18n } from '@/lib/i18n';
 import { CredentialFieldKind, type CredentialFieldPrompt } from '../channels.constants';
 
 interface CredentialFieldProps {
@@ -20,10 +21,12 @@ const FIELD_ID_PREFIX = 'connect-credential-';
 
 /** One value the merchant pastes: text, a masked key, or a choice such as the country. */
 export function CredentialField({ field, value, onChange, disabled }: CredentialFieldProps) {
+  const { t } = useI18n();
   const id = `${FIELD_ID_PREFIX}${field.key}`;
+  const label = t(field.label);
   return (
     <Field>
-      <FieldLabel htmlFor={id}>{field.label}</FieldLabel>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
       {field.kind === CredentialFieldKind.Select ? (
         <Select
           value={value}
@@ -32,12 +35,12 @@ export function CredentialField({ field, value, onChange, disabled }: Credential
           required={!field.optional}
         >
           <SelectTrigger id={id} className="w-full">
-            <SelectValue placeholder={field.label} />
+            <SelectValue placeholder={label} />
           </SelectTrigger>
           <SelectContent>
             {field.options?.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {t(option.label)}
               </SelectItem>
             ))}
           </SelectContent>

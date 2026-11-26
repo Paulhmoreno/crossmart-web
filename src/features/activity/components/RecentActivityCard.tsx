@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ROUTES } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { useProductActivity } from '../hooks/useProductActivity';
 import { ActivityEventItem } from './ActivityEventItem';
 
@@ -16,15 +17,16 @@ interface RecentActivityCardProps {
 
 /** The latest changes to one product, for its editor page. */
 export function RecentActivityCard({ workspaceId, productId }: RecentActivityCardProps) {
+  const { t } = useI18n();
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2 className="text-sm font-semibold">Recent activity</h2>
+          <h2 className="text-sm font-semibold">{t('Recent activity')}</h2>
         </CardTitle>
         <CardAction>
           <Button variant="link" size="sm" className="h-auto px-0" asChild>
-            <Link to={ROUTES.activity}>{ALL_ACTIVITY_LABEL}</Link>
+            <Link to={ROUTES.activity}>{t(ALL_ACTIVITY_LABEL)}</Link>
           </Button>
         </CardAction>
       </CardHeader>
@@ -36,6 +38,7 @@ export function RecentActivityCard({ workspaceId, productId }: RecentActivityCar
 }
 
 function RecentActivity({ workspaceId, productId }: RecentActivityCardProps) {
+  const { t } = useI18n();
   const { data, isPending, error, refetch } = useProductActivity(workspaceId, productId);
 
   if (error) {
@@ -43,7 +46,7 @@ function RecentActivity({ workspaceId, productId }: RecentActivityCardProps) {
   }
   if (isPending) return <Skeleton className="h-24 w-full" />;
   if (data.items.length === 0) {
-    return <p className="text-sm text-muted-foreground">No changes recorded yet.</p>;
+    return <p className="text-sm text-muted-foreground">{t('No changes recorded yet.')}</p>;
   }
   return (
     <ul className="-my-2 divide-y">

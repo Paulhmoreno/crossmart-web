@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { isEnumValue } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import { PRODUCT_STATUS_LABELS } from '../../product-status';
 import type { ProductFormValues } from '../product-form.schema';
 import { EditorCard } from './EditorCard';
@@ -25,17 +26,18 @@ const STATUS_HINTS: Partial<Record<ProductStatus, string>> = {
 };
 
 export function StatusCard() {
+  const { t } = useI18n();
   const { control } = useFormContext<ProductFormValues>();
 
   return (
-    <EditorCard title="Status" id={PageSection.ProductStatus}>
+    <EditorCard title={t('Status')} id={PageSection.ProductStatus}>
       <Controller
         control={control}
         name="status"
         render={({ field }) => (
           <Field>
             <FieldLabel htmlFor={STATUS_FIELD_ID} className="sr-only">
-              Status
+              {t('Status')}
             </FieldLabel>
             <Select
               value={field.value}
@@ -48,14 +50,14 @@ export function StatusCard() {
                 <SelectGroup>
                   {Object.values(ProductStatus).map((status) => (
                     <SelectItem key={status} value={status}>
-                      {PRODUCT_STATUS_LABELS[status]}
+                      {t(PRODUCT_STATUS_LABELS[status])}
                     </SelectItem>
                   ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
             {STATUS_HINTS[field.value] && (
-              <FieldDescription>{STATUS_HINTS[field.value]}</FieldDescription>
+              <FieldDescription>{t(STATUS_HINTS[field.value]!)}</FieldDescription>
             )}
           </Field>
         )}

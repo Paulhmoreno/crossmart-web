@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import type { ProductChannelRef } from '../hooks/useProductChannels';
 import { useCategorySuggestions, useChooseListingCategory } from '../hooks/useListingCategory';
 import { CATEGORY_COPY, WOOCOMMERCE_CATEGORY_COPY } from '../listings.constants';
@@ -14,7 +15,7 @@ import type { ChannelCategory } from '../listings.types';
 const ENTER_KEY = 'Enter';
 const SEARCH_INPUT_ID = 'channel-category-search';
 
-type CategoryCopy = typeof CATEGORY_COPY | typeof WOOCOMMERCE_CATEGORY_COPY;
+type CategoryCopy = { readonly [Key in keyof typeof CATEGORY_COPY]: string };
 
 function copyForChannel(channel?: ChannelType): CategoryCopy {
   if (channel === ChannelType.woocommerce) return WOOCOMMERCE_CATEGORY_COPY;
@@ -101,7 +102,18 @@ function CategorySearch({
  * suggestions to change it. A choice is saved at once, apart from the sheet's other fields.
  */
 export function ChannelCategoryField({ channelRef, category, channel }: ChannelCategoryFieldProps) {
-  const copy = copyForChannel(channel);
+  const { t } = useI18n();
+  const rawCopy = copyForChannel(channel);
+  const copy = {
+    label: t(rawCopy.label),
+    automatic: t(rawCopy.automatic),
+    searchLabel: t(rawCopy.searchLabel),
+    searchPlaceholder: t(rawCopy.searchPlaceholder),
+    search: t(rawCopy.search),
+    noResults: t(rawCopy.noResults),
+    useSuggested: t(rawCopy.useSuggested),
+    savedNote: t(rawCopy.savedNote),
+  };
   const [search, setSearch] = useState<string | null>(null);
   const suggestions = useCategorySuggestions(channelRef, search);
   const choose = useChooseListingCategory(channelRef);

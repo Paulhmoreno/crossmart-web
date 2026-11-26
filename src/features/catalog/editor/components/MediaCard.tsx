@@ -19,6 +19,7 @@ import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import { useMediaUploads } from '../../hooks/useMediaUploads';
 import type { ProductFormValues } from '../product-form.schema';
 import { EditorCard } from './EditorCard';
@@ -37,6 +38,7 @@ interface MediaCardProps {
 }
 
 export function MediaCard({ workspaceId, onPendingChange, protectedUrls }: MediaCardProps) {
+  const { t } = useI18n();
   const { control } = useFormContext<ProductFormValues>();
   const media = useFieldArray({ control, name: 'media', keyName: 'rowKey' });
   const uploads = useMediaUploads(workspaceId, (url) => media.append({ url, altText: '' }));
@@ -60,7 +62,7 @@ export function MediaCard({ workspaceId, onPendingChange, protectedUrls }: Media
 
   if (media.fields.length === 0 && uploads.pendingCount === 0) {
     return (
-      <EditorCard title="Photos" id={PageSection.ProductMedia}>
+      <EditorCard title={t('Photos')} id={PageSection.ProductMedia}>
         {problems}
         <ImageDropzone onFiles={addFiles} />
       </EditorCard>
@@ -68,7 +70,7 @@ export function MediaCard({ workspaceId, onPendingChange, protectedUrls }: Media
   }
 
   return (
-    <EditorCard title="Photos" id={PageSection.ProductMedia}>
+    <EditorCard title={t('Photos')} id={PageSection.ProductMedia}>
       {problems}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext
@@ -104,17 +106,19 @@ export function MediaCard({ workspaceId, onPendingChange, protectedUrls }: Media
 }
 
 function ReorderHint() {
+  const { t } = useI18n();
   return (
     <p className="text-xs text-muted-foreground">
-      Drag to reorder. The first photo is the main one.
+      {t('Drag to reorder. The first photo is the main one.')}
     </p>
   );
 }
 
 function UploadingTile() {
+  const { t } = useI18n();
   return (
     <div className="grid aspect-square place-items-center rounded-lg border bg-muted text-muted-foreground">
-      <Spinner className="size-5" aria-label="Uploading image" />
+      <Spinner className="size-5" aria-label={t('Uploading image')} />
     </div>
   );
 }

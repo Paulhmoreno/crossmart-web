@@ -3,22 +3,20 @@ import { WorkspaceGate } from '@/components/feedback/WorkspaceGate';
 import { ListSkeleton } from '@/components/lists/ListSkeleton';
 import { AiSettingsForm, useAiConfig } from '@/features/ai-settings';
 import type { Workspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 function AiSettingsContent({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   const query = useAiConfig(workspace.id);
 
   if (query.isError) {
     return (
-      <ErrorState
-        title="No se pudo cargar la configuración de inteligencia artificial"
-        error={query.error}
-        onRetry={query.refetch}
-      />
+      <ErrorState title={t('Could not be loaded')} error={query.error} onRetry={query.refetch} />
     );
   }
 
   if (query.isPending) {
-    return <ListSkeleton label="Cargando configuración de inteligencia artificial" />;
+    return <ListSkeleton label={t('Loading...')} />;
   }
 
   const config = query.data;

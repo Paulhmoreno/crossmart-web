@@ -1,10 +1,10 @@
 import { type DraggableAttributes, type DraggableSyntheticListeners } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Lock, Star, Trash2 } from 'lucide-react';
+import { GripVertical, Star, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ODOO_COPY } from '@/features/odoo/odoo.constants';
+import { useI18n } from '@/lib/i18n';
 import { AltTextPopover } from './AltTextPopover';
 
 interface MediaTileProps {
@@ -21,16 +21,11 @@ interface MediaTileProps {
 }
 
 /** One image. Drag it, or move it with the keyboard from its handle. */
-export function MediaTile({
-  url,
-  altText,
-  position,
-  sourceManaged = false,
-  ...actions
-}: MediaTileProps) {
+export function MediaTile({ url, altText, position, ...actions }: MediaTileProps) {
   const { setNodeRef, transform, transition, isDragging, attributes, listeners } = useSortable({
     id: url,
   });
+  const { t } = useI18n();
   const isMain = position === 1;
 
   return (
@@ -44,22 +39,11 @@ export function MediaTile({
       )}
     >
       <img src={url} alt={altText} className="size-full object-cover" />
-      <div className="absolute bottom-2 left-2 flex items-center gap-1">
-        {isMain && (
-          <span className="rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium">
-            Main image
-          </span>
-        )}
-        {sourceManaged && (
-          <span
-            className="inline-flex items-center gap-1 rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium"
-            title={ODOO_COPY.managedFieldNote}
-          >
-            <Lock className="size-3" aria-hidden="true" />
-            Odoo
-          </span>
-        )}
-      </div>
+      {isMain && (
+        <span className="absolute bottom-2 left-2 rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium">
+          {t('Main image')}
+        </span>
+      )}
       <TileActions
         name={altText || `image ${position}`}
         altText={altText}

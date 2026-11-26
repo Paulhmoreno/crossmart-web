@@ -11,12 +11,12 @@ export const AI_PROVIDER_LABELS: Record<AiProviderName, string> = {
 };
 
 export const AI_CONFIG_STATUS_LABELS: Record<AiConfigStatus, string> = {
-  [AiConfigStatus.CONNECTED]: 'Conectado',
+  [AiConfigStatus.CONNECTED]: 'Connected',
   [AiConfigStatus.ERROR]: 'Error',
-  [AiConfigStatus.DISABLED]: 'Sin configurar',
+  [AiConfigStatus.DISABLED]: 'Not configured',
 };
 
 export const AI_SETTINGS_FEEDBACK = {
-  saved: 'Configuración de inteligencia artificial guardada',
-  cleared: 'Configuración de inteligencia artificial eliminada',
+  saved: 'AI configuration saved',
+  cleared: 'AI configuration cleared',
 } as const;

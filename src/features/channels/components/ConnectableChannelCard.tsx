@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { toStoreRoute } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import {
   CHANNEL_PREVIEW_COPY,
   CHANNEL_STATUS_LABELS,
@@ -51,16 +52,17 @@ function storeNeedingSetup(
 
 /** Says a store waits on its setup, and links to the store, where the alert lists what. */
 function SetupNeededNote({ connections }: { connections: readonly ChannelConnection[] }) {
+  const { t } = useI18n();
   const store = storeNeedingSetup(connections);
   if (!store) return null;
   return (
     <p className="flex items-center gap-1.5 text-sm text-warning">
       <CircleDashed className="size-4 shrink-0" aria-hidden="true" />
       <span>
-        {PUBLISH_READINESS_COPY.cardNote}
+        {t(PUBLISH_READINESS_COPY.cardNote)}
         {connections.length > 1 && ` (${store.displayName})`}.{' '}
         <Link to={toStoreRoute(store.id)} className="font-medium text-foreground underline">
-          {PUBLISH_READINESS_COPY.cardAction}
+          {t(PUBLISH_READINESS_COPY.cardAction)}
         </Link>
       </span>
     </p>
@@ -75,6 +77,7 @@ function CardActions({
   canManage,
   preview = false,
 }: ConnectableChannelCardProps) {
+  const { t } = useI18n();
   const store = storeToManage(connections);
   if (store) {
     return (
@@ -82,7 +85,7 @@ function CardActions({
         <Button asChild variant="outline" size="sm">
           <Link to={toStoreRoute(store.id)}>
             <Settings2 data-icon="inline-start" />
-            Manage
+            {t('Manage')}
           </Link>
         </Button>
         {canManage && (
@@ -97,7 +100,9 @@ function CardActions({
     );
   }
   if (!canManage) {
-    return <p className="text-sm text-muted-foreground">Ask a workspace admin to connect it.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">{t('Ask a workspace admin to connect it.')}</p>
+    );
   }
   return (
     <ConnectChannelDialog
@@ -107,7 +112,7 @@ function CardActions({
       trigger={
         <Button size="sm">
           <Plus data-icon="inline-start" />
-          {preview ? CHANNEL_PREVIEW_COPY.connect : CONNECT_LABEL}
+          {preview ? t(CHANNEL_PREVIEW_COPY.connect) : t(CONNECT_LABEL)}
         </Button>
       }
     />
@@ -119,6 +124,7 @@ function CardActions({
  * need attention. Stores are listed, managed and added on a store's own page.
  */
 export function ConnectableChannelCard(props: ConnectableChannelCardProps) {
+  const { t } = useI18n();
   const { channel, connections, preview } = props;
   const status = headlineStatus(connections);
 
@@ -131,12 +137,12 @@ export function ConnectableChannelCard(props: ConnectableChannelCardProps) {
             status ? (
               <ConnectionStatusBadge status={status} />
             ) : (
-              <Badge variant="outline">{CHANNEL_STATUS_LABELS[channel.status]}</Badge>
+              <Badge variant="outline">{t(CHANNEL_STATUS_LABELS[channel.status])}</Badge>
             )
           }
         />
         {connections.length > 0 && (
-          <p className="text-sm text-muted-foreground">{connectionsSummary(connections)}</p>
+          <p className="text-sm text-muted-foreground">{t(connectionsSummary(connections))}</p>
         )}
         <SetupNeededNote connections={connections} />
         {preview && <ChannelPreviewNote />}

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { GenerateAvailability, useGenerateAvailability } from '@/features/suggestions';
+import { useI18n } from '@/lib/i18n';
 import { AI_WRITER_COPY, AI_WRITER_DONE } from '../ai-writer.constants';
 import type { ContentDraft, ContentDraftCurrent, ContentDraftTarget } from '../ai-writer.types';
 import { useContentDraft } from '../hooks/useContentDraft';
@@ -37,14 +38,16 @@ function doneMessage(fields: readonly ContentField[]): string {
  * the form unsaved, with Undo. Hidden without the permission; disabled while AI is off.
  */
 export function AiRewriteButton(props: AiRewriteButtonProps) {
+  const { t } = useI18n();
   const { target, fields, getCurrent, apply, label = AI_WRITER_COPY.rewrite } = props;
+  const localizedLabel = t(label);
   const look = props.prominent ? PROMINENT_LOOK : SUBTLE_LOOK;
   const availability = useGenerateAvailability();
   const draft = useContentDraft(target);
   const [open, setOpen] = useState(false);
   if (availability === GenerateAvailability.Hidden) return null;
   if (availability === GenerateAvailability.NotConfigured) {
-    return <NotConfiguredButton label={label} look={look} />;
+    return <NotConfiguredButton label={localizedLabel} look={look} />;
   }
 
   const submit = (instruction: string) => {
@@ -54,8 +57,8 @@ export function AiRewriteButton(props: AiRewriteButtonProps) {
         onSuccess: (written) => {
           const undo = apply(written);
           setOpen(false);
-          toast.success(doneMessage(fields), {
-            action: { label: AI_WRITER_COPY.undo, onClick: undo },
+          toast.success(t(doneMessage(fields)), {
+            action: { label: t(AI_WRITER_COPY.undo), onClick: undo },
           });
         },
       },
@@ -66,7 +69,7 @@ export function AiRewriteButton(props: AiRewriteButtonProps) {
       <PopoverTrigger asChild>
         <Button type="button" {...look}>
           <WandSparkles data-icon="inline-start" />
-          {label}
+          {localizedLabel}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
@@ -77,6 +80,7 @@ export function AiRewriteButton(props: AiRewriteButtonProps) {
 }
 
 function NotConfiguredButton({ label, look }: { label: string; look: ButtonLook }) {
+  const { t } = useI18n();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -88,7 +92,7 @@ function NotConfiguredButton({ label, look }: { label: string; look: ButtonLook 
           </Button>
         </span>
       </TooltipTrigger>
-      <TooltipContent>{AI_WRITER_COPY.notConfigured}</TooltipContent>
+      <TooltipContent>{t(AI_WRITER_COPY.notConfigured)}</TooltipContent>
     </Tooltip>
   );
 }

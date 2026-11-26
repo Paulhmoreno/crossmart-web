@@ -11,6 +11,7 @@ import { useHasOrders } from '@/features/orders';
 import { GettingStarted, SalesEmptyState, useOnboarding } from '@/features/overview';
 import { SalesOverview } from '@/features/sales';
 import type { Workspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * What needs the seller first, then the first steps while setup is unfinished, then sales.
@@ -30,18 +31,19 @@ function OverviewContent({ workspace }: { workspace: Workspace }) {
 }
 
 function HomeActions() {
+  const { t } = useI18n();
   return (
     <>
       <Button variant="outline" asChild>
         <Link to={ROUTES.activity}>
           <History data-icon="inline-start" />
-          Activity
+          {t('Activity')}
         </Link>
       </Button>
       <Button asChild>
         <Link to={ROUTES.newProduct}>
           <Plus data-icon="inline-start" />
-          Add product
+          {t('Add product')}
         </Link>
       </Button>
     </>
@@ -50,13 +52,14 @@ function HomeActions() {
 
 /** Home: what needs attention, the first steps, and sales. */
 export function OverviewPage() {
+  const { t } = useI18n();
   const { data: session } = useSession();
   const firstName = session?.user.name.split(' ')[0];
 
   return (
     <Page
-      name="Home"
-      title={firstName ? `Welcome, ${firstName}` : 'Home'}
+      name={t('Home')}
+      title={firstName ? t('Welcome, {name}', { name: firstName }) : t('Home')}
       actions={<HomeActions />}
     >
       <WorkspaceGate>{(workspace) => <OverviewContent workspace={workspace} />}</WorkspaceGate>

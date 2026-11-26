@@ -1,5 +1,6 @@
 import type { SalesRange } from '@/api/schema';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useI18n } from '@/lib/i18n';
 import { SALES_RANGE_OPTIONS } from '../sales.constants';
 
 function isSalesRange(value: string): value is SalesRange {
@@ -13,6 +14,7 @@ export function SalesRangePicker({
   value: SalesRange;
   onChange: (range: SalesRange) => void;
 }) {
+  const { t } = useI18n();
   return (
     <ToggleGroup
       type="single"
@@ -21,16 +23,16 @@ export function SalesRangePicker({
       value={value}
       // A single toggle group reports '' when the active item is pressed again; keep it.
       onValueChange={(next) => isSalesRange(next) && onChange(next)}
-      aria-label="Sales period"
+      aria-label={t('Sales period')}
     >
       {SALES_RANGE_OPTIONS.map((option) => (
         <ToggleGroupItem
           key={option.value}
           value={option.value}
-          aria-label={option.description}
+          aria-label={t(option.description)}
           className="px-3"
         >
-          {option.label}
+          {t(option.label)}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

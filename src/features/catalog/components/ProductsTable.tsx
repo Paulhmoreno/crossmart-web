@@ -14,6 +14,7 @@ import {
 import { toProductRoute } from '@/config/routes';
 import type { Selection } from '@/hooks/useSelection';
 import { formatPriceRange } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import type { ProductSummary } from '../catalog.types';
 import { ProductStatusBadge } from './ProductStatusBadge';
 import { ProductThumbnail } from './ProductThumbnail';
@@ -42,6 +43,7 @@ export function ProductsTable({
   selection,
   renderRowMenu,
 }: ProductsTableProps) {
+  const { t } = useI18n();
   return (
     <div
       className={cn('rounded-lg border transition-opacity', isRefreshing && 'opacity-60')}
@@ -59,15 +61,15 @@ export function ProductsTable({
                 />
               </TableHead>
             )}
-            <TableHead>Product</TableHead>
-            <TableHead className="hidden sm:table-cell">Status</TableHead>
-            <TableHead className="hidden sm:table-cell">Stores</TableHead>
-            <TableHead className="hidden md:table-cell">Inventory</TableHead>
-            <TableHead className="hidden text-right md:table-cell">Price</TableHead>
-            <TableHead className="hidden lg:table-cell">Vendor</TableHead>
+            <TableHead>{t('Product')}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t('Status')}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t('Stores')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('Inventory')}</TableHead>
+            <TableHead className="hidden text-right md:table-cell">{t('Price')}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t('Vendor')}</TableHead>
             {renderRowMenu && (
               <TableHead className="w-10">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('Actions')}</span>
               </TableHead>
             )}
           </TableRow>

@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { formatMoney } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { toPeriodChange } from '../sales-format';
 import { ChangeBadge } from './ChangeBadge';
 import type { SalesReport } from '../sales.types';
@@ -28,34 +29,35 @@ function KpiTile({ label, value, current, previous, comparedTo }: KpiTileProps) 
 
 /** Sales, orders, average order value and units, each against the previous period. */
 export function SalesKpiGrid({ report, comparedTo }: { report: SalesReport; comparedTo: string }) {
+  const { formatNumber, t } = useI18n();
   const { current, previous, currencyCode } = report;
   const money = (amount: string | null) => (amount ? formatMoney(amount, currencyCode) : '–');
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       <KpiTile
-        label="Sales"
+        label={t('Sales')}
         value={money(current.sales)}
         current={Number(current.sales)}
         previous={Number(previous.sales)}
         comparedTo={comparedTo}
       />
       <KpiTile
-        label="Orders"
-        value={current.orders.toLocaleString()}
+        label={t('Orders')}
+        value={formatNumber(current.orders)}
         current={current.orders}
         previous={previous.orders}
         comparedTo={comparedTo}
       />
       <KpiTile
-        label="Average order value"
+        label={t('Average order value')}
         value={money(current.averageOrderValue)}
         current={Number(current.averageOrderValue ?? 0)}
         previous={Number(previous.averageOrderValue ?? 0)}
         comparedTo={comparedTo}
       />
       <KpiTile
-        label="Units sold"
-        value={current.units.toLocaleString()}
+        label={t('Units sold')}
+        value={formatNumber(current.units)}
         current={current.units}
         previous={previous.units}
         comparedTo={comparedTo}

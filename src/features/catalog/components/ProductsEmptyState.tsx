@@ -9,6 +9,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { useI18n } from '@/lib/i18n';
 
 interface ProductsEmptyStateProps {
   isFiltered: boolean;
@@ -22,6 +23,7 @@ export function ProductsEmptyState({
   onClearFilters,
   actions,
 }: ProductsEmptyStateProps) {
+  const { t } = useI18n();
   if (isFiltered) {
     return (
       <Empty className="border">
@@ -29,12 +31,12 @@ export function ProductsEmptyState({
           <EmptyMedia variant="icon">
             <SearchX />
           </EmptyMedia>
-          <EmptyTitle>No products match</EmptyTitle>
-          <EmptyDescription>Try another search, or clear the filters.</EmptyDescription>
+          <EmptyTitle>{t('No products match')}</EmptyTitle>
+          <EmptyDescription>{t('Try another search, or clear the filters.')}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={onClearFilters}>
-            Clear filters
+            {t('Clear filters')}
           </Button>
         </EmptyContent>
       </Empty>
@@ -46,9 +48,9 @@ export function ProductsEmptyState({
         <EmptyMedia variant="icon">
           <PackageOpen />
         </EmptyMedia>
-        <EmptyTitle>Your catalog is empty</EmptyTitle>
+        <EmptyTitle>{t('Your catalog is empty')}</EmptyTitle>
         <EmptyDescription>
-          Import a product export from Shopify, or add your first product by hand.
+          {t('Import a product export from Shopify, or add your first product by hand.')}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent className="flex-row justify-center">{actions}</EmptyContent>

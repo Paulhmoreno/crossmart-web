@@ -4,6 +4,7 @@ import { FormError } from '@/components/feedback/FormError';
 import { Button } from '@/components/ui/button';
 import { FieldGroup } from '@/components/ui/field';
 import { ROUTES } from '@/config/routes';
+import { useI18n } from '@/lib/i18n';
 import { AuthField } from '../auth.constants';
 import { useSignIn } from '../hooks/useSignIn';
 import { readAuthField, readPassword } from '../read-auth-form';
@@ -11,6 +12,7 @@ import { EmailField, PasswordField } from './AuthFields';
 
 /** On success the session updates and `RedirectIfSignedIn` moves the user on. */
 export function SignInForm() {
+  const { t } = useI18n();
   const signIn = useSignIn();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -32,10 +34,10 @@ export function SignInForm() {
           to={ROUTES.forgotPassword}
           className="-mt-3 self-end text-sm text-muted-foreground underline-offset-2 hover:underline"
         >
-          Forgot your password?
+          {t('Forgot your password?')}
         </Link>
         <Button type="submit" disabled={signIn.isPending}>
-          {signIn.isPending ? 'Signing in…' : 'Sign in'}
+          {signIn.isPending ? t('Signing in…') : t('Sign in')}
         </Button>
       </FieldGroup>
     </form>

@@ -4,17 +4,19 @@ import { Page } from '@/components/layout/Page';
 import { ChannelGrid, useConnectRedirectToast } from '@/features/channels';
 import { StoreSetupDialog, useStoreSetupParam } from '@/features/store-setup';
 import { hasPermission } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * The stores the workspace sells on, by channel. The OAuth callback returns here, and an admin
  * who just connected a store gets its one-step setup.
  */
 export function StoresPage() {
+  const { t } = useI18n();
   useConnectRedirectToast();
   const setup = useStoreSetupParam();
 
   return (
-    <Page name="Stores">
+    <Page name={t('Stores')}>
       <WorkspaceGate>
         {(workspace) => (
           <>

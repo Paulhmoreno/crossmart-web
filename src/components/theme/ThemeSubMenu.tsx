@@ -8,12 +8,14 @@ import {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { parseEnum } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import { THEME_OPTIONS, Theme } from './theme.constants';
 import { useTheme } from './useTheme';
 
 /** Light, dark or system, for menus that already hold account settings. */
 export function ThemeSubMenu() {
   const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
 
   function selectTheme(value: string) {
     const next = parseEnum(Theme, value);
@@ -24,7 +26,7 @@ export function ThemeSubMenu() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <SunMoon />
-        Theme
+        {t('Theme')}
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
@@ -32,7 +34,7 @@ export function ThemeSubMenu() {
             {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
               <DropdownMenuRadioItem key={value} value={value}>
                 <Icon />
-                {label}
+                {t(label)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
