@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_WORKER_COPY } from '../agent-worker.constants';
 import type { AgentWorkerAction } from '../agent-worker.types';
 import { ChangePreview } from './ChangePreview';
@@ -21,6 +22,7 @@ export function ProposedActionItem({
   disabled,
   onToggle,
 }: ProposedActionItemProps) {
+  const { t } = useI18n();
   const checkboxId = useId();
   const preview = action.preview;
   const target = preview?.target;
@@ -39,7 +41,7 @@ export function ProposedActionItem({
         </label>
         {target && (
           <p className="text-xs text-muted-foreground">
-            {AGENT_WORKER_COPY.changeTarget} {target}
+            {t(AGENT_WORKER_COPY.changeTarget)} {target}
           </p>
         )}
         <RiskBadges risks={action.risks} />

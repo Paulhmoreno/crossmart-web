@@ -1,5 +1,6 @@
 import { Sparkles } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_WORKER_COPY, AGENT_WORKER_TEST_IDS } from '../agent-worker.constants';
 import type { AgentWorkerSession } from '../hooks/useAgentWorkerSession';
 import { Composer } from './Composer';
@@ -18,11 +19,12 @@ function useFocusOnOpen() {
 }
 
 function ChatHeader({ session }: { session: AgentWorkerSession }) {
+  const { t } = useI18n();
   return (
     <header className="flex items-center justify-between gap-2 border-b px-3 py-2">
       <h2 className="flex items-center gap-1.5 text-sm font-semibold whitespace-nowrap">
         <Sparkles className="size-4 text-brand" aria-hidden="true" />
-        {AGENT_WORKER_COPY.name}
+        {t(AGENT_WORKER_COPY.name)}
       </h2>
       <ConversationSwitcher
         workspaceId={session.workspaceId}
@@ -39,10 +41,11 @@ function ChatHeader({ session }: { session: AgentWorkerSession }) {
  * their tool activity and the changes to approve, and the composer.
  */
 export function AgentChat({ session }: { session: AgentWorkerSession }) {
+  const { t } = useI18n();
   const composerRef = useFocusOnOpen();
   return (
     <section
-      aria-label={AGENT_WORKER_COPY.logLabel}
+      aria-label={t(AGENT_WORKER_COPY.logLabel)}
       data-testid={AGENT_WORKER_TEST_IDS.chat}
       className="flex h-full min-h-0 flex-col"
     >

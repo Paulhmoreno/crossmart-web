@@ -14,6 +14,7 @@ import {
   useStore,
 } from '@xyflow/react';
 import { useTheme } from '@/components/theme/useTheme';
+import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { CHANNEL_MAP_COPY, MAP_LAYOUT } from '../channel-map.constants';
 import { canvasHeight } from '../map-layout';
@@ -99,6 +100,7 @@ export function ChannelMapCanvas<TNode extends Node>({
   label,
   fill = false,
 }: ChannelMapCanvasProps<TNode>) {
+  const { t } = useI18n();
   const { resolvedTheme } = useTheme();
   const { flowNodes, onNodesChange } = useMeasuredNodes(nodes);
   const fitOptions = fill ? FILL_FIT_VIEW_OPTIONS : FIT_VIEW_OPTIONS;
@@ -140,7 +142,7 @@ export function ChannelMapCanvas<TNode extends Node>({
             showInteractive={false}
             fitViewOptions={fitOptions}
             orientation="horizontal"
-            aria-label={CHANNEL_MAP_COPY.controlsLabel}
+            aria-label={t(CHANNEL_MAP_COPY.controlsLabel)}
           />
         )}
       </ReactFlow>

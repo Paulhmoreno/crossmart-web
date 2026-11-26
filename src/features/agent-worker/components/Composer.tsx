@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useI18n } from '@/lib/i18n';
 import {
   AGENT_WORKER_COPY,
   AGENT_WORKER_MESSAGE_MAX_LENGTH,
@@ -28,12 +29,13 @@ function isSubmitKey(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
 }
 
 function StopButton({ onStop }: { onStop: () => void }) {
+  const { t } = useI18n();
   return (
     <Button
       type="button"
       variant="outline"
       size="icon"
-      aria-label={AGENT_WORKER_COPY.stop}
+      aria-label={t(AGENT_WORKER_COPY.stop)}
       data-testid={AGENT_WORKER_TEST_IDS.stop}
       onClick={onStop}
     >
@@ -44,6 +46,7 @@ function StopButton({ onStop }: { onStop: () => void }) {
 
 /** Where the message is typed, with Send, or Stop while Crossmart Agent is working. */
 export function Composer({ value, onChange, onSend, onStop, isBusy, inputRef }: ComposerProps) {
+  const { t } = useI18n();
   const inputId = useId();
   const hintId = useId();
   const text = value.trim();
@@ -57,7 +60,7 @@ export function Composer({ value, onChange, onSend, onStop, isBusy, inputRef }: 
   return (
     <form onSubmit={submit} className="flex flex-col gap-2 border-t p-4">
       <Label htmlFor={inputId} className="sr-only">
-        {AGENT_WORKER_COPY.composerLabel}
+        {t(AGENT_WORKER_COPY.composerLabel)}
       </Label>
       <div className="flex items-end gap-2">
         <Textarea
@@ -66,7 +69,7 @@ export function Composer({ value, onChange, onSend, onStop, isBusy, inputRef }: 
           rows={COMPOSER_ROWS}
           dir="auto"
           maxLength={AGENT_WORKER_MESSAGE_MAX_LENGTH}
-          placeholder={AGENT_WORKER_COPY.composerPlaceholder}
+          placeholder={t(AGENT_WORKER_COPY.composerPlaceholder)}
           aria-describedby={hintId}
           data-testid={AGENT_WORKER_TEST_IDS.composer}
           value={value}
@@ -85,7 +88,7 @@ export function Composer({ value, onChange, onSend, onStop, isBusy, inputRef }: 
             type="submit"
             size="icon"
             disabled={!canSend}
-            aria-label={AGENT_WORKER_COPY.send}
+            aria-label={t(AGENT_WORKER_COPY.send)}
             data-testid={AGENT_WORKER_TEST_IDS.send}
           >
             <SendHorizontal className="rtl:-scale-x-100" />
@@ -93,7 +96,7 @@ export function Composer({ value, onChange, onSend, onStop, isBusy, inputRef }: 
         )}
       </div>
       <p id={hintId} className="text-xs text-muted-foreground">
-        <Kbd>{SUBMIT_KEY}</Kbd> {AGENT_WORKER_COPY.keyboardHint}
+        <Kbd>{SUBMIT_KEY}</Kbd> {t(AGENT_WORKER_COPY.keyboardHint)}
       </p>
     </form>
   );

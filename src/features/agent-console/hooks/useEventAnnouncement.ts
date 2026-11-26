@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { AGENT_CONSOLE_COPY, EVENT_FEED } from '../agent-console.constants';
+import { tp } from '@/lib/i18n';
+import { EVENT_FEED } from '../agent-console.constants';
 import type { WorkspaceEvent } from '../agent-console.types';
+import { formatEventSummary } from '../event-presentation';
 
 /**
  * A sentence for screen readers about the events that just arrived, at most every few seconds:
@@ -30,7 +32,17 @@ export function useEventAnnouncement(events: readonly WorkspaceEvent[]): string 
       const fresh = current.slice(start);
       announcedId.current = current.at(-1)?.id ?? null;
       const last = fresh.at(-1);
-      if (last) setMessage(AGENT_CONSOLE_COPY.announce(fresh.length, last.summary));
+      if (last) {
+        const summary = formatEventSummary(last.summary);
+        setMessage(
+          tp(
+            fresh.length,
+            '1 new event. Latest: {summary}',
+            '{count} new events. Latest: {summary}',
+            { summary },
+          ),
+        );
+      }
     }, EVENT_FEED.announceEveryMs);
   }, [events]);
 

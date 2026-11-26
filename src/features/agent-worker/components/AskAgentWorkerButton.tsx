@@ -1,6 +1,7 @@
 import { Sparkles } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import { useAgentWorker } from '../agent-worker-context';
 import { AGENT_WORKER_COPY } from '../agent-worker.constants';
 import type { OpenAgentWorkerOptions } from '../agent-worker.types';
@@ -26,6 +27,7 @@ export function AskAgentWorkerButton({
   className,
   testId,
 }: AskAgentWorkerButtonProps) {
+  const { t } = useI18n();
   const { canUse, openAgentWorker } = useAgentWorker();
   if (!canUse) return null;
   return (
@@ -38,7 +40,7 @@ export function AskAgentWorkerButton({
       onClick={() => openAgentWorker({ context, prefill })}
     >
       <Sparkles data-icon="inline-start" className="text-brand" />
-      {label}
+      {t(label)}
     </Button>
   );
 }

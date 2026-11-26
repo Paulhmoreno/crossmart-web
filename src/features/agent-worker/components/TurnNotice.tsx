@@ -1,5 +1,6 @@
 import { CircleAlert, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_WORKER_COPY } from '../agent-worker.constants';
 import type { AgentWorkerError, AgentWorkerTurn } from '../agent-worker.types';
 import { turnNote } from '../conversation-view';
@@ -11,7 +12,8 @@ interface TurnNoticeProps {
 
 /** How the last turn went wrong, when it did: the stream's error, or why it stopped early. */
 export function TurnNotice({ turn, error }: TurnNoticeProps) {
-  const note = turnNote(turn, AGENT_WORKER_COPY.stoppedNote);
+  const { t } = useI18n();
+  const note = turnNote(turn, t(AGENT_WORKER_COPY.stoppedNote));
   if (error) {
     return (
       <Alert variant="destructive">

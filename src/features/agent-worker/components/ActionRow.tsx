@@ -2,6 +2,7 @@ import { CircleCheck, CircleMinus, CircleX, type LucideIcon } from 'lucide-react
 import { AgentWorkerToolKind } from '@/api/schema';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 import { ActionTone, AGENT_WORKER_ACTION_STATUS_COPY } from '../agent-worker.constants';
 import type { AgentWorkerAction } from '../agent-worker.types';
 
@@ -29,6 +30,7 @@ function ToneIcon({ tone }: { tone: ActionTone }) {
  * change with how it ended ("Applied", "Failed · the store refused the price").
  */
 export function ActionRow({ action }: { action: AgentWorkerAction }) {
+  const { t } = useI18n();
   const { label, tone } = AGENT_WORKER_ACTION_STATUS_COPY[action.status];
   const isWrite = action.kind === AgentWorkerToolKind.write;
   const isFailure = tone === ActionTone.Failure || action.isError;
@@ -46,7 +48,7 @@ export function ActionRow({ action }: { action: AgentWorkerAction }) {
         <span className={cn(isWrite && 'font-medium text-foreground')}>
           {isWrite ? action.summary : action.toolTitle}
         </span>
-        {isWrite && <span> · {label}</span>}
+        {isWrite && <span> · {t(label)}</span>}
         {action.outcome && <span> · {action.outcome}</span>}
       </span>
     </li>

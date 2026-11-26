@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortcutAria, shortcutLabel } from '@/lib/platform';
+import { useI18n } from '@/lib/i18n';
 import { useAgentWorker } from '../agent-worker-context';
 import {
   AGENT_WORKER_COPY,
@@ -19,6 +20,7 @@ const SHORTCUT_KEY_LABEL = AGENT_WORKER_SHORTCUT_KEY.toUpperCase();
  * shows as the current page there.
  */
 export function AgentWorkerLauncher() {
+  const { t } = useI18n();
   const { canUse, openAgentWorker } = useAgentWorker();
   const isOnPage = useMatch(ROUTES.agent) !== null;
   if (!canUse) return null;
@@ -34,11 +36,11 @@ export function AgentWorkerLauncher() {
           onClick={() => openAgentWorker()}
         >
           <Sparkles data-icon="inline-start" className="text-brand" />
-          <span className="max-sm:sr-only">{AGENT_WORKER_COPY.name}</span>
+          <span className="max-sm:sr-only">{t(AGENT_WORKER_COPY.name)}</span>
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {AGENT_WORKER_COPY.name} <Kbd>{shortcutLabel(SHORTCUT_KEY_LABEL)}</Kbd>
+        {t(AGENT_WORKER_COPY.name)} <Kbd>{shortcutLabel(SHORTCUT_KEY_LABEL)}</Kbd>
       </TooltipContent>
     </Tooltip>
   );

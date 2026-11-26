@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 import { useCatalogStats } from '@/features/catalog/hooks/useCatalogStats';
 import { CHANNELS } from '@/features/channels';
 import type { ChannelInfo } from '@/features/channels/channels.constants';
@@ -30,6 +31,7 @@ function AccountMapGraphView({
   channels,
   overlay,
 }: AccountMapInput & { fill: boolean }) {
+  const { t } = useI18n();
   const graph = useMemo(
     () => buildAccountMap({ stores, productCount, channels, overlay }),
     [stores, productCount, channels, overlay],
@@ -40,7 +42,7 @@ function AccountMapGraphView({
       edges={graph.edges}
       nodeTypes={NODE_TYPES}
       graphHeight={graph.height}
-      label={CHANNEL_MAP_COPY.accountGraphLabel}
+      label={t(CHANNEL_MAP_COPY.accountGraphLabel)}
       fill={fill}
     />
   );

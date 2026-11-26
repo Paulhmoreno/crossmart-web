@@ -1,4 +1,5 @@
 import { AccountChannelMap, type MapOverlay } from '@/features/channel-map';
+import { useI18n } from '@/lib/i18n';
 import {
   AGENT_CONSOLE_COPY,
   AGENT_CONSOLE_TEST_IDS,
@@ -16,9 +17,10 @@ interface AgentMapPanelProps {
 
 /** The status bar over the live map of the catalog and its stores, with the agent's work on it. */
 export function AgentMapPanel({ workspaceId, overlay, stores, agent }: AgentMapPanelProps) {
+  const { t } = useI18n();
   return (
     <section
-      aria-label={AGENT_CONSOLE_COPY.mapTitle}
+      aria-label={t(AGENT_CONSOLE_COPY.mapTitle)}
       data-testid={AGENT_CONSOLE_TEST_IDS.map}
       className="@container flex h-full min-h-0 flex-col gap-3 p-3"
     >

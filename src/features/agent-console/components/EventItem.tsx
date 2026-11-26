@@ -4,7 +4,15 @@ import { RelativeTime } from '@/components/time/RelativeTime';
 import { cn } from '@/lib/utils';
 import { AGENT_CONSOLE_TEST_IDS } from '../agent-console.constants';
 import type { WorkspaceEvent } from '../agent-console.types';
-import { actorLabel, eventNodeId, eventRoute, SEVERITY_PRESENTATION } from '../event-presentation';
+import {
+  actorLabel,
+  eventNodeId,
+  eventRoute,
+  formatEventDetail,
+  formatEventSummary,
+  SEVERITY_PRESENTATION,
+} from '../event-presentation';
+import { useI18n } from '@/lib/i18n';
 
 export interface EventItemProps {
   event: WorkspaceEvent;
@@ -25,6 +33,8 @@ function highlightHandlers(nodeId: string | null, onHighlight: (nodeId: string |
 
 /** The summary, as a way to what it is about: the changes to review, or the page that shows it. */
 function EventSummary({ event, onOpenProposals, onHighlight }: EventItemProps) {
+  useI18n();
+  const summary = formatEventSummary(event.summary);
   const handlers = highlightHandlers(eventNodeId(event), onHighlight);
   if (event.type === WorkspaceEventType.agent_change_proposed) {
     return (
@@ -34,15 +44,15 @@ function EventSummary({ event, onOpenProposals, onHighlight }: EventItemProps) {
         onClick={onOpenProposals}
         {...handlers}
       >
-        {event.summary}
+        {summary}
       </button>
     );
   }
   const route = eventRoute(event);
-  if (!route) return <p className="text-sm leading-snug break-words">{event.summary}</p>;
+  if (!route) return <p className="text-sm leading-snug break-words">{summary}</p>;
   return (
     <Link to={route} className={SUMMARY_CLASS} {...handlers}>
-      {event.summary}
+      {summary}
     </Link>
   );
 }
@@ -52,6 +62,7 @@ function EventSummary({ event, onOpenProposals, onHighlight }: EventItemProps) {
  * Its summary leads to what it is about and rings its store or product on the map.
  */
 export function EventItem(props: EventItemProps) {
+  useI18n();
   const { event } = props;
   const { icon: Icon, iconClass } = SEVERITY_PRESENTATION[event.severity];
   const isError = event.severity === WorkspaceEventSeverity.error;
@@ -71,7 +82,7 @@ export function EventItem(props: EventItemProps) {
               isError ? 'text-destructive' : 'text-muted-foreground',
             )}
           >
-            {event.detail}
+            {formatEventDetail(event.detail)}
           </p>
         )}
         <p className="text-xs text-muted-foreground">

@@ -1,6 +1,7 @@
 import { Check, X } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import {
   AGENT_WORKER_COPY,
   AGENT_WORKER_ELEMENT_IDS,
@@ -25,6 +26,7 @@ interface ProposedActionsCardProps {
  * an explicit confirmation, and one decision approves the selected and rejects the rest.
  */
 export function ProposedActionsCard({ actions, disabled, onDecide }: ProposedActionsCardProps) {
+  const { t } = useI18n();
   const selection = useProposedSelection(actions);
   const titleId = useId();
   return (
@@ -37,9 +39,9 @@ export function ProposedActionsCard({ actions, disabled, onDecide }: ProposedAct
     >
       <header className="flex flex-col gap-0.5">
         <h3 id={titleId} className="text-sm font-semibold">
-          {AGENT_WORKER_COPY.proposedTitle}
+          {t(AGENT_WORKER_COPY.proposedTitle)}
         </h3>
-        <p className="text-xs text-muted-foreground">{AGENT_WORKER_COPY.proposedDescription}</p>
+        <p className="text-xs text-muted-foreground">{t(AGENT_WORKER_COPY.proposedDescription)}</p>
       </header>
       <ul className="flex flex-col gap-2">
         {actions.map((action) => (
@@ -67,7 +69,7 @@ export function ProposedActionsCard({ actions, disabled, onDecide }: ProposedAct
           onClick={() => onDecide(REJECT_ALL)}
         >
           <X data-icon="inline-start" />
-          {AGENT_WORKER_COPY.rejectAll}
+          {t(AGENT_WORKER_COPY.rejectAll)}
         </Button>
         <Button
           size="sm"
@@ -76,7 +78,7 @@ export function ProposedActionsCard({ actions, disabled, onDecide }: ProposedAct
           onClick={() => onDecide(selection.approval())}
         >
           <Check data-icon="inline-start" />
-          {AGENT_WORKER_COPY.approveSelected}
+          {t(AGENT_WORKER_COPY.approveSelected)}
         </Button>
       </div>
     </section>

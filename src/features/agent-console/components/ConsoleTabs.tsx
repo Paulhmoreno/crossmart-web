@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { parseEnum } from '@/lib/enum';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_CONSOLE_COPY, AGENT_CONSOLE_TEST_IDS, ConsoleTab } from '../agent-console.constants';
 import type { AgentConsoleState } from '../hooks/useAgentConsole';
 import { useUnseenCount } from '../hooks/useUnseenCount';
@@ -9,20 +10,22 @@ import type { ConsolePanels } from './AgentConsole';
 const TAB_ORDER: readonly ConsoleTab[] = [ConsoleTab.Chat, ConsoleTab.Map, ConsoleTab.Events];
 
 function UnseenBadge({ count }: { count: number }) {
+  const { tp } = useI18n();
   if (count === 0) return null;
   return (
     <span className="ms-1 rounded-full bg-brand px-1.5 text-[11px] leading-4 font-semibold text-white tabular-nums">
-      <span className="sr-only">, {AGENT_CONSOLE_COPY.newEvents(count)}</span>
+      <span className="sr-only">, {tp(count, '{count} new event', '{count} new events')}</span>
       <span aria-hidden="true">{count}</span>
     </span>
   );
 }
 
 function ActivityDot({ active }: { active: boolean }) {
+  const { t } = useI18n();
   if (!active) return null;
   return (
     <span className="ms-1 size-2 rounded-full bg-brand motion-safe:animate-pulse">
-      <span className="sr-only">, {AGENT_CONSOLE_COPY.mapActive}</span>
+      <span className="sr-only">, {t(AGENT_CONSOLE_COPY.mapActive)}</span>
     </span>
   );
 }
@@ -35,6 +38,7 @@ export function ConsoleTabs({
   panels: ConsolePanels;
   state: AgentConsoleState;
 }) {
+  const { t } = useI18n();
   const unseen = useUnseenCount(state.feed.events, state.tab === ConsoleTab.Events);
   const mapActive = state.tab !== ConsoleTab.Map && hasActivity(state.overlay);
   return (
@@ -47,7 +51,7 @@ export function ConsoleTabs({
       <TabsList className="w-full">
         {TAB_ORDER.map((tab) => (
           <TabsTrigger key={tab} value={tab} className="flex-1">
-            {AGENT_CONSOLE_COPY.tabs[tab]}
+            {t(AGENT_CONSOLE_COPY.tabs[tab])}
             {tab === ConsoleTab.Events && <UnseenBadge count={unseen} />}
             {tab === ConsoleTab.Map && <ActivityDot active={mapActive} />}
           </TabsTrigger>

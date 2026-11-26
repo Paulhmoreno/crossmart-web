@@ -31,10 +31,10 @@ export const INLINE_CHANGE_MAX_LENGTH = 60;
 
 /** Prompts offered in an empty conversation. */
 export const AGENT_WORKER_EXAMPLE_PROMPTS = [
-  'Fix my failed eBay listings',
-  'Publish the Linen Shirt to my Outlet store',
   'Which products are low on stock?',
-  'Shorten titles for eBay’s 80-character limit',
+  'Check listings with errors',
+  'Find products missing descriptions or photos',
+  'Improve product titles and descriptions for my stores',
 ] as const;
 
 /** Hooks for end-to-end tests and screenshots. */

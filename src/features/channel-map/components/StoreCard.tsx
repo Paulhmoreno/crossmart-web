@@ -9,6 +9,7 @@ import { ConnectionStatusBadge } from '@/features/channels';
 import { StoreName } from '@/features/listings';
 import type { StoreListingHealth } from '@/features/listing-health/listing-health.types';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 import {
   CHANNEL_MAP_COPY,
   MAP_STATUS_ORDER,
@@ -36,7 +37,9 @@ function StatusCountChip({
   /** Set apart from the count before it. */
   separated: boolean;
 }) {
+  const { formatNumber, t } = useI18n();
   const { label, countLabel, icon: Icon, iconClass } = MAP_STATUS_PRESENTATION[status];
+  const localizedLabel = t(label);
   return (
     <li className="flex items-center gap-1">
       {separated && (
@@ -46,7 +49,11 @@ function StatusCountChip({
       )}
       <Link
         to={storeListingsRoute(store.connectionId, status)}
-        aria-label={CHANNEL_MAP_COPY.statusCount(store.displayName, label, count)}
+        aria-label={t('{store}: {count} {status}. Show them', {
+          store: store.displayName,
+          count: formatNumber(count),
+          status: localizedLabel.toLowerCase(),
+        })}
         data-status={status}
         className={cn(
           'flex items-center gap-1 px-0.5 whitespace-nowrap transition-colors hover:bg-accent',
@@ -54,8 +61,8 @@ function StatusCountChip({
         )}
       >
         <Icon className={cn('size-3', iconClass)} aria-hidden="true" />
-        <span className="font-medium tabular-nums">{count.toLocaleString()}</span>
-        <span className="text-muted-foreground">{countLabel}</span>
+        <span className="font-medium tabular-nums">{formatNumber(count)}</span>
+        <span className="text-muted-foreground">{t(countLabel)}</span>
       </Link>
     </li>
   );
@@ -63,9 +70,10 @@ function StatusCountChip({
 
 /** The statuses the store has products in, or one muted line when it has none. */
 function StatusCounts({ store, counts }: StoreNodeData) {
+  const { t } = useI18n();
   const present = MAP_STATUS_ORDER.filter((status) => counts[status] > 0);
   if (present.length === 0) {
-    return <p className="text-xs text-muted-foreground">{CHANNEL_MAP_COPY.nothingListed}</p>;
+    return <p className="text-xs text-muted-foreground">{t(CHANNEL_MAP_COPY.nothingListed)}</p>;
   }
   return (
     <ul className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs">
@@ -84,11 +92,12 @@ function StatusCounts({ store, counts }: StoreNodeData) {
 
 /** For a store with failed listings: Crossmart Agent, ready to fix them (the person presses send). */
 function FixWithAgentWorker({ store }: { store: StoreListingHealth }) {
+  const { t } = useI18n();
   return (
     <AskAgentWorkerButton
       label={AGENT_WORKER_COPY.fixStore}
       context={{ view: AgentWorkerContextView.channel_map, connectionId: store.connectionId }}
-      prefill={AGENT_WORKER_COPY.fixStorePrompt(store.displayName)}
+      prefill={t('Fix the failed listings on {store}', { store: store.displayName })}
       variant="ghost"
       size="xs"
       className="-me-1.5"
@@ -112,12 +121,13 @@ export function StoreCard({ store, counts, overlay }: StoreNodeData) {
 }
 
 function StoreCardBody({ store, counts }: StoreNodeData) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground shadow-sm">
       <div className="flex items-center justify-between gap-2 text-sm">
         <Link
           to={storeListingsRoute(store.connectionId)}
-          aria-label={CHANNEL_MAP_COPY.openStore(store.displayName)}
+          aria-label={t('Open {store}’s listings', { store: store.displayName })}
           className={cn('min-w-0 hover:underline', FOCUS_RING)}
         >
           <StoreName connection={store} />

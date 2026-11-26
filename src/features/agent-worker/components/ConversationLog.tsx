@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { ContentLoader } from '@/components/feedback/ContentLoader';
 import { ErrorState } from '@/components/feedback/ErrorState';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_WORKER_COPY } from '../agent-worker.constants';
 import type { AgentWorkerSession } from '../hooks/useAgentWorkerSession';
 import { ConversationMessage } from './ConversationMessage';
@@ -15,13 +16,14 @@ function isEmpty({ conversationId, live }: AgentWorkerSession): boolean {
 
 /** The messages as a polite live region, so new ones are read out without interrupting. */
 function MessageList({ session }: { session: AgentWorkerSession }) {
+  const { t } = useI18n();
   const { view, live, isStreaming } = session;
   return (
     <ol
       role="log"
       aria-live="polite"
       aria-busy={isStreaming}
-      aria-label={AGENT_WORKER_COPY.logLabel}
+      aria-label={t(AGENT_WORKER_COPY.logLabel)}
       className="flex flex-col gap-3"
     >
       {view.messages.map((message) => (

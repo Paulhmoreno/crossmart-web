@@ -1,5 +1,6 @@
 import { AgentWorkerRole } from '@/api/schema';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 import { AGENT_WORKER_COPY } from '../agent-worker.constants';
 
 interface MessageBubbleProps {
@@ -19,6 +20,7 @@ const ROLE_NAMES: Record<AgentWorkerRole, string> = {
  * messages sit on the right, Crossmart Agent's on the left; the role is named for screen readers.
  */
 export function MessageBubble({ role, text, streaming = false }: MessageBubbleProps) {
+  const { t } = useI18n();
   const isUser = role === AgentWorkerRole.user;
   return (
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
@@ -30,7 +32,7 @@ export function MessageBubble({ role, text, streaming = false }: MessageBubblePr
           isUser ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-muted',
         )}
       >
-        <span className="sr-only">{ROLE_NAMES[role]}: </span>
+        <span className="sr-only">{t(ROLE_NAMES[role])}: </span>
         {text}
       </p>
     </div>

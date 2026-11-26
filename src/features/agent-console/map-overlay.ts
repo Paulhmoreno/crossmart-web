@@ -7,9 +7,7 @@ import {
   NodeActivityTone,
   type NodeOverlay,
 } from '@/features/channel-map';
-import { AGENT_CONSOLE_COPY } from './agent-console.constants';
-
-const { activity: COPY } = AGENT_CONSOLE_COPY;
+import { t, tp } from '@/lib/i18n';
 
 /** When several things happen on one node, the one that matters most is shown. */
 const TONE_PRIORITY: Record<NodeActivityTone, number> = {
@@ -29,27 +27,29 @@ const ACTIVITY_BY_STATUS: Partial<
   Record<AgentWorkerActionStatus, (action: AgentWorkerAction) => NodeActivity>
 > = {
   [AgentWorkerActionStatus.running]: (action) => ({
-    label: COPY.reading(action.toolTitle),
+    label: t('Reading: {tool}', { tool: action.toolTitle }),
     tone: NodeActivityTone.Reading,
   }),
   [AgentWorkerActionStatus.succeeded]: (action) => ({
-    label: COPY.read(action.toolTitle, action.outcome),
+    label: action.outcome
+      ? t('Read: {tool} · {outcome}', { tool: action.toolTitle, outcome: action.outcome })
+      : t('Read: {tool}', { tool: action.toolTitle }),
     tone: NodeActivityTone.Reading,
   }),
   [AgentWorkerActionStatus.failed]: (action) => ({
-    label: COPY.failed(action.toolTitle),
+    label: t('Failed: {change}', { change: action.toolTitle }),
     tone: NodeActivityTone.Failed,
   }),
   [AgentWorkerActionStatus.executing]: (action) => ({
-    label: COPY.updating(changeOf(action)),
+    label: t('Updating: {change}', { change: changeOf(action) }),
     tone: NodeActivityTone.Writing,
   }),
   [AgentWorkerActionStatus.executed]: (action) => ({
-    label: COPY.applied(changeOf(action)),
+    label: t('Applied: {change}', { change: changeOf(action) }),
     tone: NodeActivityTone.Done,
   }),
   [AgentWorkerActionStatus.execution_failed]: (action) => ({
-    label: COPY.failed(changeOf(action)),
+    label: t('Failed: {change}', { change: changeOf(action) }),
     tone: NodeActivityTone.Failed,
   }),
 };
@@ -102,7 +102,10 @@ export function buildMapOverlay(input: MapOverlayInput): MapOverlay {
   for (const action of input.proposed) nodeFor(actionNodeId(action)).proposals += 1;
   for (const node of Object.values(nodes)) {
     if (node.proposals > 0) {
-      const waiting = { label: COPY.proposed(node.proposals), tone: NodeActivityTone.Waiting };
+      const waiting = {
+        label: tp(node.proposals, 'Proposed: 1 change', 'Proposed: {count} changes'),
+        tone: NodeActivityTone.Waiting,
+      };
       node.activity = stronger(node.activity, waiting);
     }
   }

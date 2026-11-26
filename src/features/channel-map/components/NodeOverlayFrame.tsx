@@ -1,7 +1,8 @@
 import './channel-map.css';
 import type { PropsWithChildren } from 'react';
+import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { CHANNEL_MAP_COPY, NODE_ACTIVITY_CLASSES } from '../channel-map.constants';
+import { NODE_ACTIVITY_CLASSES } from '../channel-map.constants';
 import type { NodeActivity, NodeOverlay } from '../channel-map.types';
 
 const NO_OVERLAY: NodeOverlay = { activity: null, proposals: 0, highlighted: false };
@@ -20,12 +21,18 @@ function ActivityPill({ activity }: { activity: NodeActivity }) {
 }
 
 function ProposalMarker({ count, onOpen }: { count: number; onOpen?: () => void }) {
+  const { tp } = useI18n();
+  const label = tp(
+    count,
+    '{count} change waiting for you. Show it',
+    '{count} changes waiting for you. Show them',
+  );
   return (
     <button
       type="button"
       onClick={onOpen}
-      aria-label={CHANNEL_MAP_COPY.proposals(count)}
-      title={CHANNEL_MAP_COPY.proposals(count)}
+      aria-label={label}
+      title={label}
       className="absolute -top-3 -right-3 z-10 grid size-7 place-items-center rounded-full border-2 border-background bg-warning text-sm font-semibold text-white tabular-nums shadow-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none dark:text-black"
     >
       {count}
