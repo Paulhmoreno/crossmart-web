@@ -8,6 +8,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { useI18n } from '@/lib/i18n';
 
 interface ActivityEmptyStateProps {
   isFiltered: boolean;
@@ -15,6 +16,7 @@ interface ActivityEmptyStateProps {
 }
 
 export function ActivityEmptyState({ isFiltered, onClearFilters }: ActivityEmptyStateProps) {
+  const { t } = useI18n();
   if (isFiltered) {
     return (
       <Empty className="border">
@@ -22,12 +24,12 @@ export function ActivityEmptyState({ isFiltered, onClearFilters }: ActivityEmpty
           <EmptyMedia variant="icon">
             <SearchX />
           </EmptyMedia>
-          <EmptyTitle>No matching activity</EmptyTitle>
-          <EmptyDescription>Nothing here matches these filters.</EmptyDescription>
+          <EmptyTitle>{t('No matching activity')}</EmptyTitle>
+          <EmptyDescription>{t('Nothing here matches these filters.')}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={onClearFilters}>
-            Clear filters
+            {t('Clear filters')}
           </Button>
         </EmptyContent>
       </Empty>
@@ -39,9 +41,9 @@ export function ActivityEmptyState({ isFiltered, onClearFilters }: ActivityEmpty
         <EmptyMedia variant="icon">
           <History />
         </EmptyMedia>
-        <EmptyTitle>No activity yet</EmptyTitle>
+        <EmptyTitle>{t('No activity yet')}</EmptyTitle>
         <EmptyDescription>
-          Changes to products, saved views and API keys show up here, with who made them.
+          {t('Changes to products, saved views and API keys show up here, with who made them.')}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

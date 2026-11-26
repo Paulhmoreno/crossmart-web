@@ -1,10 +1,12 @@
 import { ROUTES } from '@/config/routes';
 import { ChannelSetup } from '@/features/channels';
-import { CONNECT_CHANNEL_PROMPT } from './overview.constants';
+import { CONNECT_CHANNEL_PROMPT, CONNECTABLE_CHANNEL_NAMES } from './overview.constants';
 
 export interface OnboardingStep {
   title: string;
   description: string;
+  /** Live channel names when this step prompts connecting a store, for locale-aware formatting. */
+  channelNames?: readonly string[];
   to: string;
   done: boolean;
 }
@@ -12,7 +14,7 @@ export interface OnboardingStep {
 /** What a new seller has done so far. `channelSetup` is undefined until it is known. */
 export interface OnboardingState {
   hasProducts: boolean;
-  hasApiKey: boolean;
+  isAiConfigured: boolean;
   channelSetup: ChannelSetup | undefined;
 }
 
@@ -29,6 +31,7 @@ function channelStep(setup: ChannelSetup | undefined): OnboardingStep {
   return {
     title: 'Connect a store',
     description: `${CONNECT_CHANNEL_PROMPT}.`,
+    channelNames: CONNECTABLE_CHANNEL_NAMES,
     to: ROUTES.stores,
     done: setup === ChannelSetup.Imported,
   };
@@ -37,22 +40,22 @@ function channelStep(setup: ChannelSetup | undefined): OnboardingStep {
 /** The first things a new seller does. Each step reflects what is really done. */
 export function onboardingSteps({
   hasProducts,
-  hasApiKey,
+  isAiConfigured,
   channelSetup,
 }: OnboardingState): OnboardingStep[] {
   return [
     {
       title: 'Add your products',
-      description: 'Import a Shopify export or add a product by hand.',
+      description: 'Sync from Odoo, import from a store, or add a product by hand.',
       to: ROUTES.products,
       done: hasProducts,
     },
     channelStep(channelSetup),
     {
-      title: 'Give your AI agent a key',
-      description: 'Let Claude or your own agent work with your catalog.',
-      to: ROUTES.developers,
-      done: hasApiKey,
+      title: 'Configure AI',
+      description: 'Connect an AI provider to generate and refine product content.',
+      to: ROUTES.aiSettings,
+      done: isAiConfigured,
     },
   ];
 }

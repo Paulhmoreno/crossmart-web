@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import { ActionsTableHead } from '@/components/lists/ActionsTableHead';
 import { formatDate } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import type { Workspace } from '../hooks/useCurrentWorkspace';
 import { useMembers, type WorkspaceMember } from '../hooks/useMembers';
 import { useRoleCatalog } from '../hooks/useRoleCatalog';
@@ -36,6 +37,7 @@ interface MemberAccess {
 }
 
 export function MembersTable({ workspace, currentUserId }: MembersTableProps) {
+  const { t } = useI18n();
   const members = useMembers(workspace.id);
   const catalog = useRoleCatalog(workspace.id);
 
@@ -64,9 +66,9 @@ export function MembersTable({ workspace, currentUserId }: MembersTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Member</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead className="hidden sm:table-cell">Joined</TableHead>
+            <TableHead>{t('Member')}</TableHead>
+            <TableHead>{t('Role')}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t('Joined')}</TableHead>
             <ActionsTableHead className="w-24" />
           </TableRow>
         </TableHeader>
@@ -94,6 +96,7 @@ interface MemberRowProps {
 }
 
 function MemberRow({ workspace, member, isYou, access }: MemberRowProps) {
+  const { t } = useI18n();
   return (
     <TableRow>
       <TableCell>
@@ -104,7 +107,7 @@ function MemberRow({ workspace, member, isYou, access }: MemberRowProps) {
           <span className="flex min-w-0 flex-col">
             <span className="truncate font-medium">
               {member.name}
-              {isYou && <span className="font-normal text-muted-foreground"> (you)</span>}
+              {isYou && <span className="font-normal text-muted-foreground"> ({t('you')})</span>}
             </span>
             <span className="truncate text-xs text-muted-foreground">{member.email}</span>
           </span>

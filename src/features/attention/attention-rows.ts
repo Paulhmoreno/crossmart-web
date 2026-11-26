@@ -6,6 +6,7 @@ import {
   toStoreRoute,
 } from '@/config/routes';
 import { listingFixOf, listingFixRoute } from '@/features/listings/listing-fix';
+import { tp } from '@/lib/i18n';
 import { ATTENTION_COPY, STORE_REASON_COPY } from './attention.constants';
 import {
   type AttentionCounts,
@@ -94,10 +95,20 @@ export function attentionRows(summary: AttentionSummary): AttentionRow[] {
     ...(summary.listings?.items ?? []).map(listingRow),
   ];
   if (counts.proposals > 0) {
-    rows.push(reviewRow(ReviewSource.Proposals, ATTENTION_COPY.proposals(counts.proposals)));
+    rows.push(
+      reviewRow(
+        ReviewSource.Proposals,
+        tp(counts.proposals, '{count} agent proposal', '{count} agent proposals'),
+      ),
+    );
   }
   if (counts.suggestions > 0) {
-    rows.push(reviewRow(ReviewSource.Suggestions, ATTENTION_COPY.suggestions(counts.suggestions)));
+    rows.push(
+      reviewRow(
+        ReviewSource.Suggestions,
+        tp(counts.suggestions, '{count} AI suggestion', '{count} AI suggestions'),
+      ),
+    );
   }
   return rows;
 }

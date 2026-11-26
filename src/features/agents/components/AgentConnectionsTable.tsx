@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatDate } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { asksToWrite, hasVerifiedName } from '../agent-authorization';
 import {
   type AgentConnection,
@@ -29,6 +30,7 @@ import {
 import { UnverifiedNameBadge } from './UnverifiedNameBadge';
 
 export function AgentConnectionsTable({ workspaceId }: { workspaceId: string }) {
+  const { t } = useI18n();
   const { data: connections, isPending, error, refetch } = useAgentConnections(workspaceId);
 
   if (error) {
@@ -44,10 +46,10 @@ export function AgentConnectionsTable({ workspaceId }: { workspaceId: string }) 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Agent</TableHead>
-            <TableHead>Access</TableHead>
-            <TableHead className="hidden md:table-cell">Connected by</TableHead>
-            <TableHead className="hidden md:table-cell">Connected</TableHead>
+            <TableHead>{t('Agent')}</TableHead>
+            <TableHead>{t('Access')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('Connected by')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('Connected')}</TableHead>
             <TableHead className="w-28" />
           </TableRow>
         </TableHeader>
@@ -59,7 +61,7 @@ export function AgentConnectionsTable({ workspaceId }: { workspaceId: string }) 
               </TableCell>
               <TableCell>
                 <Badge variant="secondary">
-                  {asksToWrite(connection.scopes) ? 'Read and change' : 'Read only'}
+                  {asksToWrite(connection.scopes) ? t('Read and change') : t('Read only')}
                 </Badge>
               </TableCell>
               <TableCell className="hidden text-muted-foreground md:table-cell">
@@ -90,16 +92,18 @@ function AgentName({ connection }: { connection: AgentConnection }) {
 }
 
 function NoAgents() {
+  const { t } = useI18n();
   return (
     <Empty className="border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Bot />
         </EmptyMedia>
-        <EmptyTitle>No agents connected</EmptyTitle>
+        <EmptyTitle>{t('No agents connected')}</EmptyTitle>
         <EmptyDescription>
-          Add Crossmart as a connector in Claude, ChatGPT or another AI assistant and sign in. It
-          shows up here.
+          {t(
+            'Add Crossmart as a connector in Claude, ChatGPT or another AI assistant and sign in. It shows up here.',
+          )}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>
@@ -112,17 +116,24 @@ interface DisconnectButtonProps {
 }
 
 function DisconnectButton({ workspaceId, connection }: DisconnectButtonProps) {
+  const { t } = useI18n();
   const disconnect = useDisconnectAgent(workspaceId);
   return (
     <ConfirmDialog
       trigger={
-        <Button variant="destructive" size="sm" aria-label={`Disconnect ${connection.clientName}`}>
-          Disconnect
+        <Button
+          variant="destructive"
+          size="sm"
+          aria-label={t('Disconnect {name}', { name: connection.clientName })}
+        >
+          {t('Disconnect')}
         </Button>
       }
-      title={`Disconnect ${connection.clientName}?`}
-      description="It stops working with this workspace right away. To use it again, connect it again from the agent."
-      confirmLabel="Disconnect"
+      title={t('Disconnect {name}?', { name: connection.clientName })}
+      description={t(
+        'It stops working with this workspace right away. To use it again, connect it again from the agent.',
+      )}
+      confirmLabel={t('Disconnect')}
       onConfirm={() => disconnect.mutateAsync(connection.id)}
     />
   );

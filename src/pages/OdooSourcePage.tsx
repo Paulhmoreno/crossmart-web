@@ -24,7 +24,7 @@ function OdooSourceContent({ workspace }: { workspace: Workspace }) {
   const connection = query.data.connection;
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
+    <div className="flex max-w-2xl flex-col gap-6">
       <OdooConnectionForm
         key={`${connection?.id ?? 'new'}-${connection?.connectedAt ?? ''}-${connection?.status ?? ''}`}
         workspaceId={workspace.id}

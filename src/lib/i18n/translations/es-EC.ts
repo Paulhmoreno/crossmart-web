@@ -38,6 +38,7 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   // Settings tabs & general settings
   General: 'General',
   'Odoo ERP': 'Odoo ERP',
+  AI: 'IA',
   'Artificial intelligence': 'Inteligencia artificial',
   Team: 'Equipo',
   Billing: 'Facturación',
@@ -371,8 +372,8 @@ export const MESSAGES_ES_EC: Record<string, string> = {
 
   // Suggestions & AI Writer
   'AI is not configured': 'La inteligencia artificial no está configurada',
-  'Configure a provider in Settings → Artificial intelligence to enable AI content and suggestions.':
-    'Configura un proveedor en Configuración → Inteligencia artificial para activar el contenido y las sugerencias con IA.',
+  'Configure a provider in Settings → AI to enable AI content and suggestions.':
+    'Configura un proveedor en Configuración → IA para activar el contenido y las sugerencias con IA.',
   'Generate with AI': 'Generar con IA',
   'Rewrite with AI': 'Reescribir con IA',
   'Nothing to review': 'Nada pendiente por revisar',
@@ -427,6 +428,7 @@ export const MESSAGES_ES_EC: Record<string, string> = {
     'Permite que tu agente de IA trabaje con tu catálogo.',
   'Needs attention': 'Requiere atención',
   'Everything looks good.': 'Todo está en orden.',
+  'All good. Nothing needs you right now.': 'Todo en orden. No hay nada pendiente por ahora.',
   Sales: 'Ventas',
   'No sales yet': 'Aún no hay ventas',
   'Your sales will appear here once orders come in.':
@@ -673,4 +675,151 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   "Outside agents' changes": 'Cambios de agentes externos',
   'Choose whether changes proposed by AI agents connected over MCP wait for your approval or apply immediately.':
     'Elige si los cambios propuestos por agentes de IA conectados por MCP esperan tu aprobación o se aplican de inmediato.',
+  'When an AI agent you connected (Claude, ChatGPT or any MCP client) changes your catalog, stock or listings. API keys are not affected.':
+    'Cuando un agente de IA conectado (Claude, ChatGPT o cualquier cliente MCP) modifica tu catálogo, stock o publicaciones. No afecta a las claves API.',
+  'Wait for my approval': 'Esperar mi aprobación',
+  'Each change waits in Agent, under Review, except new products added as drafts. Recommended.':
+    'Cada cambio espera en Agente, en Revisión, excepto los productos nuevos agregados como borrador. Recomendado.',
+  'Apply directly': 'Aplicar directamente',
+  "Changes are made at once, within the agent's access, and logged in Activity.":
+    'Los cambios se aplican de inmediato, dentro del acceso del agente, y se registran en Actividad.',
+
+  // Getting started & Home attention
+  'Sync from Odoo, import from a store, or add a product by hand.':
+    'Sincroniza desde Odoo, importa desde una tienda o agrega un producto manualmente.',
+  'Connect {channels} to sync products and stock.':
+    'Conecta {channels} para sincronizar productos y stock.',
+  'Configure AI': 'Configurar IA',
+  'Connect an AI provider to generate and refine product content.':
+    'Conecta un proveedor de IA para generar y mejorar contenido comercial.',
+  '{count} AI suggestion': '{count} sugerencia de IA',
+  '{count} AI suggestions': '{count} sugerencias de IA',
+  '{count} agent proposal': '{count} propuesta de agente',
+  '{count} agent proposals': '{count} propuestas de agentes',
+
+  // Team
+  Member: 'Miembro',
+  Role: 'Rol',
+  Joined: 'Se unió',
+  you: 'tú',
+  Invite: 'Invitar',
+  'Invite someone': 'Invitar a alguien',
+  'We email them a link to join {workspace}. It works for 7 days.':
+    'Le enviaremos un enlace por correo para unirse a {workspace}. Tiene validez de 7 días.',
+  'Sending…': 'Enviando…',
+  'Send invitation': 'Enviar invitación',
+  'Members could not be loaded': 'No se pudieron cargar los miembros',
+  'Edit the catalog': 'Editar el catálogo',
+  'Full access to everything in this workspace':
+    'Acceso completo a todo en este espacio de trabajo',
+  'Manage products, stores, team and settings':
+    'Administrar productos, tiendas, equipo y configuración',
+  'View products, stock and orders': 'Ver productos, inventario y pedidos',
+
+  // Billing & Plan
+  'Current plan': 'Plan actual',
+  'Legacy plan': 'Plan heredado',
+  'This plan is no longer offered. You keep it, with its limits, until you choose one of the current plans.':
+    'Este plan ya no se ofrece. Lo conservas, con sus límites, hasta que elijas uno de los planes actuales.',
+  'Manage billing': 'Administrar facturación',
+  'Change plan, card or billing details, cancel, and download invoices.':
+    'Cambia de plan, tarjeta o datos de facturación, cancela y descarga facturas.',
+  'Billing is off on this Crossmart instance: every feature is free to use.':
+    'La facturación está desactivada en esta instancia de Crossmart: todas las funciones están disponibles sin costo.',
+  'Actions that would go past a limit are refused until the plan is upgraded.':
+    'Las acciones que superen un límite se rechazan hasta actualizar el plan.',
+  'Limits are not enforced yet: going past one is shown here but never blocks you.':
+    'Los límites aún no se aplican: superarlos se muestra aquí pero no te bloquea.',
+  'Only owners and admins can see the plan and its billing.':
+    'Solo los propietarios y administradores pueden ver el plan y su facturación.',
+  'Billing could not be loaded': 'No se pudo cargar la facturación',
+  'The plan could not be loaded': 'No se pudo cargar el plan',
+  Usage: 'Uso',
+  Features: 'Funciones',
+  Included: 'Incluido',
+  'Not included': 'No incluido',
+  Unlimited: 'Ilimitado',
+  'Limit reached': 'Límite alcanzado',
+  'Over the limit': 'Por encima del límite',
+  'Active listings': 'Publicaciones activas',
+  'Listings live on a channel, across all workspaces':
+    'Publicaciones activas en un canal, en todos los espacios de trabajo',
+  'Connected stores and marketplaces, across all workspaces':
+    'Tiendas y marketplaces conectados, en todos los espacios de trabajo',
+  'One per brand or client': 'Uno por marca o cliente',
+  'People in any workspace, counted once':
+    'Personas en cualquier espacio de trabajo, contadas una vez',
+  'Keys that are not revoked or expired': 'Claves que no están revocadas ni vencidas',
+  'Webhook endpoints': 'Endpoints de webhook',
+  'URLs that receive events, across all workspaces':
+    'URLs que reciben eventos, en todos los espacios de trabajo',
+  'AI credits': 'Créditos de IA',
+  'Used this month': 'Usados este mes',
+  'Autonomous agents': 'Agentes autónomos',
+  'Agents that act without asking first': 'Agentes que actúan sin pedir aprobación previa',
+  'Your own AI key': 'Tu propia clave de IA',
+  'Use your AI provider account instead of Crossmart’s':
+    'Usa tu propia cuenta de proveedor de IA en lugar de la de Crossmart',
+  Monthly: 'Mensual',
+  Annual: 'Anual',
+  Trial: 'Prueba',
+  'Payment due': 'Pago pendiente',
+  Canceled: 'Cancelado',
+  'No plan chosen': 'Sin plan elegido',
+  Unpaid: 'Impago',
+
+  // Developers (API keys, Webhooks, Connected agents)
+  'API keys could not be loaded': 'No se pudieron cargar las claves API',
+  'No API keys yet': 'Aún no hay claves API',
+  'Create a key to let an AI agent or a script read and edit your catalog.':
+    'Crea una clave para que un agente de IA o un script lea y edite tu catálogo.',
+  Key: 'Clave',
+  Access: 'Acceso',
+  'Last used': 'Último uso',
+  Never: 'Nunca',
+  Revoke: 'Revocar',
+  'Revoke {name}': 'Revocar {name}',
+  'Revoke {name}?': '¿Revocar {name}?',
+  'Anything using this key stops working right away. This cannot be undone.':
+    'Todo lo que use esta clave dejará de funcionar de inmediato. Esta acción no se puede deshacer.',
+  'Revoke key': 'Revocar clave',
+  'Create key': 'Crear clave',
+  'Creating…': 'Creando…',
+  'Create an API key': 'Crear una clave API',
+  'Your new API key': 'Tu nueva clave API',
+  'For Claude, ChatGPT, your own agent or scripts. Send it in the x-api-key header.':
+    'Para Claude, ChatGPT, tu propio agente o scripts. Envíala en la cabecera x-api-key.',
+  '{name} can now act as {role}.': '{name} ahora puede actuar como {role}.',
+  Done: 'Listo',
+  'Copy key': 'Copiar clave',
+  'Copy it now. For your security it is stored only as a hash and cannot be shown again.':
+    'Cópiala ahora. Por seguridad se guarda únicamente como hash y no volverá a mostrarse.',
+  'Add endpoint': 'Agregar endpoint',
+  'No webhook endpoints yet': 'Aún no hay endpoints de webhook',
+  'Add a URL and pick the events it should receive. Each request is signed, so your receiver can check it came from Crossmart.':
+    'Agrega una URL y elige los eventos que debe recibir. Cada solicitud va firmada para que tu receptor verifique que proviene de Crossmart.',
+  'Read the webhooks guide': 'Leer la guía de webhooks',
+  'Webhook endpoints could not be loaded': 'No se pudieron cargar los endpoints de webhook',
+  'Connect an AI assistant': 'Conectar un asistente de IA',
+  'In Claude, ChatGPT, Gemini or any assistant that supports MCP, add a custom connector with this address. It asks you to sign in, pick a workspace and choose what it may do.':
+    'En Claude, ChatGPT, Gemini o cualquier asistente compatible con MCP, agrega un conector personalizado con esta dirección. Te pedirá iniciar sesión, elegir un espacio de trabajo y definir qué puede hacer.',
+  'Copy address': 'Copiar dirección',
+  'Connected agents could not be loaded': 'No se pudieron cargar los agentes conectados',
+  'Connected by': 'Conectado por',
+  'Read and change': 'Lectura y escritura',
+  'Read only': 'Solo lectura',
+  'No agents connected': 'No hay agentes conectados',
+  'Add Crossmart as a connector in Claude, ChatGPT or another AI assistant and sign in. It shows up here.':
+    'Agrega Crossmart como conector en Claude, ChatGPT u otro asistente de IA e inicia sesión. Aparecerá aquí.',
+  'Disconnect {name}': 'Desconectar {name}',
+  'Disconnect {name}?': '¿Desconectar {name}?',
+  'It stops working with this workspace right away. To use it again, connect it again from the agent.':
+    'Dejará de funcionar con este espacio de trabajo de inmediato. Para volver a usarlo, conéctalo de nuevo desde el agente.',
+
+  // Activity empty states
+  'No matching activity': 'No hay actividad que coincida',
+  'Nothing here matches these filters.': 'Ningún registro coincide con estos filtros.',
+  'No activity yet': 'Aún no hay actividad',
+  'Changes to products, saved views and API keys show up here, with who made them.':
+    'Los cambios en productos, vistas guardadas y claves API aparecerán aquí junto con quién los realizó.',
 };

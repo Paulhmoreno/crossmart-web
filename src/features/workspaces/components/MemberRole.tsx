@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useI18n } from '@/lib/i18n';
 import { useChangeMemberRole, type WorkspaceMember } from '../hooks/useMembers';
 import { type RoleOption, roleLabel, roleValue } from '../role-options';
 import { WORKSPACE_ROLE_DESCRIPTIONS } from '../workspace-role';
@@ -15,6 +16,7 @@ interface MemberRoleProps {
 
 /** A role picker for members the user may manage; a badge explaining the role otherwise. */
 export function MemberRole({ workspaceId, member, options, editable }: MemberRoleProps) {
+  const { t } = useI18n();
   const changeRole = useChangeMemberRole(workspaceId);
 
   if (!editable) {
@@ -23,10 +25,10 @@ export function MemberRole({ workspaceId, member, options, editable }: MemberRol
         <TooltipTrigger asChild>
           {/* Focusable, so keyboard users can read what the role allows. */}
           <Badge variant="secondary" tabIndex={0}>
-            {roleLabel(member)}
+            {t(roleLabel(member))}
           </Badge>
         </TooltipTrigger>
-        <TooltipContent>{WORKSPACE_ROLE_DESCRIPTIONS[member.role]}</TooltipContent>
+        <TooltipContent>{t(WORKSPACE_ROLE_DESCRIPTIONS[member.role])}</TooltipContent>
       </Tooltip>
     );
   }

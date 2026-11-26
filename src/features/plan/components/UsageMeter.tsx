@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { useI18n } from '@/lib/i18n';
 import { FEATURE_LABELS } from '../plan.constants';
 import type { FeatureUsage } from '../plan.types';
 import { formatUsage, UsageLevel, usageLevel, usagePercent } from '../usage';
@@ -19,15 +20,19 @@ const LEVEL_NOTES: Partial<Record<UsageLevel, string>> = {
 
 /** One counted feature: what it is, how much is used of how much, and a meter. */
 export function UsageMeter({ feature }: { feature: FeatureUsage }) {
+  const { t } = useI18n();
   const { label, description } = FEATURE_LABELS[feature.feature];
   const level = usageLevel(feature);
   const note = LEVEL_NOTES[level];
+  const usageText = formatUsage(feature)
+    .replace('Unlimited', t('Unlimited'))
+    .replace(' of ', ` ${t('of')} `);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-4">
         <div className="flex flex-col">
-          <span className="font-medium">{label}</span>
-          <span className="text-xs text-muted-foreground">{description}</span>
+          <span className="font-medium">{t(label)}</span>
+          <span className="text-xs text-muted-foreground">{t(description)}</span>
         </div>
         <span
           className={cn(
@@ -35,15 +40,15 @@ export function UsageMeter({ feature }: { feature: FeatureUsage }) {
             level === UsageLevel.OverLimit && 'text-destructive',
           )}
         >
-          {formatUsage(feature)}
+          {usageText}
         </span>
       </div>
       <Progress
         value={usagePercent(feature)}
-        aria-label={`${label}: ${formatUsage(feature)}`}
+        aria-label={`${t(label)}: ${usageText}`}
         className={METER_FILLS[level]}
       />
-      {note && <span className="text-xs text-muted-foreground">{note}</span>}
+      {note && <span className="text-xs text-muted-foreground">{t(note)}</span>}
     </div>
   );
 }

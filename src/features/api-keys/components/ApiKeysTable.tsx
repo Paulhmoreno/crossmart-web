@@ -22,9 +22,11 @@ import {
 import { roleLabel } from '@/features/workspaces';
 import { ActionsTableHead } from '@/components/lists/ActionsTableHead';
 import { formatDate } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import { type ApiKey, useApiKeys, useRevokeApiKey } from '../hooks/useApiKeys';
 
 export function ApiKeysTable({ workspaceId }: { workspaceId: string }) {
+  const { t } = useI18n();
   const { data: apiKeys, isPending, error, refetch } = useApiKeys(workspaceId);
 
   if (error) {
@@ -38,9 +40,9 @@ export function ApiKeysTable({ workspaceId }: { workspaceId: string }) {
           <EmptyMedia variant="icon">
             <KeyRound />
           </EmptyMedia>
-          <EmptyTitle>No API keys yet</EmptyTitle>
+          <EmptyTitle>{t('No API keys yet')}</EmptyTitle>
           <EmptyDescription>
-            Create a key to let an AI agent or a script read and edit your catalog.
+            {t('Create a key to let an AI agent or a script read and edit your catalog.')}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -52,10 +54,10 @@ export function ApiKeysTable({ workspaceId }: { workspaceId: string }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Key</TableHead>
-            <TableHead>Access</TableHead>
-            <TableHead className="hidden md:table-cell">Last used</TableHead>
+            <TableHead>{t('Name')}</TableHead>
+            <TableHead>{t('Key')}</TableHead>
+            <TableHead>{t('Access')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('Last used')}</TableHead>
             <ActionsTableHead className="w-24" />
           </TableRow>
         </TableHeader>
@@ -67,10 +69,10 @@ export function ApiKeysTable({ workspaceId }: { workspaceId: string }) {
                 {apiKey.prefix}…
               </TableCell>
               <TableCell>
-                <Badge variant="secondary">{roleLabel(apiKey)}</Badge>
+                <Badge variant="secondary">{t(roleLabel(apiKey))}</Badge>
               </TableCell>
               <TableCell className="hidden text-muted-foreground md:table-cell">
-                {formatDate(apiKey.lastUsedAt, 'Never')}
+                {formatDate(apiKey.lastUsedAt, t('Never'))}
               </TableCell>
               <TableCell className="text-right">
                 <RevokeButton workspaceId={workspaceId} apiKey={apiKey} />
@@ -84,18 +86,23 @@ export function ApiKeysTable({ workspaceId }: { workspaceId: string }) {
 }
 
 function RevokeButton({ workspaceId, apiKey }: { workspaceId: string; apiKey: ApiKey }) {
+  const { t } = useI18n();
   const revoke = useRevokeApiKey(workspaceId);
 
   return (
     <ConfirmDialog
       trigger={
-        <Button variant="destructive" size="sm" aria-label={`Revoke ${apiKey.name}`}>
-          Revoke
+        <Button
+          variant="destructive"
+          size="sm"
+          aria-label={t('Revoke {name}', { name: apiKey.name })}
+        >
+          {t('Revoke')}
         </Button>
       }
-      title={`Revoke ${apiKey.name}?`}
-      description="Anything using this key stops working right away. This cannot be undone."
-      confirmLabel="Revoke key"
+      title={t('Revoke {name}?', { name: apiKey.name })}
+      description={t('Anything using this key stops working right away. This cannot be undone.')}
+      confirmLabel={t('Revoke key')}
       onConfirm={() => revoke.mutateAsync(apiKey.id)}
     />
   );

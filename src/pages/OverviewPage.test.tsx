@@ -28,12 +28,12 @@ vi.mock('@/features/attention', () => ({ NeedsAttention: () => <p>Needs attentio
 
 const NEW_SELLER: OnboardingState = {
   hasProducts: false,
-  hasApiKey: false,
+  isAiConfigured: false,
   channelSetup: ChannelSetup.NotConnected,
 };
 const SET_UP_SELLER: OnboardingState = {
   hasProducts: true,
-  hasApiKey: true,
+  isAiConfigured: true,
   channelSetup: ChannelSetup.Imported,
 };
 

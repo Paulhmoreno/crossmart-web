@@ -15,6 +15,7 @@ import {
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { useI18n } from '@/lib/i18n';
 import type { Workspace } from '../hooks/useCurrentWorkspace';
 import { useInviteMember } from '../hooks/useInvitations';
 import { useRolePicker } from '../hooks/useRolePicker';
@@ -26,6 +27,7 @@ const ROLE_FIELD_ID = 'invite-role';
 const DEFAULT_INVITE_ROLE: string = WorkspaceRole.EDITOR;
 
 export function InviteMemberDialog({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const picker = useRolePicker(workspace, DEFAULT_INVITE_ROLE);
@@ -55,14 +57,16 @@ export function InviteMemberDialog({ workspace }: { workspace: Workspace }) {
       <DialogTrigger asChild>
         <Button>
           <UserPlus data-icon="inline-start" />
-          Invite
+          {t('Invite')}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite someone</DialogTitle>
+          <DialogTitle>{t('Invite someone')}</DialogTitle>
           <DialogDescription>
-            We email them a link to join {workspace.displayName}. It works for 7 days.
+            {t('We email them a link to join {workspace}. It works for 7 days.', {
+              workspace: workspace.displayName,
+            })}
           </DialogDescription>
         </DialogHeader>
         <FormError error={invite.error} />
@@ -78,10 +82,11 @@ export function InviteMemberDialog({ workspace }: { workspace: Workspace }) {
 }
 
 function SendButton({ disabled, isPending }: { disabled: boolean; isPending: boolean }) {
+  const { t } = useI18n();
   return (
     <Button type="submit" form={FORM_ID} disabled={disabled || isPending}>
       {isPending && <Spinner data-icon="inline-start" />}
-      {isPending ? 'Sending…' : 'Send invitation'}
+      {isPending ? t('Sending…') : t('Send invitation')}
     </Button>
   );
 }
@@ -93,11 +98,12 @@ interface InviteFieldsProps {
 }
 
 function InviteFields({ email, onEmailChange, picker }: InviteFieldsProps) {
+  const { t } = useI18n();
   const { role } = picker;
   return (
     <FieldGroup>
       <Field>
-        <FieldLabel htmlFor={EMAIL_FIELD_ID}>Email</FieldLabel>
+        <FieldLabel htmlFor={EMAIL_FIELD_ID}>{t('Email')}</FieldLabel>
         <Input
           id={EMAIL_FIELD_ID}
           type="email"
@@ -108,7 +114,7 @@ function InviteFields({ email, onEmailChange, picker }: InviteFieldsProps) {
         />
       </Field>
       <Field>
-        <FieldLabel htmlFor={ROLE_FIELD_ID}>Role</FieldLabel>
+        <FieldLabel htmlFor={ROLE_FIELD_ID}>{t('Role')}</FieldLabel>
         <RoleSelect
           id={ROLE_FIELD_ID}
           value={role?.value ?? ''}
@@ -116,7 +122,7 @@ function InviteFields({ email, onEmailChange, picker }: InviteFieldsProps) {
           onChange={picker.pick}
           className="w-full"
         />
-        {role && <FieldDescription>{role.description}</FieldDescription>}
+        {role && <FieldDescription>{t(role.description)}</FieldDescription>}
       </Field>
     </FieldGroup>
   );

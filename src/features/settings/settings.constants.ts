@@ -34,7 +34,7 @@ export const SETTINGS_TABS: readonly SettingsTabInfo[] = [
   },
   {
     tab: SettingsTab.Ai,
-    label: 'Artificial intelligence',
+    label: 'AI',
     to: ROUTES.aiSettings,
     anyOf: [WorkspacePermission.workspace_manage],
   },

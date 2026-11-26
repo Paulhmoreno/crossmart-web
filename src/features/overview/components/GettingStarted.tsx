@@ -39,8 +39,13 @@ export function GettingStarted(props: OnboardingState) {
 }
 
 function StepItem({ step }: { step: OnboardingStep }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const Icon = step.done ? CircleCheck : Circle;
+  const description = step.channelNames
+    ? t('Connect {channels} to sync products and stock.', {
+        channels: new Intl.ListFormat(locale, { type: 'disjunction' }).format(step.channelNames),
+      })
+    : t(step.description);
   return (
     <li>
       <Link
@@ -59,7 +64,7 @@ function StepItem({ step }: { step: OnboardingStep }) {
             <span className="sr-only">{step.done ? t('Done: ') : t('To do: ')}</span>
             {t(step.title)}
           </span>
-          <span className="text-sm text-muted-foreground">{t(step.description)}</span>
+          <span className="text-sm text-muted-foreground">{description}</span>
         </span>
       </Link>
     </li>

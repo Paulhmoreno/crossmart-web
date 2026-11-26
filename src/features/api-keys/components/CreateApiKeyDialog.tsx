@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { roleLabel, useRolePicker, type Workspace } from '@/features/workspaces';
+import { useI18n } from '@/lib/i18n';
 import { API_KEY_FEEDBACK, DEFAULT_KEY_ROLE, KEY_EXCLUDED_ROLES } from '../api-keys.constants';
 import { type IssuedApiKey, useCreateApiKey } from '../hooks/useApiKeys';
 import { ApiKeyFields } from './ApiKeyFields';
@@ -26,6 +27,7 @@ function describe(issued: IssuedApiKey | undefined): string {
 }
 
 export function CreateApiKeyDialog({ workspace }: { workspace: Workspace }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   // A key never gets Owner, nor more than its creator has.
@@ -53,7 +55,7 @@ export function CreateApiKeyDialog({ workspace }: { workspace: Workspace }) {
       <DialogTrigger asChild>
         <Button>
           <Plus data-icon="inline-start" />
-          Create key
+          {t('Create key')}
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -63,8 +65,15 @@ export function CreateApiKeyDialog({ workspace }: { workspace: Workspace }) {
         onInteractOutside={(event) => issued && event.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{issued ? 'Your new API key' : 'Create an API key'}</DialogTitle>
-          <DialogDescription>{describe(issued)}</DialogDescription>
+          <DialogTitle>{issued ? t('Your new API key') : t('Create an API key')}</DialogTitle>
+          <DialogDescription>
+            {issued
+              ? t('{name} can now act as {role}.', {
+                  name: issued.apiKey.name,
+                  role: t(roleLabel(issued.apiKey)),
+                })
+              : t(describe(issued))}
+          </DialogDescription>
         </DialogHeader>
         <FormError error={createKey.error} />
         {issued ? (
@@ -76,7 +85,7 @@ export function CreateApiKeyDialog({ workspace }: { workspace: Workspace }) {
         )}
         <DialogFooter>
           {issued ? (
-            <Button onClick={() => handleOpenChange(false)}>Done</Button>
+            <Button onClick={() => handleOpenChange(false)}>{t('Done')}</Button>
           ) : (
             <SubmitKeyButton disabled={!name.trim() || !role} isPending={createKey.isPending} />
           )}
@@ -87,19 +96,27 @@ export function CreateApiKeyDialog({ workspace }: { workspace: Workspace }) {
 }
 
 function SubmitKeyButton({ disabled, isPending }: { disabled: boolean; isPending: boolean }) {
+  const { t } = useI18n();
   return (
     <Button type="submit" form={FORM_ID} disabled={disabled || isPending}>
       {isPending && <Spinner data-icon="inline-start" />}
-      {isPending ? 'Creating…' : 'Create key'}
+      {isPending ? t('Creating…') : t('Create key')}
     </Button>
   );
 }
 
 /** The key, shown once, with a copy button. */
 function IssuedKeySecret({ secret }: { secret: string }) {
+  const { t } = useI18n();
   return (
-    <SecretReveal secret={secret} copyLabel="Copy key" copiedMessage={API_KEY_FEEDBACK.copied}>
-      <p>Copy it now. For your security it is stored only as a hash and cannot be shown again.</p>
+    <SecretReveal
+      secret={secret}
+      copyLabel={t('Copy key')}
+      copiedMessage={t(API_KEY_FEEDBACK.copied)}
+    >
+      <p>
+        {t('Copy it now. For your security it is stored only as a hash and cannot be shown again.')}
+      </p>
     </SecretReveal>
   );
 }

@@ -2,6 +2,7 @@ import { SubscriptionAccessState } from '@/api/schema';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDate, pluralize } from '@/lib/format';
+import { useI18n } from '@/lib/i18n';
 import {
   BILLING_COPY,
   GOOD_STANDING_STATUSES,
@@ -34,17 +35,18 @@ function periodNote(status: BillingStatus, now: Date): string | null {
 
 /** The plan's name with its status, interval and legacy badges. */
 function PlanHeading({ status }: { status: BillingStatus }) {
+  const { t } = useI18n();
   const { plan, interval, enabled } = status;
   return (
     <div className="flex flex-wrap items-center gap-2">
       <p className="font-heading text-2xl font-semibold tracking-tight">{plan.name}</p>
       {enabled && (
         <Badge variant={GOOD_STANDING_STATUSES.has(status.status) ? 'success' : 'warning'}>
-          {SUBSCRIPTION_STATUS_LABELS[status.status]}
+          {t(SUBSCRIPTION_STATUS_LABELS[status.status])}
         </Badge>
       )}
-      {interval && <Badge variant="secondary">{INTERVAL_LABELS[interval]}</Badge>}
-      {!plan.offered && <Badge variant="secondary">{BILLING_COPY.legacyPlan}</Badge>}
+      {interval && <Badge variant="secondary">{t(INTERVAL_LABELS[interval])}</Badge>}
+      {!plan.offered && <Badge variant="secondary">{t(BILLING_COPY.legacyPlan)}</Badge>}
     </div>
   );
 }
@@ -57,24 +59,29 @@ interface BillingStatusCardProps {
 
 /** The organization's plan, its billing status and period, and the way to the billing portal. */
 export function BillingStatusCard({ status, now }: BillingStatusCardProps) {
-  const note = status.enabled ? periodNote(status, now) : BILLING_COPY.billingOff;
+  const { t } = useI18n();
+  const note = status.enabled ? periodNote(status, now) : t(BILLING_COPY.billingOff);
   return (
     <Card>
       <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">{BILLING_COPY.currentPlan}</p>
+          <p className="text-sm text-muted-foreground">{t(BILLING_COPY.currentPlan)}</p>
           <PlanHeading status={status} />
-          {!status.plan.offered && <p className="max-w-prose text-sm">{BILLING_COPY.legacyNote}</p>}
+          {!status.plan.offered && (
+            <p className="max-w-prose text-sm">{t(BILLING_COPY.legacyNote)}</p>
+          )}
           {note && <p className="max-w-prose text-sm">{note}</p>}
           <p className="max-w-prose text-xs text-muted-foreground">
-            {status.access.enforced ? BILLING_COPY.limitsEnforced : BILLING_COPY.limitsNotEnforced}
+            {status.access.enforced
+              ? t(BILLING_COPY.limitsEnforced)
+              : t(BILLING_COPY.limitsNotEnforced)}
           </p>
         </div>
         {status.hasBillingAccount && (
           <div className="flex flex-col items-start gap-1 sm:items-end">
             <ManageBillingButton organizationId={status.organizationId} />
             <span className="max-w-56 text-xs text-muted-foreground sm:text-right">
-              {BILLING_COPY.manageBillingHint}
+              {t(BILLING_COPY.manageBillingHint)}
             </span>
           </div>
         )}
