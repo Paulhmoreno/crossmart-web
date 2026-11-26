@@ -1033,6 +1033,13 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   'Not in {store}': 'No está en {store}',
   'In no store': 'En ninguna tienda',
   'With listing errors': 'Con errores de publicación',
+  'Added by hand': 'Agregado manualmente',
+  'Added automatically': 'Agregado automáticamente',
+  'Imported from store': 'Importado de la tienda',
+  Publishing: 'Publicando',
+  Ready: 'Listo',
+  Removing: 'Retirando',
+  Removed: 'Retirado',
 
   // Channel Map (nodes, statuses, controls & view toggle)
   live: 'en línea',

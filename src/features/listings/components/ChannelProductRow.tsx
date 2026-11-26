@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { ROUTE_QUERY } from '@/config/routes';
 import { ProductThumbnail } from '@/features/catalog';
+import { useI18n } from '@/lib/i18n';
 import { listingFixOf } from '../listing-fix';
 import { hasListingReason, LISTING_STATE_PRESENTATION } from '../listing-states';
 import { LISTING_SOURCE_LABELS, LISTINGS_ROW_COPY } from '../listings.constants';
@@ -82,20 +83,23 @@ function RemoveButton({
 
 /** Under a state with nothing to fix: why the product is in the store, or what the state means. */
 function StateHint({ row }: { row: ChannelProduct }) {
+  const { t } = useI18n();
   const queuedAt = row.listing?.syncRequestedAt;
   if (row.displayState === ListingDisplayState.publishing && queuedAt) {
     return (
       <span className="text-xs text-muted-foreground">
-        {LISTINGS_ROW_COPY.queued} <RelativeTime value={queuedAt} />
+        {t(LISTINGS_ROW_COPY.queued)} <RelativeTime value={queuedAt} />
       </span>
     );
   }
   const inStore = row.listing && row.state !== ChannelProductState.removed_by_hand;
   return (
     <span className="text-xs text-muted-foreground">
-      {inStore && row.listing
-        ? LISTING_SOURCE_LABELS[row.listing.source]
-        : LISTING_STATE_PRESENTATION[row.displayState].hint}
+      {t(
+        inStore && row.listing
+          ? LISTING_SOURCE_LABELS[row.listing.source]
+          : LISTING_STATE_PRESENTATION[row.displayState].hint,
+      )}
     </span>
   );
 }
