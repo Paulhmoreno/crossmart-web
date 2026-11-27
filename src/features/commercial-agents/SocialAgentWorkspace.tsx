@@ -1,16 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  Check,
-  ExternalLink,
-  Film,
-  Image as ImageIcon,
-  Pause,
-  Play,
-  Plus,
-  Send,
-  X,
-} from 'lucide-react';
+import { Check, ExternalLink, Film, Image as ImageIcon, Pause, Play, Plus, X } from 'lucide-react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -37,13 +27,41 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { SafeMarkdown } from './SafeMarkdown';
+import {
+  SharedLiveActivity,
+  SharedSupervisorComposer,
+  SharedToolRunList,
+} from './SharedAgentActivity';
 import { socialMarketingApi } from './social-api';
 import { SocialEventsPanel } from './SocialEventsPanel';
 import { SocialOperationalMap } from './SocialOperationalMap';
+import { type AgentToolRunView, useAgentStream } from './useAgentStream';
 
 type SocialCenterView = 'operations' | 'production' | 'trypost' | 'results';
 
+interface SocialChatMessage {
+  role: 'user' | 'assistant';
+  text: string;
+  toolRuns?: AgentToolRunView[];
+  status?: 'completed' | 'failed' | 'cancelled' | 'awaiting_approval';
+}
+
 const COLUMN_CLASS = 'min-h-0 overflow-hidden rounded-xl border bg-background';
+const MAX_SAVED_MESSAGES = 30;
+const MAX_HISTORY_TURNS = 12;
+
+function loadSavedChat(workspaceId: string): SocialChatMessage[] {
+  try {
+    const raw = window.localStorage.getItem(`crossmart.social.chat.${workspaceId}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed)
+      ? (parsed as SocialChatMessage[]).slice(-MAX_SAVED_MESSAGES)
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Unified 3-column Social Agent workspace reusing Crossmart Agent and Sales Agent's exact layout,
@@ -53,16 +71,28 @@ const COLUMN_CLASS = 'min-h-0 overflow-hidden rounded-xl border bg-background';
  * - Right: Real operational events panel with Live indicator and filter pills
  */
 export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
-  const { t, formatNumber } = useI18n();
+  const { t, formatNumber, locale } = useI18n();
   const qc = useQueryClient();
   const wide = useMediaQuery(CONSOLE_COLUMNS_MEDIA_QUERY);
   const eventsCol = useEventsColumn();
+  const stream = useAgentStream();
 
   const [centerTab, setCenterTab] = useState<SocialCenterView>('operations');
   const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<
-    Array<{ role: 'user' | 'assistant'; text: string }>
-  >([]);
+  const [chatMessages, setChatMessages] = useState<SocialChatMessage[]>(() =>
+    loadSavedChat(workspaceId),
+  );
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        `crossmart.social.chat.${workspaceId}`,
+        JSON.stringify(chatMessages.slice(-MAX_SAVED_MESSAGES)),
+      );
+    } catch {
+      // Ignore storage quota errors.
+    }
+  }, [chatMessages, workspaceId]);
 
   // Production creation form state
   const [newTitle, setNewTitle] = useState('');
@@ -82,20 +112,41 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
     refetchInterval: 20_000,
   });
 
-  const chatMutation = useMutation({
-    mutationFn: (message: string) =>
-      socialMarketingApi.chatSupervisor(workspaceId, { message, history: chatMessages }),
-    onSuccess: (res, message) => {
-      setChatMessages((prev) => [
-        ...prev,
-        { role: 'user', text: message },
-        { role: 'assistant', text: res.reply },
-      ]);
-      setChatInput('');
-      void qc.invalidateQueries({ queryKey: ['social-overview', workspaceId] });
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
+  const sendSupervisorPrompt = async (rawMessage: string) => {
+    const trimmed = rawMessage.trim();
+    if (!trimmed || stream.state.isBusy) return;
+    const history = chatMessages
+      .slice(-MAX_HISTORY_TURNS)
+      .map((msg) => ({ role: msg.role, text: msg.text }));
+    setChatMessages((prev) => [...prev, { role: 'user', text: trimmed }]);
+    setChatInput('');
+
+    await stream.startStream({
+      path: `/api/v1/workspaces/${workspaceId}/social-agent/supervisor/stream`,
+      body: { message: trimmed, history, locale },
+      cancelPathForTurn: (turnId) =>
+        `/api/v1/workspaces/${workspaceId}/social-agent/supervisor/cancel/${turnId}`,
+      onFinished: (payload) => {
+        if (payload.text || payload.toolRuns.length > 0 || payload.status === 'cancelled') {
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              text:
+                payload.text ||
+                (payload.status === 'cancelled'
+                  ? t('Execution cancelled.')
+                  : payload.error || t('No response received.')),
+              toolRuns: payload.toolRuns,
+              status: payload.status,
+            },
+          ]);
+        }
+        void qc.invalidateQueries({ queryKey: ['social-overview', workspaceId] });
+      },
+      onError: (message) => toast.error(message),
+    });
+  };
 
   const createItemMutation = useMutation({
     mutationFn: () =>
@@ -167,14 +218,7 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
     onError: (err: Error) => toast.error(err.message),
   });
 
-  const handleChatSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (chatInput.trim() && !chatMutation.isPending) {
-      chatMutation.mutate(chatInput.trim());
-    }
-  };
-
-  /* ── Left Column: Supervisor Panel (matching SalesAgentWorkspace) ── */
+  /* ── Left Column: Shared Supervisor Panel ── */
   const supervisorPanel = (
     <section aria-label={t('Supervisor')} className="flex h-full min-h-0 flex-col bg-background">
       <header className="flex flex-col gap-2 border-b px-3 py-2.5">
@@ -198,8 +242,11 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
             variant="outline"
             size="sm"
             className="h-7 px-2 text-xs"
-            disabled={chatMessages.length === 0 || chatMutation.isPending}
-            onClick={() => setChatMessages([])}
+            disabled={chatMessages.length === 0 || stream.state.isBusy}
+            onClick={() => {
+              setChatMessages([]);
+              stream.reset();
+            }}
           >
             <Plus className="size-3.5" />
             {t('New')}
@@ -213,7 +260,7 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
-        {chatMessages.length === 0 ? (
+        {chatMessages.length === 0 && !stream.state.isBusy ? (
           <div className="my-auto flex flex-col gap-2.5 px-2 text-center text-xs text-muted-foreground">
             <p className="font-medium text-foreground">{t('Supervisor mode')}</p>
             <p>
@@ -233,8 +280,8 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
                   variant="outline"
                   size="sm"
                   className="h-auto whitespace-normal py-1.5 text-left text-xs"
-                  disabled={chatMutation.isPending}
-                  onClick={() => chatMutation.mutate(prompt)}
+                  disabled={stream.state.isBusy}
+                  onClick={() => void sendSupervisorPrompt(prompt)}
                 >
                   {prompt}
                 </Button>
@@ -242,50 +289,48 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
             </div>
           </div>
         ) : (
-          chatMessages.map((msg, idx) => {
-            const isOutgoing = msg.role === 'user';
-            return (
-              <div
-                key={idx}
-                className={cn('flex flex-col gap-1', isOutgoing ? 'items-end' : 'items-start')}
-              >
+          <>
+            {chatMessages.map((msg, idx) => {
+              const isOutgoing = msg.role === 'user';
+              return (
                 <div
-                  className={cn(
-                    'max-w-[90%] rounded-2xl px-3 py-2 text-sm',
-                    isOutgoing
-                      ? 'rounded-br-sm bg-primary text-primary-foreground'
-                      : 'rounded-bl-sm bg-muted text-foreground',
-                  )}
+                  key={idx}
+                  className={cn('flex flex-col gap-1.5', isOutgoing ? 'items-end' : 'items-start')}
                 >
-                  {isOutgoing ? (
-                    <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
-                  ) : (
-                    <SafeMarkdown text={msg.text} />
+                  {!isOutgoing && msg.toolRuns && msg.toolRuns.length > 0 && (
+                    <SharedToolRunList toolRuns={msg.toolRuns} />
                   )}
+                  <div
+                    className={cn(
+                      'max-w-[90%] rounded-2xl px-3 py-2 text-sm',
+                      isOutgoing
+                        ? 'rounded-br-sm bg-primary text-primary-foreground'
+                        : 'rounded-bl-sm bg-muted text-foreground',
+                    )}
+                  >
+                    {isOutgoing ? (
+                      <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+                    ) : (
+                      <SafeMarkdown text={msg.text} />
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+            <SharedLiveActivity stream={stream.state} />
+          </>
         )}
       </div>
 
-      <form onSubmit={handleChatSubmit} className="flex gap-2 border-t p-2.5">
-        <Input
-          value={chatInput}
-          onChange={(event) => setChatInput(event.target.value)}
-          placeholder={t('Write to Social Agent...')}
-          className="h-9 text-sm"
-          disabled={chatMutation.isPending}
-        />
-        <Button
-          type="submit"
-          size="sm"
-          className="h-9 px-3"
-          disabled={!chatInput.trim() || chatMutation.isPending}
-        >
-          <Send className="size-4" />
-        </Button>
-      </form>
+      <SharedSupervisorComposer
+        value={chatInput}
+        onChange={setChatInput}
+        onSubmit={() => void sendSupervisorPrompt(chatInput)}
+        onStop={() => void stream.cancel()}
+        isBusy={stream.state.isBusy}
+        isCancelling={stream.state.isCancelling}
+        placeholder={t('Write to Social Agent...')}
+      />
     </section>
   );
 

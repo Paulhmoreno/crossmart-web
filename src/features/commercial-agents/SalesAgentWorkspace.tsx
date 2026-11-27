@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
-  Send,
   SlidersHorizontal,
   Trash2,
   UserRoundCheck,
@@ -28,6 +27,8 @@ import { type AgentConfigView, commercialAgentsApi, type SalesChannelContext } f
 import { SafeMarkdown } from './SafeMarkdown';
 import { SalesEventsPanel } from './SalesEventsPanel';
 import { SalesOperationalMap } from './SalesOperationalMap';
+import { SharedLiveActivity, SharedSupervisorComposer } from './SharedAgentActivity';
+import { useAgentStream } from './useAgentStream';
 
 type ChatMode = 'supervisor' | 'simulator';
 
@@ -54,10 +55,12 @@ export function SalesAgentWorkspace({
   workspaceId: string;
   config: AgentConfigView;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const qc = useQueryClient();
   const wide = useMediaQuery(CONSOLE_COLUMNS_MEDIA_QUERY);
   const eventsCol = useEventsColumn();
+  const stream = useAgentStream();
+  const [pendingUserText, setPendingUserText] = useState<string | null>(null);
 
   const [chatMode, setChatMode] = useState<ChatMode>('supervisor');
   const [activeIds, setActiveIds] = useState<Record<ChatMode, string | null>>({
@@ -151,10 +154,11 @@ export function SalesAgentWorkspace({
     onError: (err: Error) => toast.error(err.message),
   });
 
-  const sendMsg = useMutation({
-    mutationFn: async (text: string) => {
-      let targetId = activeIds[chatMode] ?? conversations[0]?.id ?? null;
-      const ctx = buildSimContext();
+  async function sendStreamingMessage(trimmed: string) {
+    if (!trimmed || stream.state.isBusy || isReadOnlyTrace) return;
+    let targetId = activeIds[chatMode] ?? conversations[0]?.id ?? null;
+    const ctx = buildSimContext();
+    try {
       if (!targetId) {
         const created = await commercialAgentsApi.createSalesConversation(workspaceId, {
           source: chatMode,
@@ -163,16 +167,30 @@ export function SalesAgentWorkspace({
         targetId = created.id;
         setActiveIds((prev) => ({ ...prev, [chatMode]: created.id }));
       }
-      return commercialAgentsApi.sendSalesMessage(workspaceId, targetId, text, ctx);
-    },
-    onSuccess: (updated) => {
       setDraft('');
       setInspectedChatwootId(null);
-      qc.setQueryData(['sales-conversation', workspaceId, updated.id], updated);
-      invalidateAfterTurn();
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
+      setPendingUserText(trimmed);
+
+      await stream.startStream({
+        path: `/api/v1/workspaces/${workspaceId}/sales-agent/conversations/${targetId}/stream`,
+        body: { text: trimmed, ...(ctx ? { context: ctx } : {}), locale },
+        cancelPathForTurn: (turnId) =>
+          `/api/v1/workspaces/${workspaceId}/sales-agent/turns/${turnId}/cancel`,
+        onFinished: () => {
+          setPendingUserText(null);
+          void qc.invalidateQueries({ queryKey: ['sales-conversation', workspaceId, targetId] });
+          invalidateAfterTurn();
+        },
+        onError: (message) => {
+          setPendingUserText(null);
+          toast.error(message);
+        },
+      });
+    } catch (err) {
+      setPendingUserText(null);
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
 
   const proposeCorrection = useMutation({
     mutationFn: (msgId: string) =>
@@ -205,11 +223,10 @@ export function SalesAgentWorkspace({
     onError: (err: Error) => toast.error(err.message),
   });
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  function handleSubmit() {
     const trimmed = draft.trim();
-    if (!trimmed || sendMsg.isPending || isReadOnlyTrace) return;
-    sendMsg.mutate(trimmed);
+    if (!trimmed || stream.state.isBusy || isReadOnlyTrace) return;
+    void sendStreamingMessage(trimmed);
   }
 
   function handleOpenEventConversation(conversationId: string) {
@@ -478,6 +495,16 @@ export function SalesAgentWorkspace({
           })
         )}
 
+        {pendingUserText && (
+          <div className="flex flex-col items-end gap-1">
+            <div className="max-w-[90%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+              <p className="whitespace-pre-wrap break-words leading-relaxed">{pendingUserText}</p>
+            </div>
+          </div>
+        )}
+
+        <SharedLiveActivity stream={stream.state} />
+
         {detail?.handoffRequested && (
           <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-2.5 py-2 text-xs text-muted-foreground">
             <UserRoundCheck className="size-4 shrink-0" />
@@ -488,24 +515,21 @@ export function SalesAgentWorkspace({
         )}
       </div>
 
-      {/* Composer */}
+      {/* Shared Composer with Stop/Cancel */}
       {!isReadOnlyTrace && (
-        <form onSubmit={handleSubmit} className="flex gap-2 border-t p-2.5">
-          <Input
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder={
-              chatMode === 'supervisor'
-                ? t('Ask the Sales Agent or teach a store policy...')
-                : t('Ask as a buyer (e.g. price, availability, recommendations)...')
-            }
-            disabled={sendMsg.isPending}
-          />
-          <Button type="submit" size="sm" disabled={sendMsg.isPending || !draft.trim()}>
-            <Send className="size-3.5" />
-            <span className="sr-only">{t('Send')}</span>
-          </Button>
-        </form>
+        <SharedSupervisorComposer
+          value={draft}
+          onChange={setDraft}
+          onSubmit={handleSubmit}
+          onStop={() => void stream.cancel()}
+          isBusy={stream.state.isBusy}
+          isCancelling={stream.state.isCancelling}
+          placeholder={
+            chatMode === 'supervisor'
+              ? t('Ask the Sales Agent or teach a store policy...')
+              : t('Ask as a buyer (e.g. price, availability, recommendations)...')
+          }
+        />
       )}
     </section>
   );
@@ -516,7 +540,7 @@ export function SalesAgentWorkspace({
       overview={overview}
       knowledge={knowledge}
       proposals={proposals}
-      activeSimulation={sendMsg.isPending && chatMode === 'simulator'}
+      activeSimulation={stream.state.isBusy && chatMode === 'simulator'}
       onStopAuto={() => stopAuto.mutate()}
       stoppingAuto={stopAuto.isPending}
     />
