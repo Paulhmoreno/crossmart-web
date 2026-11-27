@@ -1575,4 +1575,6 @@ export const MESSAGES_ES_EC: Record<string, string> = {
   Pause: 'Pausar',
   Resume: 'Reanudar',
   'Not connected': 'Sin conectar',
+  '1 social account connected': '1 cuenta social conectada',
+  '{count} social accounts connected': '{count} cuentas sociales conectadas',
 };

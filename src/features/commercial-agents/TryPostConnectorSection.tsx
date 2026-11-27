@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, ChevronRight, Plus, Settings2 } from 'lucide-react';
 import { Link } from 'react-router';
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChannelConnectionStatus } from '@/api/schema';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,18 +17,27 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ChannelLogo } from '@/features/channels/components/ChannelLogo';
 import { ConnectionStatusBadge } from '@/features/channels/components/ConnectionStatusBadge';
 import { useI18n } from '@/lib/i18n';
 import trypostLogo from './assets/logos/trypost.svg';
 import { socialMarketingApi } from './social-api';
+
+const TRYPOST_LOGO = { src: trypostLogo } as const;
 
 interface TryPostConnectorSectionProps {
   workspaceId: string;
   canManage: boolean;
 }
 
+/**
+ * Marketing connector card for TryPost, matching native Crossmart connector cards
+ * (`ConnectableChannelCard`, `OdooConnectorCard`, `ChatwootConnectorSection`):
+ * - Uses `ChannelLogo`, `ConnectionStatusBadge` / `Available` badge, native typography,
+ *   and compact `Manage` (`Settings2`) / `Connect` (`Plus`) footer buttons.
+ */
 export function TryPostConnectorSection({ workspaceId, canManage }: TryPostConnectorSectionProps) {
-  const { t } = useI18n();
+  const { t, tp } = useI18n();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -86,38 +96,49 @@ export function TryPostConnectorSection({ workspaceId, canManage }: TryPostConne
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <Card className="flex flex-col justify-between">
-        <CardHeader className="gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <img src={trypostLogo} alt="TryPost" className="size-8 rounded-md object-contain" />
-            {badgeStatus && <ConnectionStatusBadge status={badgeStatus} />}
+      <Card>
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <ChannelLogo logo={TRYPOST_LOGO} />
+            {badgeStatus ? (
+              <ConnectionStatusBadge status={badgeStatus} />
+            ) : (
+              <Badge variant="outline">{t('Available')}</Badge>
+            )}
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-base">TryPost</CardTitle>
-            <CardDescription className="text-xs">
-              {isConnected
-                ? t('{count} social account(s) connected').replace(
-                    '{count}',
-                    String(conn.channels.length),
-                  )
-                : t('Editorial calendar, idea bank, drafts, media library, and social analytics.')}
-            </CardDescription>
+          <div className="flex flex-col gap-1">
+            <h2 className="font-medium">TryPost</h2>
+            <p className="text-sm text-muted-foreground">
+              {t('Editorial calendar, idea bank, drafts, media library, and social analytics.')}
+            </p>
           </div>
-        </CardHeader>
-        <CardFooter>
+          {isConnected && (
+            <p className="text-sm text-muted-foreground">
+              {tp(
+                conn.channels.length,
+                '1 social account connected',
+                '{count} social accounts connected',
+              )}
+            </p>
+          )}
+        </CardContent>
+        <CardFooter className="mt-auto">
           {isConnected ? (
-            <Button asChild variant="outline" size="sm" className="w-full">
-              <Link to="/stores/trypost">{t('Manage')}</Link>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/stores/trypost">
+                <Settings2 data-icon="inline-start" />
+                {t('Manage')}
+              </Link>
             </Button>
-          ) : (
-            <Button
-              size="sm"
-              className="w-full"
-              disabled={!canManage}
-              onClick={() => setOpen(true)}
-            >
+          ) : canManage ? (
+            <Button type="button" size="sm" onClick={() => setOpen(true)}>
+              <Plus data-icon="inline-start" />
               {t('Connect')}
             </Button>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t('Ask a workspace admin to connect it.')}
+            </p>
           )}
         </CardFooter>
       </Card>
@@ -127,7 +148,9 @@ export function TryPostConnectorSection({ workspaceId, canManage }: TryPostConne
           <DialogHeader>
             <DialogTitle>{t('Connect TryPost')}</DialogTitle>
             <DialogDescription>
-              {t('Connect your TryPost workspace using an official REST API key. Individual social network passwords are never requested.')}
+              {t(
+                'Connect your TryPost workspace using an official REST API key. Individual social network passwords are never requested.',
+              )}
             </DialogDescription>
           </DialogHeader>
 
@@ -138,7 +161,7 @@ export function TryPostConnectorSection({ workspaceId, canManage }: TryPostConne
                 id="tp-api-key"
                 type="password"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                onChange={(event) => setApiKey(event.target.value)}
                 placeholder="tp_..."
               />
             </div>
@@ -146,9 +169,13 @@ export function TryPostConnectorSection({ workspaceId, canManage }: TryPostConne
             <button
               type="button"
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-              onClick={() => setShowAdvanced((v) => !v)}
+              onClick={() => setShowAdvanced((prev) => !prev)}
             >
-              {showAdvanced ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+              {showAdvanced ? (
+                <ChevronDown className="size-3.5" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              )}
               {t('Advanced options (self-hosted instance)')}
             </button>
 
@@ -158,7 +185,7 @@ export function TryPostConnectorSection({ workspaceId, canManage }: TryPostConne
                 <Input
                   id="tp-url"
                   value={baseUrl}
-                  onChange={(e) => setBaseUrl(e.target.value)}
+                  onChange={(event) => setBaseUrl(event.target.value)}
                   placeholder="https://app.trypost.it/api"
                 />
               </div>
