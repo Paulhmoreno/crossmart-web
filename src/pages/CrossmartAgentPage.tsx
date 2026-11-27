@@ -21,6 +21,7 @@ import {
   type InternalAgentKey,
 } from '@/features/commercial-agents/api';
 import { SalesAgentWorkspace } from '@/features/commercial-agents/SalesAgentWorkspace';
+import { SocialAgentWorkspace } from '@/features/commercial-agents/SocialAgentWorkspace';
 import { AgentTabs } from '@/features/review';
 import { hasPermission, useCurrentWorkspace } from '@/features/workspaces';
 import { useI18n } from '@/lib/i18n';
@@ -44,6 +45,16 @@ const DEFAULT_AGENT_CONFIG: Record<InternalAgentKey, AgentConfigView> = {
     authorizedInboxIds: [],
     commercialPolicy: {},
     salesMode: 'DISABLED',
+    updatedAt: null,
+  },
+  social: {
+    agentKey: 'social',
+    aiConnectionId: null,
+    model: null,
+    chatwootConnectionId: null,
+    authorizedInboxIds: [],
+    commercialPolicy: {},
+    salesMode: 'SUPERVISED',
     updatedAt: null,
   },
 };
@@ -85,6 +96,7 @@ export function CrossmartAgentPage() {
               <SelectContent>
                 <SelectItem value="crossmart">{t('Crossmart Agent')}</SelectItem>
                 <SelectItem value="sales">{t('Sales Agent')}</SelectItem>
+                <SelectItem value="social">{t('Social Agent')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -111,8 +123,10 @@ export function CrossmartAgentPage() {
             {(current) =>
               selectedAgent === 'crossmart' ? (
                 <AgentConsole workspaceId={current.id} />
-              ) : (
+              ) : selectedAgent === 'sales' ? (
                 <SalesAgentWorkspace workspaceId={current.id} config={activeConfig} />
+              ) : (
+                <SocialAgentWorkspace workspaceId={current.id} />
               )
             }
           </WorkspaceGate>

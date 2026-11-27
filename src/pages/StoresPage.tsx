@@ -5,6 +5,7 @@ import { ChannelGrid, useConnectRedirectToast } from '@/features/channels';
 import { AiConnectorsSection } from '@/features/commercial-agents/AiConnectorsSection';
 import { ChatwootConnectorSection } from '@/features/commercial-agents/ChatwootConnectorSection';
 import { OdooConnectorCard } from '@/features/commercial-agents/OdooConnectorCard';
+import { TryPostConnectorSection } from '@/features/commercial-agents/TryPostConnectorSection';
 import { StoreSetupDialog, useStoreSetupParam } from '@/features/store-setup';
 import { hasPermission } from '@/features/workspaces';
 import { useI18n } from '@/lib/i18n';
@@ -51,6 +52,13 @@ export function StoresPage() {
 
               <ConnectorSection title={t('Communication')}>
                 <ChatwootConnectorSection
+                  workspaceId={workspace.id}
+                  canManage={canManageChannels}
+                />
+              </ConnectorSection>
+
+              <ConnectorSection title={t('Marketing')}>
+                <TryPostConnectorSection
                   workspaceId={workspace.id}
                   canManage={canManageChannels}
                 />

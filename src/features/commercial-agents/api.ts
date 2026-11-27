@@ -4,7 +4,7 @@ export type AiProviderFamily =
   'openai' | 'anthropic' | 'gemini' | 'openai_compatible' | 'anthropic_compatible';
 
 export type SalesAgentMode = 'DISABLED' | 'SUPERVISED' | 'AUTOMATIC';
-export type InternalAgentKey = 'crossmart' | 'sales';
+export type InternalAgentKey = 'crossmart' | 'sales' | 'social';
 
 export interface AiCapabilities {
   structuredOutput: boolean;
