@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { env } from '@/config/env';
 import type { ChannelConnection } from '@/features/channels';
 import { useOdooConnection } from '@/features/odoo';
 import { useI18n } from '@/lib/i18n';
@@ -78,7 +79,7 @@ export function StoreOrderPolicyCard({
       const connRecord = connection as unknown as { settings?: Record<string, unknown> };
       const existingSettings = connRecord.settings ?? {};
       const res = await fetch(
-        `/api/v1/workspaces/${workspaceId}/channels/${connection.id}/settings`,
+        `${env.apiUrl}/api/v1/workspaces/${workspaceId}/channels/${connection.id}/settings`,
         {
           method: 'PATCH',
           credentials: 'include',

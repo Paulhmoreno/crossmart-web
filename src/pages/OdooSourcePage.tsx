@@ -67,7 +67,7 @@ function OdooSourceContent({ workspace }: { workspace: Workspace }) {
                 />
               </TabsContent>
               <TabsContent value="operations">
-                <OdooOperationsCard workspaceId={workspace.id} />
+                <OdooOperationsCard workspaceId={workspace.id} canManage={canManage} />
               </TabsContent>
             </Tabs>
           ) : (

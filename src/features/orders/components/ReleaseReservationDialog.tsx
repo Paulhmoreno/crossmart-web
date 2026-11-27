@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { env } from '@/config/env';
 import { useI18n } from '@/lib/i18n';
 
 interface ReleaseReservationDialogProps {
@@ -41,7 +42,7 @@ export function ReleaseReservationDialog({
   const mutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(
-        `/api/v1/workspaces/${workspaceId}/orders/${orderId}/release-reservation`,
+        `${env.apiUrl}/api/v1/workspaces/${workspaceId}/orders/${orderId}/release-reservation`,
         {
           method: 'POST',
           credentials: 'include',

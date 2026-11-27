@@ -15,6 +15,7 @@ import { ROUTE_PARAMS } from '@/config/routes';
 import { useOdooConnection } from '@/features/odoo';
 import { OrderLinesTable, OrderStatusBadge, useOrder } from '@/features/orders';
 import { ReleaseReservationDialog } from '@/features/orders/components/ReleaseReservationDialog';
+import { env } from '@/config/env';
 import { hasPermission, type Workspace } from '@/features/workspaces';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
@@ -68,7 +69,7 @@ function Order({ workspace, orderId }: { workspace: Workspace; orderId: string }
   const reReserveMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(
-        `/api/v1/workspaces/${workspace.id}/orders/${orderId}/re-reserve`,
+        `${env.apiUrl}/api/v1/workspaces/${workspace.id}/orders/${orderId}/re-reserve`,
         { method: 'POST', credentials: 'include' },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -85,7 +86,7 @@ function Order({ workspace, orderId }: { workspace: Workspace; orderId: string }
 
   const invoiceMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/v1/workspaces/${workspace.id}/orders/${orderId}/invoice`, {
+      const res = await fetch(`${env.apiUrl}/api/v1/workspaces/${workspace.id}/orders/${orderId}/invoice`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
