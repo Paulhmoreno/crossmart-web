@@ -120,7 +120,32 @@ async function jsonReq<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+export interface SocialConversationView {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: Array<{
+    id: string;
+    role: string;
+    text: string;
+    metadata?: Record<string, unknown>;
+    createdAt: string;
+  }>;
+}
+
 export const socialMarketingApi = {
+  getLatestConversation: (wsId: string, conversationId?: string | null) =>
+    jsonReq<SocialConversationView>(
+      `/api/v1/workspaces/${wsId}/social-agent/conversations/latest${
+        conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : ''
+      }`,
+    ),
+  createConversation: (wsId: string, title?: string) =>
+    jsonReq<SocialConversationView>(`/api/v1/workspaces/${wsId}/social-agent/conversations`, {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    }),
   getTryPost: (wsId: string) =>
     jsonReq<{ connection: TryPostConnectionView | null }>(
       `/api/v1/workspaces/${wsId}/connectors/trypost`,

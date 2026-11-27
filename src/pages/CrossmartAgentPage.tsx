@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AgentConsole } from '@/features/agent-console';
-import { AGENT_WORKER_COPY } from '@/features/agent-worker';
 import { AgentConfigDialog } from '@/features/commercial-agents/AgentConfigDialog';
 import {
   type AgentConfigView,
@@ -82,7 +81,7 @@ export function CrossmartAgentPage() {
     : false;
 
   return (
-    <Page name={t(AGENT_WORKER_COPY.name)} headerHidden>
+    <Page name={t('Agents')} headerHidden>
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -94,7 +93,7 @@ export function CrossmartAgentPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="crossmart">{t('Crossmart Agent')}</SelectItem>
+                <SelectItem value="crossmart">{t('Product Agent')}</SelectItem>
                 <SelectItem value="sales">{t('Sales Agent')}</SelectItem>
                 <SelectItem value="social">{t('Social Agent')}</SelectItem>
               </SelectContent>

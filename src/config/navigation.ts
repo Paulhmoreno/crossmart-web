@@ -41,7 +41,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     also: [ROUTES.odooSource, ROUTES.aiSettings],
     badge: NavBadge.ChannelErrors,
   },
-  { label: 'Agent', to: ROUTES.agent, icon: Sparkles, badge: NavBadge.PendingReview },
+  { label: 'Agents', to: ROUTES.agent, icon: Sparkles, badge: NavBadge.PendingReview },
   { label: 'Settings', to: ROUTES.settings, icon: Settings },
 ];
 
@@ -83,7 +83,7 @@ export const PAGE_PARENTS = {
   ],
   stores: [{ label: 'Connectors', to: ROUTES.stores }],
   orders: [{ label: 'Orders', to: ROUTES.orders }],
-  agent: [{ label: 'Agent', to: ROUTES.agent }],
+  agent: [{ label: 'Agents', to: ROUTES.agent }],
   platform: [{ label: 'Platform' }],
   askInsights: [{ label: 'Platform' }, { label: 'Ask insights', to: ROUTES.askInsights }],
 } as const satisfies Record<string, readonly Crumb[]>;

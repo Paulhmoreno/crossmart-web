@@ -20,6 +20,38 @@ function ToolStatusIcon({ tool }: { tool: AgentToolRunView }) {
   return <CircleCheck className="size-3.5 shrink-0 text-emerald-500" aria-hidden="true" />;
 }
 
+const OUTCOME_PATTERNS: Array<{ re: RegExp; key: string }> = [
+  { re: /^(\d+)\s+account\(s\)$/i, key: '{count} account(s)' },
+  { re: /^(\d+)\s+post\(s\)$/i, key: '{count} post(s)' },
+  { re: /^(\d+)\s+idea\(s\)$/i, key: '{count} idea(s)' },
+  { re: /^(\d+)\s+slot\(s\)$/i, key: '{count} slot(s)' },
+  { re: /^(\d+)\s+rule\(s\)$/i, key: '{count} rule(s)' },
+  { re: /^(\d+)\s+match\(es\)$/i, key: '{count} match(es)' },
+  { re: /^(\d+)\s+piece\(s\)$/i, key: '{count} piece(s)' },
+  { re: /^(\d+)\s+product\(s\) with photos$/i, key: '{count} product(s) with photos' },
+  { re: /^(\d+)\s+conversation\(s\)$/i, key: '{count} conversation(s)' },
+];
+
+const SECOND_GROUP = 2;
+
+function localizeToolOutcome(
+  outcome: string,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  const stockMatch = /^(\d+)\/(\d+)\s+in stock$/i.exec(outcome);
+  if (stockMatch) {
+    return t('{inStock}/{total} in stock', {
+      inStock: stockMatch[1] ?? '0',
+      total: stockMatch[SECOND_GROUP] ?? '0',
+    });
+  }
+  for (const item of OUTCOME_PATTERNS) {
+    const match = item.re.exec(outcome);
+    if (match) return t(item.key, { count: match[1] ?? '0' });
+  }
+  return t(outcome);
+}
+
 /**
  * Compact tool-execution list visually aligned with Crossmart Agent's `ActionList` / `ActionRow`.
  * Renders dynamically from backend tool metadata without hardcoding any connector or tool name.
@@ -44,7 +76,7 @@ export function SharedToolRunList({ toolRuns }: { toolRuns: readonly AgentToolRu
             </span>
             <span className="min-w-0 break-words">
               <span>{t(tool.title)}</span>
-              {tool.outcome ? <span> · {t(tool.outcome)}</span> : null}
+              {tool.outcome ? <span> · {localizeToolOutcome(tool.outcome, t)}</span> : null}
             </span>
           </li>
         );

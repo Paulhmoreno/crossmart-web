@@ -8,7 +8,6 @@ import { shortcutAria, shortcutLabel } from '@/lib/platform';
 import { useI18n } from '@/lib/i18n';
 import { useAgentWorker } from '../agent-worker-context';
 import {
-  AGENT_WORKER_COPY,
   AGENT_WORKER_SHORTCUT_KEY,
   AGENT_WORKER_TEST_IDS,
 } from '../agent-worker.constants';
@@ -36,11 +35,11 @@ export function AgentWorkerLauncher() {
           onClick={() => openAgentWorker()}
         >
           <Sparkles data-icon="inline-start" className="text-brand" />
-          <span className="max-sm:sr-only">{t(AGENT_WORKER_COPY.name)}</span>
+          <span className="max-sm:sr-only">{t('Agents')}</span>
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {t(AGENT_WORKER_COPY.name)} <Kbd>{shortcutLabel(SHORTCUT_KEY_LABEL)}</Kbd>
+        {t('Agents')} <Kbd>{shortcutLabel(SHORTCUT_KEY_LABEL)}</Kbd>
       </TooltipContent>
     </Tooltip>
   );

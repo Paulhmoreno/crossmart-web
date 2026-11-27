@@ -1,5 +1,6 @@
 import { History, Plus } from 'lucide-react';
 import { Link } from 'react-router';
+import { WorkspacePermission } from '@/api/schema';
 import { ContentLoader } from '@/components/feedback/ContentLoader';
 import { WorkspaceGate } from '@/components/feedback/WorkspaceGate';
 import { Page } from '@/components/layout/Page';
@@ -7,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/config/routes';
 import { NeedsAttention } from '@/features/attention';
 import { useSession } from '@/features/auth';
+import { useOdooConnection } from '@/features/odoo';
 import { useHasOrders } from '@/features/orders';
 import { GettingStarted, SalesEmptyState, useOnboarding } from '@/features/overview';
 import { SalesOverview } from '@/features/sales';
-import type { Workspace } from '@/features/workspaces';
+import { hasPermission, useCurrentWorkspace, type Workspace } from '@/features/workspaces';
 import { useI18n } from '@/lib/i18n';
 
 /**
@@ -32,6 +34,14 @@ function OverviewContent({ workspace }: { workspace: Workspace }) {
 
 function HomeActions() {
   const { t } = useI18n();
+  const { workspace } = useCurrentWorkspace();
+  const odooQuery = useOdooConnection(workspace?.id ?? '');
+  const isOdooExclusive = Boolean(odooQuery.data?.connection);
+  const canCreateNative =
+    Boolean(workspace) &&
+    !isOdooExclusive &&
+    hasPermission(workspace!, WorkspacePermission.products_edit);
+
   return (
     <>
       <Button variant="outline" asChild>
@@ -40,12 +50,14 @@ function HomeActions() {
           {t('Activity')}
         </Link>
       </Button>
-      <Button asChild>
-        <Link to={ROUTES.newProduct}>
-          <Plus data-icon="inline-start" />
-          {t('Add product')}
-        </Link>
-      </Button>
+      {canCreateNative && (
+        <Button asChild>
+          <Link to={ROUTES.newProduct}>
+            <Plus data-icon="inline-start" />
+            {t('Add product')}
+          </Link>
+        </Button>
+      )}
     </>
   );
 }

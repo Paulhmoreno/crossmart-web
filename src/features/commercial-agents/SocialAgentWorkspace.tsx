@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, ExternalLink, Film, Image as ImageIcon, Pause, Play, Plus, X } from 'lucide-react';
 import { Link } from 'react-router';
@@ -47,28 +47,11 @@ interface SocialChatMessage {
 }
 
 const COLUMN_CLASS = 'min-h-0 overflow-hidden rounded-xl border bg-background';
-const MAX_SAVED_MESSAGES = 30;
-const MAX_HISTORY_TURNS = 12;
-
-function loadSavedChat(workspaceId: string): SocialChatMessage[] {
-  try {
-    const raw = window.localStorage.getItem(`crossmart.social.chat.${workspaceId}`);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed)
-      ? (parsed as SocialChatMessage[]).slice(-MAX_SAVED_MESSAGES)
-      : [];
-  } catch {
-    return [];
-  }
-}
 
 /**
- * Unified 3-column Social Agent workspace reusing Crossmart Agent and Sales Agent's exact layout,
- * visual tokens, collapsible Events rail, native ChannelMapCanvas, and responsive narrow-screen tabs:
- * - Left: Supervisor natural-language strategy & creative direction chat
- * - Center: Operations (native React Flow map + list), Production, TryPost, and Results
- * - Right: Real operational events panel with Live indicator and filter pills
+ * Unified 3-column Social Agent workspace reusing Crossmart's native 3-column layout,
+ * PostgreSQL conversation persistence, collapsible Events rail, native ChannelMapCanvas,
+ * and shared Supervisor streaming/activity/cancel UI.
  */
 export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
   const { t, formatNumber, locale } = useI18n();
@@ -79,20 +62,32 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
 
   const [centerTab, setCenterTab] = useState<SocialCenterView>('operations');
   const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<SocialChatMessage[]>(() =>
-    loadSavedChat(workspaceId),
-  );
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [pendingUserText, setPendingUserText] = useState<string | null>(null);
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        `crossmart.social.chat.${workspaceId}`,
-        JSON.stringify(chatMessages.slice(-MAX_SAVED_MESSAGES)),
-      );
-    } catch {
-      // Ignore storage quota errors.
-    }
-  }, [chatMessages, workspaceId]);
+  const { data: conversation } = useQuery({
+    queryKey: ['social-conversation', workspaceId, activeConversationId],
+    queryFn: () => socialMarketingApi.getLatestConversation(workspaceId, activeConversationId),
+  });
+
+  const chatMessages: SocialChatMessage[] = (conversation?.messages ?? []).map((msg) => ({
+    role: msg.role === 'supervisor' || msg.role === 'user' ? 'user' : 'assistant',
+    text: msg.text,
+    toolRuns: Array.isArray(msg.metadata?.toolRuns)
+      ? (msg.metadata.toolRuns as AgentToolRunView[])
+      : undefined,
+  }));
+
+  const newConvMutation = useMutation({
+    mutationFn: () => socialMarketingApi.createConversation(workspaceId),
+    onSuccess: (created) => {
+      setActiveConversationId(created.id);
+      setPendingUserText(null);
+      stream.reset();
+      qc.setQueryData(['social-conversation', workspaceId, created.id], created);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   // Production creation form state
   const [newTitle, setNewTitle] = useState('');
@@ -115,36 +110,24 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
   const sendSupervisorPrompt = async (rawMessage: string) => {
     const trimmed = rawMessage.trim();
     if (!trimmed || stream.state.isBusy) return;
-    const history = chatMessages
-      .slice(-MAX_HISTORY_TURNS)
-      .map((msg) => ({ role: msg.role, text: msg.text }));
-    setChatMessages((prev) => [...prev, { role: 'user', text: trimmed }]);
     setChatInput('');
+    setPendingUserText(trimmed);
 
+    const convId = activeConversationId ?? conversation?.id ?? null;
     await stream.startStream({
       path: `/api/v1/workspaces/${workspaceId}/social-agent/supervisor/stream`,
-      body: { message: trimmed, history, locale },
+      body: { message: trimmed, conversationId: convId, locale },
       cancelPathForTurn: (turnId) =>
         `/api/v1/workspaces/${workspaceId}/social-agent/supervisor/cancel/${turnId}`,
-      onFinished: (payload) => {
-        if (payload.text || payload.toolRuns.length > 0 || payload.status === 'cancelled') {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              role: 'assistant',
-              text:
-                payload.text ||
-                (payload.status === 'cancelled'
-                  ? t('Execution cancelled.')
-                  : payload.error || t('No response received.')),
-              toolRuns: payload.toolRuns,
-              status: payload.status,
-            },
-          ]);
-        }
+      onFinished: () => {
+        setPendingUserText(null);
+        void qc.invalidateQueries({ queryKey: ['social-conversation', workspaceId] });
         void qc.invalidateQueries({ queryKey: ['social-overview', workspaceId] });
       },
-      onError: (message) => toast.error(message),
+      onError: (message) => {
+        setPendingUserText(null);
+        toast.error(message);
+      },
     });
   };
 
@@ -242,11 +225,8 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
             variant="outline"
             size="sm"
             className="h-7 px-2 text-xs"
-            disabled={chatMessages.length === 0 || stream.state.isBusy}
-            onClick={() => {
-              setChatMessages([]);
-              stream.reset();
-            }}
+            disabled={newConvMutation.isPending || stream.state.isBusy}
+            onClick={() => newConvMutation.mutate()}
           >
             <Plus className="size-3.5" />
             {t('New')}
@@ -260,7 +240,7 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
-        {chatMessages.length === 0 && !stream.state.isBusy ? (
+        {chatMessages.length === 0 && !pendingUserText && !stream.state.isBusy ? (
           <div className="my-auto flex flex-col gap-2.5 px-2 text-center text-xs text-muted-foreground">
             <p className="font-medium text-foreground">{t('Supervisor mode')}</p>
             <p>
@@ -317,6 +297,15 @@ export function SocialAgentWorkspace({ workspaceId }: { workspaceId: string }) {
                 </div>
               );
             })}
+            {pendingUserText && (
+              <div className="flex flex-col items-end gap-1">
+                <div className="max-w-[90%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                  <p className="whitespace-pre-wrap break-words leading-relaxed">
+                    {pendingUserText}
+                  </p>
+                </div>
+              </div>
+            )}
             <SharedLiveActivity stream={stream.state} />
           </>
         )}

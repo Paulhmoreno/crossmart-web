@@ -24,7 +24,7 @@ function ChatHeader({ session }: { session: AgentWorkerSession }) {
     <header className="flex items-center justify-between gap-2 border-b px-3 py-2">
       <h2 className="flex items-center gap-1.5 text-sm font-semibold whitespace-nowrap">
         <Sparkles className="size-4 text-brand" aria-hidden="true" />
-        {t(AGENT_WORKER_COPY.name)}
+        {t('Product Agent')}
       </h2>
       <ConversationSwitcher
         workspaceId={session.workspaceId}
